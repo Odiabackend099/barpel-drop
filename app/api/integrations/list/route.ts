@@ -34,7 +34,7 @@ export async function GET() {
   const { data: integrations, error } = await supabase
     .from("integrations")
     .select(
-      "id, platform, shop_domain, connection_active, last_synced_at, outbound_consent_confirmed_at, created_at"
+      "id, platform, shop_domain, shop_name, connection_active, last_synced_at, outbound_consent_confirmed_at, created_at"
     )
     .eq("merchant_id", merchant.id)
     .order("created_at", { ascending: false });

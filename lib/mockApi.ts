@@ -113,12 +113,28 @@ export const mockMerchant: MerchantData = {
   shopify_domain: "powerfit-gadgets.myshopify.com",
   shopify_connected: true,
   vapi_agent_id: "vapi_agent_123",
-  phone_number: "+234 801 234 5678",
-  support_phone: "+234 801 234 5678",
+  phone_number: "+44 20 7946 0958",
+  support_phone: "+44 20 7946 0958",
   custom_prompt: "",
+  country: "NG",
+  provisioning_status: "active",
   credits_remaining_secs: 6234,
   credits_total_secs: 12000,
 };
+
+// Mock integrations — used by useIntegrations hook in dev mode
+export const mockIntegrations = [
+  {
+    id: "integration_001",
+    platform: "shopify",
+    shop_domain: "powerfit-gadgets.myshopify.com",
+    shop_name: "PowerFit Gadgets",
+    connection_active: true,
+    last_synced_at: new Date().toISOString(),
+    outbound_consent_confirmed_at: null,
+    created_at: new Date().toISOString(),
+  },
+];
 
 // ============================================================================
 // MOCK TRANSACTIONS

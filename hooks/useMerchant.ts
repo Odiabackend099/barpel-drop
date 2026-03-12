@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { MerchantData } from "@/lib/mockApi";
 import { createClient } from "@/lib/supabase/client";
 
@@ -10,23 +10,26 @@ export function useMerchant() {
   const [merchant, setMerchant] = useState<MerchantData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const userIdRef = useRef<string | null>(null);
 
   useEffect(() => {
+    if (useMock) {
+      import("@/lib/mockApi").then(({ mockMerchant }) => {
+        setMerchant(mockMerchant);
+        setLoading(false);
+      });
+      return;
+    }
+
+    const supabase = createClient();
+
     async function fetchMerchant() {
       try {
-        if (useMock) {
-          // Dynamic import so mockApi is never imported at module level in production
-          const { mockMerchant } = await import("@/lib/mockApi");
-          setMerchant(mockMerchant);
-          setLoading(false);
-          return;
-        }
-
-        const supabase = createClient();
         const {
           data: { user },
         } = await supabase.auth.getUser();
         if (!user) throw new Error("Not authenticated");
+        userIdRef.current = user.id;
 
         const { data, error: dbError } = await supabase
           .from("merchants")
@@ -44,6 +47,24 @@ export function useMerchant() {
     }
 
     fetchMerchant();
+
+    // Realtime subscription — auto-refresh when provisioning completes or merchant data changes
+    const channel = supabase
+      .channel("merchant-updates")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "merchants" },
+        (payload) => {
+          if (payload.new && userIdRef.current && payload.new.user_id === userIdRef.current) {
+            setMerchant(payload.new as MerchantData);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const updateCustomPrompt = async (prompt: string) => {
