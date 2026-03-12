@@ -1,16 +1,18 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { randomBytes } from "crypto";
 import { verifyHmacSha256 } from "@/lib/security";
 import { exchangeCodeForToken } from "@/lib/shopify/oauth";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+const OAUTH_STATE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
 /**
  * Shopify OAuth callback.
- * Verifies HMAC (hex for OAuth), exchanges code for token,
- * stores token in Vault, generates per-shop webhook secret,
- * and registers the abandoned cart webhook.
+ * Verifies CSRF state from database (not cookies — they are unreliable on
+ * Vercel serverless). Verifies HMAC (hex for OAuth), exchanges code for token,
+ * stores token in Vault, generates per-shop webhook secret, and registers
+ * the abandoned cart webhook.
  */
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -43,20 +45,36 @@ export async function GET(request: Request) {
     return redirectError("missing_params");
   }
 
-  // Verify CSRF nonce
-  const cookieStore = cookies();
-  const savedNonce = cookieStore.get("shopify_oauth_nonce")?.value;
-  const savedShop = cookieStore.get("shopify_oauth_shop")?.value;
+  // ── CSRF verification via database (replaces cookie-based nonce) ──────────
+  const adminSupabase = createAdminClient();
 
-  if (!savedNonce || state !== savedNonce) {
+  const { data: oauthState } = await adminSupabase
+    .from("oauth_states")
+    .select("merchant_id, shop_domain, created_at")
+    .eq("state", state)
+    .single();
+
+  if (!oauthState) {
     return redirectError("csrf_mismatch");
   }
 
-  if (savedShop && savedShop !== shop) {
+  // Check expiry (10 minutes)
+  const stateAge = Date.now() - new Date(oauthState.created_at).getTime();
+  if (stateAge > OAUTH_STATE_TTL_MS) {
+    await adminSupabase.from("oauth_states").delete().eq("state", state);
+    return redirectError("csrf_mismatch");
+  }
+
+  // Verify shop matches what was originally requested
+  if (oauthState.shop_domain !== shop) {
+    await adminSupabase.from("oauth_states").delete().eq("state", state);
     return redirectError("shop_mismatch");
   }
 
-  // Verify Shopify HMAC — OAuth callback uses hex encoding (NOT base64)
+  // Delete the used state (single-use token — prevents replay attacks)
+  await adminSupabase.from("oauth_states").delete().eq("state", state);
+
+  // ── Verify Shopify HMAC — OAuth callback uses hex encoding (NOT base64) ──
   const apiSecret = process.env.SHOPIFY_API_SECRET;
   if (!apiSecret || !hmac) {
     return redirectError("missing_secret");
@@ -92,7 +110,7 @@ export async function GET(request: Request) {
     // non-fatal
   }
 
-  // Get authenticated user
+  // Secondary verification: confirm authenticated user owns the merchant
   const supabase = createClient();
   const {
     data: { user },
@@ -105,7 +123,9 @@ export async function GET(request: Request) {
   const { data: merchant } = await supabase
     .from("merchants")
     .select("id")
+    .eq("id", oauthState.merchant_id)
     .eq("user_id", user.id)
+    .is("deleted_at", null)
     .single();
 
   if (!merchant) {
@@ -113,7 +133,6 @@ export async function GET(request: Request) {
   }
 
   const merchantId = merchant.id;
-  const adminSupabase = createAdminClient();
 
   // B-14: Store access token in Supabase Vault — never raw in DB
   let accessTokenSecretId: string | null = null;
@@ -193,10 +212,6 @@ export async function GET(request: Request) {
     console.error("[shopify callback] Webhook registration failed:", err);
     // Non-fatal — merchant can reconnect later
   }
-
-  // Clear OAuth cookies
-  cookieStore.delete("shopify_oauth_nonce");
-  cookieStore.delete("shopify_oauth_shop");
 
   // Redirect back to onboarding Step 2 with connected confirmation
   return NextResponse.redirect(

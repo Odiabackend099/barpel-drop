@@ -15,7 +15,7 @@ export default function IntegrationsPage() {
     isShopifyConnected,
     loading: intLoading,
     refetch,
-  } = useIntegrations();
+  } = useIntegrations(merchant?.id);
 
   if (merchantLoading || intLoading) {
     return (

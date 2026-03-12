@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { buildAuthUrl } from "@/lib/shopify/oauth";
-import { cookies } from "next/headers";
 
 /**
  * Initiates the Shopify OAuth flow.
- * Stores a nonce in a signed cookie for CSRF verification.
+ * Stores a nonce in the database for CSRF verification (not cookies — they
+ * are unreliable on Vercel serverless across redirect hops).
  */
 export async function POST(request: Request) {
   const supabase = createClient();
@@ -34,25 +35,41 @@ export async function POST(request: Request) {
     );
   }
 
+  // Look up merchant for the authenticated user
+  const { data: merchant } = await supabase
+    .from("merchants")
+    .select("id")
+    .eq("user_id", user.id)
+    .is("deleted_at", null)
+    .single();
+
+  if (!merchant) {
+    return NextResponse.json(
+      { error: "Merchant not found" },
+      { status: 404 }
+    );
+  }
+
   const redirectUri = `${process.env.NEXT_PUBLIC_BASE_URL}/api/shopify/oauth/callback`;
   const { url, nonce } = buildAuthUrl(shopDomain, redirectUri);
 
-  // Store nonce + shop domain in a signed cookie (5-minute expiry)
-  const cookieStore = cookies();
-  cookieStore.set("shopify_oauth_nonce", nonce, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 300, // 5 minutes
-    path: "/",
-  });
-  cookieStore.set("shopify_oauth_shop", shopDomain, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 300,
-    path: "/",
-  });
+  // Store nonce in database (replaces cookie-based approach)
+  const adminSupabase = createAdminClient();
+  const { error: stateError } = await adminSupabase
+    .from("oauth_states")
+    .insert({
+      state: nonce,
+      merchant_id: merchant.id,
+      shop_domain: shopDomain,
+    });
+
+  if (stateError) {
+    console.error("[shopify oauth start] Failed to store state:", stateError);
+    return NextResponse.json(
+      { error: "Internal error" },
+      { status: 500 }
+    );
+  }
 
   return NextResponse.json({ url });
 }

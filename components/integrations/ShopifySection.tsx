@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { ShoppingBag, Clock } from "lucide-react";
-import { Loader2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,7 +12,6 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { normalizeShopDomain } from "@/lib/shopify/oauth";
 import type { Integration } from "@/hooks/useIntegrations";
 
 function Badge({ color, children }: { color: string; children: React.ReactNode }) {
@@ -40,10 +38,6 @@ export function ShopifySection({
 }: ShopifySectionProps) {
   const [disconnectOpen, setDisconnectOpen] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
-  const [shopifyDialogOpen, setShopifyDialogOpen] = useState(false);
-  const [shopDomain, setShopDomain] = useState("");
-  const [connecting, setConnecting] = useState(false);
-  const [connectError, setConnectError] = useState("");
 
   const shopName = shopifyIntegration?.shop_name || shopifyIntegration?.shop_domain || "Shopify";
 
@@ -59,37 +53,6 @@ export function ShopifySection({
     } finally {
       setDisconnecting(false);
       setDisconnectOpen(false);
-    }
-  };
-
-  const handleConnectShopify = async () => {
-    const fullDomain = normalizeShopDomain(shopDomain);
-
-    if (!/^[a-z0-9-]+\.myshopify\.com$/i.test(fullDomain)) {
-      setConnectError("Enter a valid Shopify store URL (e.g. your-store.myshopify.com)");
-      return;
-    }
-
-    setConnecting(true);
-    setConnectError("");
-    try {
-      const res = await fetch("/api/shopify/oauth/start", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ shopDomain: fullDomain }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setConnectError(data.error || "Failed to start Shopify connection.");
-        return;
-      }
-      if (data.url) {
-        window.location.href = data.url;
-      }
-    } catch {
-      setConnectError("Network error. Please try again.");
-    } finally {
-      setConnecting(false);
     }
   };
 
@@ -147,7 +110,9 @@ export function ShopifySection({
               <Button
                 size="sm"
                 className="bg-gradient-to-r from-[#00A99D] to-[#7DD9C0] text-white"
-                onClick={() => setShopifyDialogOpen(true)}
+                onClick={() => {
+                  window.location.href = "/onboarding?step=2";
+                }}
               >
                 Connect My Store
               </Button>
@@ -171,68 +136,6 @@ export function ShopifySection({
             </Button>
             <Button variant="destructive" disabled={disconnecting} onClick={handleDisconnect}>
               {disconnecting ? "Disconnecting..." : "Yes, Disconnect"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Connect Shopify Dialog */}
-      <Dialog
-        open={shopifyDialogOpen}
-        onOpenChange={(open) => {
-          setShopifyDialogOpen(open);
-          if (!open) {
-            setConnectError("");
-            setShopDomain("");
-          }
-        }}
-      >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Connect your Shopify store</DialogTitle>
-            <DialogDescription>
-              Enter your Shopify store URL to start the connection.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3 py-2">
-            <div>
-              <label className="text-xs text-muted-foreground mb-1 block font-sans">Store URL</label>
-              <input
-                type="text"
-                value={shopDomain}
-                onChange={(e) => {
-                  setShopDomain(e.target.value);
-                  setConnectError("");
-                }}
-                onKeyDown={(e) => e.key === "Enter" && shopDomain.trim() && handleConnectShopify()}
-                placeholder="yourstore.myshopify.com"
-                className="w-full px-4 py-3 rounded-xl border border-[#D0EDE8] bg-[#F0F9F8] text-sm text-[#1B2A4A] placeholder:text-[#8AADA6] focus:outline-none focus:ring-2 focus:ring-[#00A99D]/30 focus:border-[#00A99D] transition-colors font-sans"
-                autoFocus
-              />
-              {shopDomain.trim() && !connectError && (
-                <p className="text-xs text-[#8AADA6] mt-1 font-sans">
-                  {normalizeShopDomain(shopDomain)}
-                </p>
-              )}
-            </div>
-            {connectError && <p className="text-xs text-red-500 font-sans">{connectError}</p>}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShopifyDialogOpen(false)} disabled={connecting}>
-              Cancel
-            </Button>
-            <Button
-              disabled={connecting || !shopDomain.trim()}
-              onClick={handleConnectShopify}
-              className="bg-gradient-to-r from-[#00A99D] to-[#7DD9C0] text-white"
-            >
-              {connecting ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-1 animate-spin" /> Connecting...
-                </>
-              ) : (
-                "Connect My Store"
-              )}
             </Button>
           </DialogFooter>
         </DialogContent>

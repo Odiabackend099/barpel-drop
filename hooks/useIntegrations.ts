@@ -16,7 +16,7 @@ export interface Integration {
   created_at: string;
 }
 
-export function useIntegrations() {
+export function useIntegrations(merchantId?: string) {
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,7 +53,9 @@ export function useIntegrations() {
       .channel("integration-updates")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "integrations" },
+        merchantId
+          ? { event: "*" as const, schema: "public", table: "integrations", filter: `merchant_id=eq.${merchantId}` }
+          : { event: "*" as const, schema: "public", table: "integrations" },
         () => fetchIntegrations()
       )
       .subscribe();
@@ -77,7 +79,7 @@ export function useIntegrations() {
       supabase.removeChannel(channel);
       if (pollInterval) clearInterval(pollInterval);
     };
-  }, [fetchIntegrations]);
+  }, [fetchIntegrations, merchantId]);
 
   const shopifyIntegration = integrations.find(
     (i) => i.platform === "shopify" && i.connection_active
