@@ -78,7 +78,7 @@ function OnboardingContent() {
   const [country, setCountry] = useState("");
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [phoneNumber, setPhoneNumber] = useState("+1 (555) 012-3456");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [error, setError] = useState("");
   const [loadingStep, setLoadingStep] = useState(true);
   const [shopifyDenied, setShopifyDenied] = useState(false);
@@ -185,6 +185,8 @@ function OnboardingContent() {
         country,
         onboarding_step: 2,
       });
+      // Kick off phone provisioning in the background — business_name + country are now in DB
+      fetch("/api/provisioning/retry", { method: "POST" }).catch(() => {});
       goToStep(2);
     } catch {
       setError("Failed to save. Please try again.");
@@ -563,20 +565,29 @@ function OnboardingContent() {
                       </div>
                       <div className="text-left">
                         <p className="text-xs text-[#8AADA6]">Your AI phone number</p>
-                        <p className="font-mono font-bold text-xl text-navy">{phoneNumber}</p>
+                        {phoneNumber ? (
+                          <p className="font-mono font-bold text-xl text-navy">{phoneNumber}</p>
+                        ) : (
+                          <div className="flex items-center gap-2 mt-1">
+                            <div className="w-4 h-4 border-2 border-teal border-t-transparent rounded-full animate-spin" />
+                            <span className="text-sm text-[#4A7A6D]">Setting up your number&hellip;</span>
+                          </div>
+                        )}
                       </div>
                     </div>
-                    <button
-                      onClick={handleCopyPhone}
-                      className="p-2 rounded-lg hover:bg-[#D0EDE8] transition-colors"
-                      title="Copy number"
-                    >
-                      {copied ? (
-                        <Check className="w-4 h-4 text-teal" />
-                      ) : (
-                        <Copy className="w-4 h-4 text-[#8AADA6]" />
-                      )}
-                    </button>
+                    {phoneNumber && (
+                      <button
+                        onClick={handleCopyPhone}
+                        className="p-2 rounded-lg hover:bg-[#D0EDE8] transition-colors"
+                        title="Copy number"
+                      >
+                        {copied ? (
+                          <Check className="w-4 h-4 text-teal" />
+                        ) : (
+                          <Copy className="w-4 h-4 text-[#8AADA6]" />
+                        )}
+                      </button>
+                    )}
                   </div>
 
                   {/* Africa note */}
