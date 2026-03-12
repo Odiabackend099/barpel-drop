@@ -1,27 +1,120 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* shadcn/ui CSS variables (HSL without hsl() wrapper) */
+    --background: 0 0% 100%;
+    --foreground: 216 45% 20%;
+    --card: 0 0% 100%;
+    --card-foreground: 216 45% 20%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 216 45% 20%;
+    --primary: 174 100% 33%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 166 30% 96%;
+    --secondary-foreground: 216 45% 20%;
+    --muted: 166 30% 96%;
+    --muted-foreground: 166 25% 40%;
+    --accent: 166 30% 96%;
+    --accent-foreground: 216 45% 20%;
+    --destructive: 6 77% 57%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 166 40% 88%;
+    --input: 166 40% 88%;
+    --ring: 174 100% 33%;
+    --radius: 0.5rem;
+
+    /* Chart colors */
+    --chart-1: 174 100% 33%;
+    --chart-2: 157 52% 67%;
+    --chart-3: 216 45% 20%;
+    --chart-4: 39 91% 55%;
+    --chart-5: 6 77% 57%;
+
+    /* Sidebar */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 216 45% 20%;
+    --sidebar-primary: 174 100% 33%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 166 50% 95%;
+    --sidebar-accent-foreground: 216 45% 20%;
+    --sidebar-border: 166 40% 88%;
+    --sidebar-ring: 174 100% 33%;
+
+    /* Barpel brand CSS custom properties */
+    --brand-navy: #1B2A4A;
+    --brand-teal: #00A99D;
+    --brand-mint: #7DD9C0;
+    --brand-light: #C8F0E8;
+    --surface: #F0F9F8;
+    --text-primary: #1B2A4A;
+    --text-secondary: #4A7A6D;
+    --text-muted: #8AADA6;
+    --gradient-brand: linear-gradient(135deg, #1B2A4A 0%, #00A99D 50%, #7DD9C0 100%);
+    --gradient-cta: linear-gradient(135deg, #00A99D, #7DD9C0);
+    --gradient-hero: linear-gradient(160deg, #F0F9F8 0%, #FFFFFF 50%, #E8F7F5 100%);
+    --shadow-sm: 0 2px 8px rgba(0,169,157,0.08);
+    --shadow-md: 0 8px 32px rgba(0,169,157,0.12);
+    --shadow-lg: 0 24px 64px rgba(0,169,157,0.16);
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Syne', system-ui, sans-serif;
+    font-weight: 700;
+  }
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #E8F7F5;
+}
+::-webkit-scrollbar-thumb {
+  background: #00A99D;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #008B82;
+}
+
+/* Selection */
+::selection {
+  background: rgba(0, 169, 157, 0.2);
+}
+
+/* Focus styles */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--brand-teal);
+  outline-offset: 2px;
+}
+
+/* Utility classes */
+.gradient-text {
+  background: var(--gradient-brand);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glow-teal {
+  box-shadow: 0 0 20px rgba(0, 169, 157, 0.15);
 }
