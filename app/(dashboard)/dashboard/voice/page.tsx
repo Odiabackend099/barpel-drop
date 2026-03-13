@@ -146,7 +146,7 @@ export default function VoicePage() {
 
   /**
    * Starts a live Vapi web call to preview the ACTUAL voice.
-   * Uses { audioSource: false } so no microphone permission is required — listen-only.
+   * Uses { startAudioOff: true } so mic starts muted (Chrome 140+ compatible).
    * The AI says one greeting then the call auto-ends after speech finishes.
    */
   const handlePlayPreview = useCallback(
@@ -175,8 +175,8 @@ export default function VoicePage() {
         return;
       }
 
-      // audioSource: false = no microphone, listen-only — no browser permission prompt
-      const vapi = new Vapi(publicKey, undefined, undefined, { audioSource: false });
+      // startAudioOff: true = mic starts muted (Chrome 140+ compatible)
+      const vapi = new Vapi(publicKey, undefined, undefined, { startAudioOff: true });
       vapiRef.current = vapi;
 
       // Auto-end shortly after the AI finishes speaking its greeting
@@ -202,21 +202,15 @@ export default function VoicePage() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await (vapi.start as any)({
           firstMessage: "Hi! I'm your AI support assistant. How can I help you today?",
-          firstMessageMode: "assistant-speaks-first",
           model: {
             provider: "openai",
             model: "gpt-4o-mini",
-            messages: [
-              {
-                role: "system",
-                content:
-                  "You are a voice preview demo. Say only your greeting, then stay completely silent.",
-              },
-            ],
+            systemPrompt:
+              "You are a voice preview demo. Say only your greeting, then stay completely silent.",
           },
           voice: { provider: "vapi", voiceId },
           maxDurationSeconds: 15,
-          silenceTimeoutSeconds: 5,
+          silenceTimeoutSeconds: 10,
         });
       } catch (err) {
         console.error("[voice-preview] start failed:", err);
