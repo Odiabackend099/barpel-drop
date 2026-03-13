@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Sparkles, Check, Mic, Trash2, AlertTriangle, Play, Pause } from "lucide-react";
+import { Sparkles, Check, Mic, Trash2, AlertTriangle, Play, Pause, ChevronDown, Volume2 } from "lucide-react";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import Vapi from "@vapi-ai/web";
 import { PERSONA_TEMPLATES, VAPI_VOICES } from "@/lib/constants";
 import { useMerchant } from "@/hooks/useMerchant";
@@ -89,6 +90,7 @@ export default function VoicePage() {
   const [voiceSaved, setVoiceSaved] = useState(false);
   const [playingVoiceId, setPlayingVoiceId] = useState<string | null>(null);
   const [previewError, setPreviewError] = useState<string | null>(null);
+  const [voiceDropdownOpen, setVoiceDropdownOpen] = useState(false);
   const vapiRef = useRef<Vapi | null>(null);
 
   // Section 4 — Delete
@@ -246,6 +248,7 @@ export default function VoicePage() {
   const handleSelectVoice = async (voiceId: string) => {
     if (voiceId === selectedVoiceId) return;
     setSelectedVoiceId(voiceId);
+    setVoiceDropdownOpen(false);
     setSavingVoice(true);
     try {
       await updateAiVoice({ ai_voice_id: voiceId, ai_voice_provider: "vapi" });
@@ -503,149 +506,203 @@ export default function VoicePage() {
         )}
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Skeleton key={i} className="h-16 w-full rounded-lg" />
-            ))}
-          </div>
+          <Skeleton className="h-14 w-full rounded-lg" />
         ) : (
-          <>
-            {/* Female Voices */}
-            <p className="text-[10px] font-semibold text-[#8AADA6] uppercase tracking-widest mb-2">
-              Female Voices
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
-              {femaleVoices.map((voice) => {
-                const isSelected = selectedVoiceId === voice.id;
-                const isPlaying = playingVoiceId === voice.id;
-                return (
-                  <button
-                    key={voice.id}
-                    onClick={() => handleSelectVoice(voice.id)}
-                    disabled={savingVoice}
-                    className="p-3 text-left rounded-lg border transition-all disabled:opacity-60 hover:scale-[1.01]"
-                    style={{
-                      backgroundColor: isSelected ? "#F0F9F8" : "#FAFAFA",
-                      borderColor: isSelected ? "#00A99D" : "#D0EDE8",
-                      borderWidth: isSelected ? "2px" : "1px",
-                    }}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="font-semibold text-[#1B2A4A] text-sm font-sans">
-                            {voice.label}
-                          </p>
-                          {isPlaying && (
-                            <span className="relative flex h-2 w-2">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00A99D] opacity-75" />
-                              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00A99D]" />
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-[#8AADA6] font-sans mt-0.5 truncate">
-                          {voice.description}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                        <div
-                          onClick={(e) => handlePlayPreview(voice.id, e)}
-                          className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-all hover:scale-110"
-                          style={{
-                            background: isPlaying
-                              ? "linear-gradient(135deg, #00A99D, #7DD9C0)"
-                              : "#F0F9F8",
-                          }}
-                        >
-                          {isPlaying ? (
-                            <Pause className="w-3.5 h-3.5 text-white" />
-                          ) : (
-                            <Play className="w-3.5 h-3.5 text-[#00A99D] ml-0.5" />
-                          )}
-                        </div>
-                        {isSelected && (
-                          <div
-                            className="w-5 h-5 rounded-full flex items-center justify-center"
-                            style={{ backgroundColor: "#00A99D" }}
-                          >
-                            <Check className="w-3 h-3 text-white" />
-                          </div>
-                        )}
-                      </div>
+          <Popover open={voiceDropdownOpen} onOpenChange={setVoiceDropdownOpen}>
+            {/* ── Trigger button ── */}
+            <PopoverTrigger asChild>
+              <button
+                className="w-full p-3 rounded-lg border text-left transition-all hover:bg-[#F0F9F8] focus:outline-none focus:ring-2 focus:ring-[#00A99D]/20 disabled:opacity-60"
+                style={{
+                  borderColor: voiceDropdownOpen ? "#00A99D" : "#D0EDE8",
+                  borderWidth: voiceDropdownOpen ? "2px" : "1px",
+                  boxShadow: "0 1px 3px rgba(0,169,157,0.08)",
+                }}
+                disabled={savingVoice}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                      style={{ background: "linear-gradient(135deg, #00A99D22, #7DD9C033)" }}
+                    >
+                      <Volume2 className="w-3.5 h-3.5 text-[#00A99D]" />
                     </div>
-                  </button>
-                );
-              })}
-            </div>
+                    <div className="min-w-0">
+                      {selectedVoiceId ? (
+                        <>
+                          <p className="font-semibold text-[#1B2A4A] text-sm font-sans leading-tight">
+                            {VAPI_VOICES.find((v) => v.id === selectedVoiceId)?.label ?? selectedVoiceId}
+                          </p>
+                          <p className="text-xs text-[#8AADA6] font-sans mt-0.5 truncate">
+                            {VAPI_VOICES.find((v) => v.id === selectedVoiceId)?.description}
+                          </p>
+                        </>
+                      ) : (
+                        <p className="text-sm text-[#8AADA6] font-sans">Select a voice</p>
+                      )}
+                    </div>
+                  </div>
+                  <ChevronDown
+                    className="w-4 h-4 text-[#8AADA6] flex-shrink-0 transition-transform duration-200"
+                    style={{ transform: voiceDropdownOpen ? "rotate(180deg)" : "rotate(0deg)" }}
+                  />
+                </div>
+              </button>
+            </PopoverTrigger>
 
-            {/* Male Voices */}
-            <p className="text-[10px] font-semibold text-[#8AADA6] uppercase tracking-widest mb-2">
-              Male Voices
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {maleVoices.map((voice) => {
-                const isSelected = selectedVoiceId === voice.id;
-                const isPlaying = playingVoiceId === voice.id;
-                return (
-                  <button
-                    key={voice.id}
-                    onClick={() => handleSelectVoice(voice.id)}
-                    disabled={savingVoice}
-                    className="p-3 text-left rounded-lg border transition-all disabled:opacity-60 hover:scale-[1.01]"
-                    style={{
-                      backgroundColor: isSelected ? "#F0F9F8" : "#FAFAFA",
-                      borderColor: isSelected ? "#00A99D" : "#D0EDE8",
-                      borderWidth: isSelected ? "2px" : "1px",
-                    }}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="font-semibold text-[#1B2A4A] text-sm font-sans">
-                            {voice.label}
-                          </p>
-                          {isPlaying && (
-                            <span className="relative flex h-2 w-2">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00A99D] opacity-75" />
-                              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00A99D]" />
+            {/* ── Dropdown list ── */}
+            <PopoverContent
+              align="start"
+              className="p-2 border border-[#D0EDE8] rounded-xl shadow-lg"
+              style={{
+                width: "var(--radix-popover-trigger-width)",
+                maxHeight: "420px",
+                overflowY: "auto",
+                backgroundColor: "#FFFFFF",
+              }}
+              onOpenAutoFocus={(e) => e.preventDefault()}
+            >
+              {/* Female section */}
+              <p className="text-[10px] font-semibold text-[#8AADA6] uppercase tracking-widest px-2 pt-1 pb-2">
+                Female Voices
+              </p>
+              <div className="space-y-1 mb-3">
+                {femaleVoices.map((voice) => {
+                  const isSelected = selectedVoiceId === voice.id;
+                  const isPlaying = playingVoiceId === voice.id;
+                  return (
+                    <button
+                      key={voice.id}
+                      onClick={() => handleSelectVoice(voice.id)}
+                      className="w-full p-2.5 rounded-lg border text-left transition-all hover:bg-[#F0F9F8]"
+                      style={{
+                        backgroundColor: isSelected ? "#F0F9F8" : "transparent",
+                        borderColor: isSelected ? "#00A99D" : "transparent",
+                        borderWidth: "1.5px",
+                      }}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-semibold text-[#1B2A4A] text-sm font-sans">
+                              {voice.label}
                             </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-[#8AADA6] font-sans mt-0.5 truncate">
-                          {voice.description}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                        <div
-                          onClick={(e) => handlePlayPreview(voice.id, e)}
-                          className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-all hover:scale-110"
-                          style={{
-                            background: isPlaying
-                              ? "linear-gradient(135deg, #00A99D, #7DD9C0)"
-                              : "#F0F9F8",
-                          }}
-                        >
-                          {isPlaying ? (
-                            <Pause className="w-3.5 h-3.5 text-white" />
-                          ) : (
-                            <Play className="w-3.5 h-3.5 text-[#00A99D] ml-0.5" />
-                          )}
-                        </div>
-                        {isSelected && (
-                          <div
-                            className="w-5 h-5 rounded-full flex items-center justify-center"
-                            style={{ backgroundColor: "#00A99D" }}
-                          >
-                            <Check className="w-3 h-3 text-white" />
+                            {isPlaying && (
+                              <span className="relative flex h-2 w-2 flex-shrink-0">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00A99D] opacity-75" />
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00A99D]" />
+                              </span>
+                            )}
                           </div>
-                        )}
+                          <p className="text-xs text-[#8AADA6] font-sans mt-0.5 leading-tight">
+                            {voice.description}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          {/* Play button — stopPropagation keeps dropdown open */}
+                          <div
+                            onClick={(e) => handlePlayPreview(voice.id, e)}
+                            className="w-7 h-7 rounded-full flex items-center justify-center cursor-pointer transition-all hover:scale-110 active:scale-95"
+                            style={{
+                              background: isPlaying
+                                ? "linear-gradient(135deg, #00A99D, #7DD9C0)"
+                                : "#F0F9F8",
+                            }}
+                          >
+                            {isPlaying ? (
+                              <Pause className="w-3 h-3 text-white" />
+                            ) : (
+                              <Play className="w-3 h-3 text-[#00A99D] ml-0.5" />
+                            )}
+                          </div>
+                          {/* Selected checkmark */}
+                          {isSelected && (
+                            <div
+                              className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
+                              style={{ backgroundColor: "#00A99D" }}
+                            >
+                              <Check className="w-3 h-3 text-white" />
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Divider */}
+              <div className="border-t border-[#D0EDE8] mx-2 mb-3" />
+
+              {/* Male section */}
+              <p className="text-[10px] font-semibold text-[#8AADA6] uppercase tracking-widest px-2 pb-2">
+                Male Voices
+              </p>
+              <div className="space-y-1">
+                {maleVoices.map((voice) => {
+                  const isSelected = selectedVoiceId === voice.id;
+                  const isPlaying = playingVoiceId === voice.id;
+                  return (
+                    <button
+                      key={voice.id}
+                      onClick={() => handleSelectVoice(voice.id)}
+                      className="w-full p-2.5 rounded-lg border text-left transition-all hover:bg-[#F0F9F8]"
+                      style={{
+                        backgroundColor: isSelected ? "#F0F9F8" : "transparent",
+                        borderColor: isSelected ? "#00A99D" : "transparent",
+                        borderWidth: "1.5px",
+                      }}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-semibold text-[#1B2A4A] text-sm font-sans">
+                              {voice.label}
+                            </span>
+                            {isPlaying && (
+                              <span className="relative flex h-2 w-2 flex-shrink-0">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00A99D] opacity-75" />
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00A99D]" />
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-[#8AADA6] font-sans mt-0.5 leading-tight">
+                            {voice.description}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          <div
+                            onClick={(e) => handlePlayPreview(voice.id, e)}
+                            className="w-7 h-7 rounded-full flex items-center justify-center cursor-pointer transition-all hover:scale-110 active:scale-95"
+                            style={{
+                              background: isPlaying
+                                ? "linear-gradient(135deg, #00A99D, #7DD9C0)"
+                                : "#F0F9F8",
+                            }}
+                          >
+                            {isPlaying ? (
+                              <Pause className="w-3 h-3 text-white" />
+                            ) : (
+                              <Play className="w-3 h-3 text-[#00A99D] ml-0.5" />
+                            )}
+                          </div>
+                          {isSelected && (
+                            <div
+                              className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
+                              style={{ backgroundColor: "#00A99D" }}
+                            >
+                              <Check className="w-3 h-3 text-white" />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </PopoverContent>
+          </Popover>
         )}
       </div>
 
