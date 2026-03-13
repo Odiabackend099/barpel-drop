@@ -532,3 +532,10 @@ export async function provisionMerchantLine(
     return { success: false, error: errorMessage };
   }
 }
+
+/**
+ * TEST-ONLY export: exposes createVapiAssistant for the debug/vapi-setup endpoint.
+ * Allows E2E testing of AI Voice update/delete without a real Twilio number.
+ * Remove when the debug endpoint is removed.
+ */
+export { createVapiAssistant as createVapiAssistantForTest };
