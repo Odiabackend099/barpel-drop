@@ -1,5 +1,8 @@
 "use client";
 
+import { Suspense, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { useMerchant } from "@/hooks/useMerchant";
 import { useIntegrations } from "@/hooks/useIntegrations";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -7,6 +10,18 @@ import { PhoneLineSection } from "@/components/integrations/PhoneLineSection";
 import { ShopifySection } from "@/components/integrations/ShopifySection";
 import { AbandonedCartSection } from "@/components/integrations/AbandonedCartSection";
 import { ComingSoonSection } from "@/components/integrations/ComingSoonSection";
+
+function ShopifyConnectedToast() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  useEffect(() => {
+    if (searchParams.get("connected") === "shopify") {
+      toast.success("Shopify store connected!");
+      router.replace("/dashboard/integrations", { scroll: false });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  return null;
+}
 
 export default function IntegrationsPage() {
   const { merchant, loading: merchantLoading } = useMerchant();
@@ -31,6 +46,10 @@ export default function IntegrationsPage() {
 
   return (
     <div className="space-y-6">
+      <Suspense fallback={null}>
+        <ShopifyConnectedToast />
+      </Suspense>
+
       <div>
         <h1 className="text-2xl font-bold text-[#1B2A4A] font-display tracking-tight mb-1">
           Integrations

@@ -99,15 +99,10 @@ async function handleLookupOrder(
     return "I don't have access to your store's order system yet. Please contact support directly.";
   }
 
-  // B-6: Decrypt the Shopify token from Supabase Vault
-  const { data: vaultData } = await supabase
-    .schema("vault")
-    .from("decrypted_secrets")
-    .select("decrypted_secret")
-    .eq("id", integration.access_token_secret_id)
-    .single();
-
-  const shopifyToken = vaultData?.decrypted_secret;
+  // B-6: Decrypt the Shopify token from Vault via public RPC
+  // (vault schema not exposed through PostgREST)
+  const { data: shopifyToken } = await supabase
+    .rpc("vault_read_secret_by_id", { p_id: integration.access_token_secret_id });
   if (!shopifyToken) {
     return "I'm unable to access your store's orders right now. Please contact support.";
   }

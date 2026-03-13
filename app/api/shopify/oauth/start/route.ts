@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { shopDomain } = await request.json();
+  const { shopDomain, returnTo } = await request.json();
   if (!shopDomain) {
     return NextResponse.json(
       { error: "Missing shopDomain" },
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const redirectUri = `${process.env.NEXT_PUBLIC_BASE_URL}/api/shopify/oauth/callback`;
+  const redirectUri = `${(process.env.NEXT_PUBLIC_BASE_URL ?? "").trim()}/api/shopify/oauth/callback`;
   const { url, nonce } = buildAuthUrl(shopDomain, redirectUri);
 
   // Store nonce in database (replaces cookie-based approach)
@@ -61,6 +61,7 @@ export async function POST(request: Request) {
       state: nonce,
       merchant_id: merchant.id,
       shop_domain: shopDomain,
+      return_to: returnTo === "integrations" ? "integrations" : "onboarding",
     });
 
   if (stateError) {

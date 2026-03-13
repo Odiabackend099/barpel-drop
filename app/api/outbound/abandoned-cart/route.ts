@@ -35,15 +35,11 @@ export async function POST(request: Request) {
       .maybeSingle();
 
     if (integration?.webhook_secret_vault_id) {
-      const { data: vaultData } = await supabase
-        .schema("vault")
-        .from("decrypted_secrets")
-        .select("decrypted_secret")
-        .eq("id", integration.webhook_secret_vault_id)
-        .single();
-
-      if (vaultData?.decrypted_secret) {
-        webhookSecret = vaultData.decrypted_secret;
+      // Read webhook secret from Vault via public RPC (vault schema not exposed through PostgREST)
+      const { data: decryptedSecret } = await supabase
+        .rpc("vault_read_secret_by_id", { p_id: integration.webhook_secret_vault_id });
+      if (decryptedSecret) {
+        webhookSecret = decryptedSecret;
       }
     }
   }

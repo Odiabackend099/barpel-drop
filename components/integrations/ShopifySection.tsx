@@ -72,7 +72,7 @@ export function ShopifySection({
       const res = await fetch("/api/shopify/oauth/start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ shopDomain: fullDomain }),
+        body: JSON.stringify({ shopDomain: fullDomain, returnTo: "integrations" }),
       });
       const data = await res.json();
       if (!res.ok) {

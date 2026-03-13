@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS oauth_states (
   state       TEXT        PRIMARY KEY,
   merchant_id UUID        NOT NULL REFERENCES merchants(id) ON DELETE CASCADE,
   shop_domain TEXT        NOT NULL,
+  return_to   TEXT        NOT NULL DEFAULT 'onboarding',
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

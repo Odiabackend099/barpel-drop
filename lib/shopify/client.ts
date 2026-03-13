@@ -52,7 +52,7 @@ export async function lookupOrder(
 
   const response = await withRetry(
     () =>
-      fetch(`https://${shopDomain}/admin/api/2024-01/graphql.json`, {
+      fetch(`https://${shopDomain}/admin/api/2026-01/graphql.json`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

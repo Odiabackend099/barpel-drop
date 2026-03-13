@@ -59,14 +59,12 @@ export async function POST(request: Request) {
   // Use admin client to delete Vault secrets
   const adminSupabase = createAdminClient();
 
-  // Delete access token from Vault
+  // Delete access token from Vault via public RPC (vault schema not exposed through PostgREST)
   if (integration.access_token_secret_id) {
     try {
-      await adminSupabase
-        .schema("vault")
-        .from("secrets")
-        .delete()
-        .eq("id", integration.access_token_secret_id);
+      await adminSupabase.rpc("vault_delete_secret_by_id", {
+        p_id: integration.access_token_secret_id,
+      });
     } catch {
       // Non-fatal — log but continue
     }
@@ -75,11 +73,9 @@ export async function POST(request: Request) {
   // Delete webhook secret from Vault
   if (integration.webhook_secret_vault_id) {
     try {
-      await adminSupabase
-        .schema("vault")
-        .from("secrets")
-        .delete()
-        .eq("id", integration.webhook_secret_vault_id);
+      await adminSupabase.rpc("vault_delete_secret_by_id", {
+        p_id: integration.webhook_secret_vault_id,
+      });
     } catch {
       // Non-fatal — log but continue
     }
