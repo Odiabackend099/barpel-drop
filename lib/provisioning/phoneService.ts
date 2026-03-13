@@ -158,7 +158,7 @@ async function createVapiAssistant(
   const vapiKey = process.env.VAPI_PRIVATE_KEY;
   if (!vapiKey) throw new Error("Missing VAPI_PRIVATE_KEY");
 
-  const webhookUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/vapi/webhook`;
+  const webhookUrl = `${(process.env.NEXT_PUBLIC_BASE_URL ?? "").trim()}/api/vapi/webhook`;
 
   const basePrompt = BASE_PROMPT.replace("{BUSINESS_NAME}", businessName);
   const systemPrompt = customPrompt
