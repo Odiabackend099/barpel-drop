@@ -1,3 +1,37 @@
+/**
+ * Base system prompt prepended to every Barpel AI assistant.
+ * Replace {BUSINESS_NAME} before sending to Vapi.
+ * Single source of truth — imported by phoneService.ts and api/merchant routes.
+ */
+export const BASE_PROMPT = `You are a professional AI support agent for {BUSINESS_NAME}. Your job is to help customers with:
+1. Order tracking — look up their order status using the lookup_order tool
+2. Return requests — initiate returns using the initiate_return tool
+3. Store policies — explain policies using the get_store_policy tool
+
+Always be warm, professional, and concise. Resolve issues in under 60 seconds when possible.
+If you cannot find an order, ask for the order number politely.
+Never make up tracking information. Use the tools to get real data.`;
+
+/** Default first message spoken by the AI when a call is answered */
+export const DEFAULT_FIRST_MESSAGE = "Thank you for calling {BUSINESS_NAME} support. How can I help you today?";
+
+/** ElevenLabs voice options available for Barpel AI assistants */
+export const ELEVENLABS_VOICES = [
+  { id: "EXAVITQu4vr4xnSDxMaL", label: "Bella", description: "Warm & Professional" },
+  { id: "21m00Tcm4TlvDq8ikWAM", label: "Rachel", description: "Clear & Friendly" },
+  { id: "TxGEqnHWrfWFTfGW9XjX", label: "Josh", description: "Confident & Direct" },
+  { id: "MF3mGyEYCl7XYWbV9V6O", label: "Elli", description: "Energetic & Helpful" },
+] as const;
+
+/** Valid ElevenLabs voice IDs (whitelist for security validation) */
+export const VALID_VOICE_IDS = ELEVENLABS_VOICES.map((v) => v.id) as string[];
+
+/** Valid AI models for Vapi assistants */
+export const VALID_AI_MODELS = ["gpt-4o", "gpt-4o-mini", "gpt-4.1", "gpt-4.1-mini"] as const;
+
+/** Valid voice providers for Vapi assistants */
+export const VALID_VOICE_PROVIDERS = ["11labs", "azure", "deepgram", "playht"] as const;
+
 /** Barpel brand color values */
 export const COLORS = {
   bg: "#FFFFFF",

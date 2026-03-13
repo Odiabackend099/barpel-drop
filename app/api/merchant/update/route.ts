@@ -2,15 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { sanitiseMerchantPrompt } from "@/lib/sanitise";
 import { updateAssistantPrompt } from "@/lib/vapi/client";
-
-const BASE_PROMPT = `You are a professional AI support agent for {BUSINESS_NAME}. Your job is to help customers with:
-1. Order tracking — look up their order status using the lookup_order tool
-2. Return requests — initiate returns using the initiate_return tool
-3. Store policies — explain policies using the get_store_policy tool
-
-Always be warm, professional, and concise. Resolve issues in under 60 seconds when possible.
-If you cannot find an order, ask for the order number politely.
-Never make up tracking information. Use the tools to get real data.`;
+import { BASE_PROMPT } from "@/lib/constants";
 
 /**
  * PATCH /api/merchant/update
@@ -105,8 +97,8 @@ export async function PATCH(request: Request) {
       : basePrompt;
 
     // Fire and forget — do not block the response if Vapi update fails
-    updateAssistantPrompt(merchant.vapi_agent_id, fullSystemPrompt).catch(() => {
-      // Non-fatal — Vapi update failure does not block the save
+    updateAssistantPrompt(merchant.vapi_agent_id, fullSystemPrompt).catch((e: Error) => {
+      console.error("[vapi] prompt sync failed:", e.message);
     });
   }
 

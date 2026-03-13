@@ -84,5 +84,82 @@ export function useMerchant() {
     setMerchant((prev) => (prev ? { ...prev, custom_prompt: prompt } : null));
   };
 
-  return { merchant, loading, error, updateCustomPrompt };
+  /**
+   * Updates one or more AI voice settings (greeting, personality, voice, model).
+   * Saves to DB first, then fire-and-forget Vapi sync server-side.
+   */
+  const updateAiVoice = async (fields: {
+    custom_prompt?: string;
+    ai_first_message?: string;
+    ai_voice_id?: string;
+    ai_voice_provider?: string;
+    ai_model?: string;
+  }) => {
+    if (useMock) {
+      setMerchant((prev) => (prev ? { ...prev, ...fields } : null));
+      return;
+    }
+
+    const res = await fetch("/api/merchant/ai-voice", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(fields),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error((data as { error?: string }).error ?? "Failed to update AI voice settings");
+    }
+    // Optimistic update — realtime subscription will confirm server state
+    setMerchant((prev) => (prev ? { ...prev, ...fields } : null));
+  };
+
+  /**
+   * Removes the merchant's AI phone line.
+   * Deletes Vapi phone number + assistant, then clears DB fields.
+   * Resets provisioning_status to 'pending' so merchant can re-provision.
+   */
+  const deleteAiVoice = async () => {
+    if (useMock) {
+      setMerchant((prev) =>
+        prev
+          ? {
+              ...prev,
+              vapi_agent_id: "",
+              support_phone: undefined,
+              provisioning_status: "pending",
+              custom_prompt: "",
+              ai_first_message: undefined,
+              ai_voice_id: undefined,
+              ai_voice_provider: undefined,
+              ai_model: undefined,
+            }
+          : null
+      );
+      return;
+    }
+
+    const res = await fetch("/api/merchant/ai-voice", { method: "DELETE" });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error((data as { error?: string }).error ?? "Failed to remove AI phone line");
+    }
+    // Clear local state — realtime subscription will confirm
+    setMerchant((prev) =>
+      prev
+        ? {
+            ...prev,
+            vapi_agent_id: "",
+            support_phone: undefined,
+            provisioning_status: "pending",
+            custom_prompt: "",
+            ai_first_message: undefined,
+            ai_voice_id: undefined,
+            ai_voice_provider: undefined,
+            ai_model: undefined,
+          }
+        : null
+    );
+  };
+
+  return { merchant, loading, error, updateCustomPrompt, updateAiVoice, deleteAiVoice };
 }

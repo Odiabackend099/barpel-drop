@@ -1,18 +1,10 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { withRetry } from "@/lib/retry";
-
-/**
- * Base prompt for every Barpel-powered AI support assistant.
- * Appended with the merchant's custom_prompt before sending to Vapi.
- */
-const BASE_PROMPT = `You are a professional AI support agent for {BUSINESS_NAME}. Your job is to help customers with:
-1. Order tracking — look up their order status using the lookup_order tool
-2. Return requests — initiate returns using the initiate_return tool
-3. Store policies — explain policies using the get_store_policy tool
-
-Always be warm, professional, and concise. Resolve issues in under 60 seconds when possible.
-If you cannot find an order, ask for the order number politely.
-Never make up tracking information. Use the tools to get real data.`;
+import {
+  BASE_PROMPT,
+  DEFAULT_FIRST_MESSAGE,
+  VALID_VOICE_IDS,
+} from "@/lib/constants";
 
 /**
  * Maps merchant country to Twilio provisioning params.
@@ -146,80 +138,140 @@ async function purchaseTwilioNumber(
 /**
  * Creates a Vapi assistant for the merchant.
  * Returns the vapi_agent_id (UUID).
+ *
+ * @param businessName - Merchant's business name (replaces {BUSINESS_NAME} in BASE_PROMPT)
+ * @param customPrompt - Optional merchant-customized personality prompt (appended to BASE_PROMPT)
+ * @param merchantId - Merchant UUID (stored in assistant metadata)
+ * @param options - Optional overrides for first message, voice, and model
  */
 async function createVapiAssistant(
   businessName: string,
   customPrompt: string | null,
-  merchantId: string
+  merchantId: string,
+  options?: {
+    firstMessage?: string | null;
+    voiceId?: string | null;
+    voiceProvider?: string | null;
+    model?: string | null;
+  }
 ): Promise<string> {
   const vapiKey = process.env.VAPI_PRIVATE_KEY;
   if (!vapiKey) throw new Error("Missing VAPI_PRIVATE_KEY");
+
+  const webhookUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/vapi/webhook`;
 
   const basePrompt = BASE_PROMPT.replace("{BUSINESS_NAME}", businessName);
   const systemPrompt = customPrompt
     ? `${basePrompt}\n\n${customPrompt}`
     : basePrompt;
 
+  const firstMessage =
+    options?.firstMessage ||
+    DEFAULT_FIRST_MESSAGE.replace("{BUSINESS_NAME}", businessName);
+
+  // Voice config — use merchant's stored preference or default to ElevenLabs Bella
+  const voiceProvider = options?.voiceProvider ?? "11labs";
+  const voiceId =
+    options?.voiceId && VALID_VOICE_IDS.includes(options.voiceId)
+      ? options.voiceId
+      : "EXAVITQu4vr4xnSDxMaL"; // Bella — neutral, professional
+
+  const llmModel = options?.model ?? "gpt-4o";
+
   const body = {
     name: `${businessName} Support`,
+
+    // Top-level firstMessage — spoken immediately when call connects
+    firstMessage,
+    firstMessageMode: "assistant-speaks-first",
+
     model: {
       provider: "openai",
-      model: "gpt-4o-mini",
+      model: llmModel,
+      temperature: 0.7,
       messages: [{ role: "system", content: systemPrompt }],
+      tools: [
+        {
+          type: "function",
+          function: {
+            name: "lookup_order",
+            description: "Look up order status and tracking information",
+            parameters: {
+              type: "object",
+              properties: {
+                order_number: {
+                  type: "string",
+                  description: "Order number from the customer, with or without # symbol",
+                },
+              },
+              required: ["order_number"],
+            },
+          },
+          server: { url: webhookUrl },
+          messages: [
+            { type: "request-start", content: "Let me look that up for you." },
+            {
+              type: "request-failed",
+              content: "I had trouble looking that up. Let me take a note for the team.",
+            },
+          ],
+        },
+        {
+          type: "function",
+          function: {
+            name: "initiate_return",
+            description: "Initiate a return request and send SMS confirmation",
+            parameters: {
+              type: "object",
+              properties: {
+                reason: { type: "string" },
+                order_number: { type: "string" },
+              },
+            },
+          },
+          server: { url: webhookUrl },
+          messages: [
+            { type: "request-start", content: "I'll start that return for you." },
+            {
+              type: "request-failed",
+              content: "I wasn't able to start the return right now. Our team will follow up.",
+            },
+          ],
+        },
+        {
+          type: "function",
+          function: {
+            name: "get_store_policy",
+            description: "Get the store's return and shipping policies",
+            parameters: { type: "object", properties: {} },
+          },
+          server: { url: webhookUrl },
+        },
+      ],
     },
-    serverUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/vapi/webhook`,
+
+    // Deepgram Nova-2 — best accuracy for retail/support terminology
+    transcriber: {
+      provider: "deepgram",
+      model: "nova-2",
+      language: "en",
+      keywords: ["order", "tracking", "refund", "delivery", "cancel"],
+    },
+
+    // ElevenLabs voice — high quality, natural-sounding
+    voice: {
+      provider: voiceProvider,
+      voiceId,
+      stability: 0.5,
+      similarityBoost: 0.75,
+    },
+
+    // Safety cap — prevent runaway billing from open lines
+    maxDurationSeconds: 480,
+
+    serverUrl: webhookUrl,
     serverUrlSecret: process.env.VAPI_WEBHOOK_SECRET,
     metadata: { merchant_id: merchantId },
-    tools: [
-      {
-        type: "function",
-        function: {
-          name: "lookup_order",
-          description: "Look up order status and tracking information",
-          parameters: {
-            type: "object",
-            properties: {
-              order_number: { type: "string" },
-            },
-            required: ["order_number"],
-          },
-        },
-        server: {
-          url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/vapi/webhook`,
-        },
-      },
-      {
-        type: "function",
-        function: {
-          name: "initiate_return",
-          description: "Initiate a return request and send SMS",
-          parameters: {
-            type: "object",
-            properties: {
-              reason: { type: "string" },
-              order_number: { type: "string" },
-            },
-          },
-        },
-        server: {
-          url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/vapi/webhook`,
-        },
-      },
-      {
-        type: "function",
-        function: {
-          name: "get_store_policy",
-          description: "Get the store's return policy",
-          parameters: {
-            type: "object",
-            properties: {},
-          },
-        },
-        server: {
-          url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/vapi/webhook`,
-        },
-      },
-    ],
   };
 
   const resp = await withRetry(
@@ -305,11 +357,11 @@ export async function provisionMerchantLine(
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = createAdminClient();
 
-  // Read current merchant state
+  // Read current merchant state (include AI voice columns added in migration 006)
   const { data: merchant, error: fetchError } = await supabase
     .from("merchants")
     .select(
-      "country, provisioning_status, twilio_number_sid, vapi_agent_id, vapi_phone_id, business_name, custom_prompt"
+      "country, provisioning_status, twilio_number_sid, vapi_agent_id, vapi_phone_id, business_name, custom_prompt, ai_first_message, ai_voice_id, ai_voice_provider, ai_model"
     )
     .eq("id", merchantId)
     .single();
@@ -390,7 +442,13 @@ export async function provisionMerchantLine(
       vapiAgentId = await createVapiAssistant(
         merchant.business_name ?? "Support",
         merchant.custom_prompt ?? null,
-        merchantId
+        merchantId,
+        {
+          firstMessage: merchant.ai_first_message ?? null,
+          voiceId: merchant.ai_voice_id ?? null,
+          voiceProvider: merchant.ai_voice_provider ?? null,
+          model: merchant.ai_model ?? null,
+        }
       );
 
       await supabase

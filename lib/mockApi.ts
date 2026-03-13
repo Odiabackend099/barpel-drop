@@ -55,6 +55,10 @@ export interface MerchantData {
   credits_remaining_secs: number;
   credits_total_secs: number;
   credit_balance?: number;
+  ai_first_message?: string;
+  ai_voice_id?: string;
+  ai_voice_provider?: string;
+  ai_model?: string;
 }
 
 // ============================================================================
