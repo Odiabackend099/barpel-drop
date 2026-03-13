@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Sparkles, Check, Mic, Trash2, AlertTriangle } from "lucide-react";
-import { PERSONA_TEMPLATES, ELEVENLABS_VOICES } from "@/lib/constants";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Sparkles, Check, Mic, Trash2, AlertTriangle, Play, Pause } from "lucide-react";
+import Vapi from "@vapi-ai/web";
+import { PERSONA_TEMPLATES, VAPI_VOICES } from "@/lib/constants";
 import { useMerchant } from "@/hooks/useMerchant";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -16,6 +17,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+
+const VALID_VAPI_IDS = VAPI_VOICES.map((v) => v.id) as string[];
 
 function Badge({ color, children }: { color: string; children: React.ReactNode }) {
   return (
@@ -75,11 +78,18 @@ export default function VoicePage() {
   const [prompt, setPrompt] = useState("");
   const [savingPrompt, setSavingPrompt] = useState(false);
   const [promptSaved, setPromptSaved] = useState(false);
+  const [activeTemplateId, setActiveTemplateId] = useState<string | null>(null);
+
+  // Greeting suggestion (shown when persona template is applied)
+  const [suggestedGreeting, setSuggestedGreeting] = useState<string | null>(null);
 
   // Section 3 — Voice
   const [selectedVoiceId, setSelectedVoiceId] = useState("");
   const [savingVoice, setSavingVoice] = useState(false);
   const [voiceSaved, setVoiceSaved] = useState(false);
+  const [playingVoiceId, setPlayingVoiceId] = useState<string | null>(null);
+  const [previewError, setPreviewError] = useState<string | null>(null);
+  const vapiRef = useRef<Vapi | null>(null);
 
   // Section 4 — Delete
   const [isDeleting, setIsDeleting] = useState(false);
@@ -88,21 +98,134 @@ export default function VoicePage() {
   const brandName = merchant?.business_name || "Your Store";
   const isActive = merchant?.provisioning_status === "active";
 
+  // Legacy ElevenLabs voice detection
+  const isLegacyVoice =
+    merchant?.ai_voice_id && !VALID_VAPI_IDS.includes(merchant.ai_voice_id);
+
   // Sync merchant data into local state once loaded (lazy-init pattern)
   useEffect(() => {
     if (merchant) {
       if (!greeting && merchant.ai_first_message) setGreeting(merchant.ai_first_message);
       if (!prompt && merchant.custom_prompt) setPrompt(merchant.custom_prompt);
       if (!selectedVoiceId) {
-        setSelectedVoiceId(merchant.ai_voice_id || "EXAVITQu4vr4xnSDxMaL");
+        // If merchant has a valid Vapi voice, use it; otherwise leave empty
+        const storedVoice = merchant.ai_voice_id || "";
+        setSelectedVoiceId(VALID_VAPI_IDS.includes(storedVoice) ? storedVoice : "");
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [merchant?.id]);
 
-  const applyTemplate = (templatePrompt: string) => {
-    setPrompt(templatePrompt.replace("[Brand]", brandName));
+  // Cleanup Vapi preview call on unmount
+  useEffect(() => {
+    return () => {
+      vapiRef.current?.end();
+      vapiRef.current = null;
+    };
+  }, []);
+
+  const replaceName = (s: string) => s.replaceAll("{BUSINESS_NAME}", brandName);
+
+  const applyTemplate = (template: (typeof PERSONA_TEMPLATES)[number]) => {
+    setPrompt(replaceName(template.prompt));
+    setActiveTemplateId(template.id);
+
+    // Show greeting suggestion instead of auto-filling
+    const suggested = replaceName(template.greeting);
+    if (greeting !== suggested) {
+      setSuggestedGreeting(suggested);
+    }
   };
+
+  const applyGreetingSuggestion = () => {
+    if (suggestedGreeting) {
+      setGreeting(suggestedGreeting);
+      setSuggestedGreeting(null);
+    }
+  };
+
+  /**
+   * Starts a live Vapi web call to preview the ACTUAL voice.
+   * Uses { audioSource: false } so no microphone permission is required — listen-only.
+   * The AI says one greeting then the call auto-ends after speech finishes.
+   */
+  const handlePlayPreview = useCallback(
+    async (voiceId: string, e: React.MouseEvent) => {
+      e.stopPropagation();
+      setPreviewError(null);
+
+      // Toggle off if same voice is already playing
+      if (playingVoiceId === voiceId) {
+        vapiRef.current?.end();
+        return;
+      }
+
+      // Stop any current preview
+      if (vapiRef.current) {
+        vapiRef.current.end();
+        vapiRef.current = null;
+      }
+
+      setPlayingVoiceId(voiceId);
+
+      const publicKey = process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY;
+      if (!publicKey) {
+        setPlayingVoiceId(null);
+        setPreviewError("Preview unavailable");
+        return;
+      }
+
+      // audioSource: false = no microphone, listen-only — no browser permission prompt
+      const vapi = new Vapi(publicKey, undefined, undefined, { audioSource: false });
+      vapiRef.current = vapi;
+
+      // Auto-end shortly after the AI finishes speaking its greeting
+      vapi.on("speech-end", () => {
+        setTimeout(() => vapi.end(), 400);
+      });
+
+      vapi.on("call-end", () => {
+        setPlayingVoiceId(null);
+        vapiRef.current = null;
+      });
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      vapi.on("error", (err: any) => {
+        console.error("[voice-preview] error:", err);
+        setPlayingVoiceId(null);
+        vapiRef.current = null;
+        setPreviewError("Preview unavailable — try again");
+        setTimeout(() => setPreviewError(null), 4000);
+      });
+
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (vapi.start as any)({
+          firstMessage: "Hi! I'm your AI support assistant. How can I help you today?",
+          firstMessageMode: "assistant-speaks-first",
+          model: {
+            provider: "openai",
+            model: "gpt-4o-mini",
+            messages: [
+              {
+                role: "system",
+                content:
+                  "You are a voice preview demo. Say only your greeting, then stay completely silent.",
+              },
+            ],
+          },
+          voice: { provider: "vapi", voiceId },
+          maxDurationSeconds: 15,
+          silenceTimeoutSeconds: 5,
+        });
+      } catch (err) {
+        console.error("[voice-preview] start failed:", err);
+        setPlayingVoiceId(null);
+        vapiRef.current = null;
+      }
+    },
+    [playingVoiceId]
+  );
 
   const handleSaveGreeting = async () => {
     setSavingGreeting(true);
@@ -131,7 +254,7 @@ export default function VoicePage() {
     setSelectedVoiceId(voiceId);
     setSavingVoice(true);
     try {
-      await updateAiVoice({ ai_voice_id: voiceId, ai_voice_provider: "11labs" });
+      await updateAiVoice({ ai_voice_id: voiceId, ai_voice_provider: "vapi" });
       setVoiceSaved(true);
       setTimeout(() => setVoiceSaved(false), 3000);
     } finally {
@@ -150,6 +273,9 @@ export default function VoicePage() {
       setIsDeleting(false);
     }
   };
+
+  const femaleVoices = VAPI_VOICES.filter((v) => v.gender === "female");
+  const maleVoices = VAPI_VOICES.filter((v) => v.gender === "male");
 
   // Provisioning banner — shown when phone line not yet active
   if (!loading && !isActive) {
@@ -221,10 +347,39 @@ export default function VoicePage() {
           <>
             <textarea
               value={greeting}
-              onChange={(e) => setGreeting(e.target.value.slice(0, 200))}
+              onChange={(e) => {
+                setGreeting(e.target.value.slice(0, 200));
+                setSuggestedGreeting(null);
+              }}
               placeholder={`Thank you for calling ${brandName} support. How can I help you today?`}
               className="w-full h-20 px-4 py-3 bg-white border border-[#D0EDE8] rounded-lg text-[#1B2A4A] placeholder:text-[#8AADA6] resize-none focus:outline-none focus:border-[#00A99D] focus:ring-2 focus:ring-[#00A99D]/10 font-sans text-sm"
             />
+
+            {/* Greeting suggestion banner */}
+            {suggestedGreeting && (
+              <div className="mt-2 p-3 rounded-lg border border-[#00A99D]/20 bg-[#00A99D]/5 backdrop-blur-sm">
+                <p className="text-xs text-[#1B2A4A] font-sans mb-1.5">
+                  <span className="font-semibold">Suggested greeting:</span>{" "}
+                  &ldquo;{suggestedGreeting}&rdquo;
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={applyGreetingSuggestion}
+                    className="text-xs font-semibold text-[#00A99D] hover:text-[#008F85] transition-colors"
+                  >
+                    Apply
+                  </button>
+                  <span className="text-[#D0EDE8]">|</span>
+                  <button
+                    onClick={() => setSuggestedGreeting(null)}
+                    className="text-xs text-[#8AADA6] hover:text-[#4A7A6D] transition-colors"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="flex justify-between mt-2 mb-4">
               <span className="text-xs text-muted-foreground font-sans">
                 {greeting.length}/200 characters
@@ -261,7 +416,7 @@ export default function VoicePage() {
           <div className="space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[1, 2, 3, 4].map((i) => (
-                <Skeleton key={i} className="h-12 w-full rounded-lg" />
+                <Skeleton key={i} className="h-16 w-full rounded-lg" />
               ))}
             </div>
             <Skeleton className="h-40 w-full rounded-lg" />
@@ -269,26 +424,37 @@ export default function VoicePage() {
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-              {PERSONA_TEMPLATES.map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => applyTemplate(t.prompt)}
-                  className="p-3 text-left bg-[#F0F9F8] rounded-lg border border-[#D0EDE8] hover:border-[#00A99D]/50 hover:bg-white transition-all"
-                >
-                  <p className="font-medium text-[#1B2A4A] text-sm font-sans">{t.label}</p>
-                </button>
-              ))}
+              {PERSONA_TEMPLATES.map((t) => {
+                const isSelected = activeTemplateId === t.id;
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => applyTemplate(t)}
+                    className="p-3 text-left rounded-lg border transition-all hover:scale-[1.01]"
+                    style={{
+                      backgroundColor: isSelected ? "#F0F9F8" : "#FAFAFA",
+                      borderColor: isSelected ? "#00A99D" : "#D0EDE8",
+                      borderWidth: isSelected ? "2px" : "1px",
+                    }}
+                  >
+                    <p className="font-medium text-[#1B2A4A] text-sm font-sans">{t.label}</p>
+                    <p className="text-xs text-[#8AADA6] font-sans mt-0.5">{t.description}</p>
+                  </button>
+                );
+              })}
             </div>
 
             <textarea
               value={prompt}
-              onChange={(e) => setPrompt(e.target.value.slice(0, 500))}
-              placeholder={`Example: You are Emma, a friendly support agent for ${brandName}. Always greet customers warmly and resolve issues quickly.`}
+              onChange={(e) => {
+                setPrompt(e.target.value.slice(0, 500));
+                setActiveTemplateId(null);
+              }}
+              placeholder={`Example: Be a friendly support agent for ${brandName}. Always greet customers warmly and resolve issues quickly.`}
               className="w-full h-40 px-4 py-3 bg-white border border-[#D0EDE8] rounded-lg text-[#1B2A4A] placeholder:text-[#8AADA6] resize-none focus:outline-none focus:border-[#00A99D] focus:ring-2 focus:ring-[#00A99D]/10 font-sans text-sm"
             />
             <p className="text-xs text-[#8AADA6] font-sans mt-1.5 mb-3">
-              Describe your brand voice. Examples: formal and professional, friendly and casual,
-              brief and to the point.
+              Describe your brand voice. Pick a template above or write your own.
             </p>
             <div className="flex justify-between mb-4">
               <span className="text-xs text-muted-foreground font-sans">
@@ -326,51 +492,166 @@ export default function VoicePage() {
           )}
         </div>
         <p className="text-xs text-muted-foreground font-sans mb-4">
-          Choose your AI&apos;s voice. Click to select.
+          Choose your AI&apos;s voice. Click to select — use the play button to hear the actual Vapi voice.
         </p>
+        {previewError && (
+          <p className="text-xs text-red-500 font-sans mb-3">{previewError}</p>
+        )}
+
+        {/* Legacy voice migration banner */}
+        {isLegacyVoice && (
+          <div className="mb-4 p-3 rounded-lg border border-[#F5A623]/30 bg-[#F5A623]/5">
+            <p className="text-xs text-[#1B2A4A] font-sans">
+              <span className="font-semibold">Your current voice is no longer available.</span>{" "}
+              We&apos;ve upgraded to higher-quality Vapi native voices. Please select a new voice below.
+            </p>
+          </div>
+        )}
 
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {[1, 2, 3, 4].map((i) => (
+            {[1, 2, 3, 4, 5, 6].map((i) => (
               <Skeleton key={i} className="h-16 w-full rounded-lg" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {ELEVENLABS_VOICES.map((voice) => {
-              const isSelected = selectedVoiceId === voice.id;
-              return (
-                <button
-                  key={voice.id}
-                  onClick={() => handleSelectVoice(voice.id)}
-                  disabled={savingVoice}
-                  className="p-3 text-left rounded-lg border transition-all disabled:opacity-60"
-                  style={{
-                    backgroundColor: isSelected ? "#F0F9F8" : "#FAFAFA",
-                    borderColor: isSelected ? "#00A99D" : "#D0EDE8",
-                    borderWidth: isSelected ? "2px" : "1px",
-                  }}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold text-[#1B2A4A] text-sm font-sans">
-                        {voice.label}
-                      </p>
-                      <p className="text-xs text-[#8AADA6] font-sans">{voice.description}</p>
-                    </div>
-                    {isSelected && (
-                      <div
-                        className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
-                        style={{ backgroundColor: "#00A99D" }}
-                      >
-                        <Check className="w-3 h-3 text-white" />
+          <>
+            {/* Female Voices */}
+            <p className="text-[10px] font-semibold text-[#8AADA6] uppercase tracking-widest mb-2">
+              Female Voices
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+              {femaleVoices.map((voice) => {
+                const isSelected = selectedVoiceId === voice.id;
+                const isPlaying = playingVoiceId === voice.id;
+                return (
+                  <button
+                    key={voice.id}
+                    onClick={() => handleSelectVoice(voice.id)}
+                    disabled={savingVoice}
+                    className="p-3 text-left rounded-lg border transition-all disabled:opacity-60 hover:scale-[1.01]"
+                    style={{
+                      backgroundColor: isSelected ? "#F0F9F8" : "#FAFAFA",
+                      borderColor: isSelected ? "#00A99D" : "#D0EDE8",
+                      borderWidth: isSelected ? "2px" : "1px",
+                    }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold text-[#1B2A4A] text-sm font-sans">
+                            {voice.label}
+                          </p>
+                          {isPlaying && (
+                            <span className="relative flex h-2 w-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00A99D] opacity-75" />
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00A99D]" />
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-[#8AADA6] font-sans mt-0.5 truncate">
+                          {voice.description}
+                        </p>
                       </div>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+                      <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                        <div
+                          onClick={(e) => handlePlayPreview(voice.id, e)}
+                          className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-all hover:scale-110"
+                          style={{
+                            background: isPlaying
+                              ? "linear-gradient(135deg, #00A99D, #7DD9C0)"
+                              : "#F0F9F8",
+                          }}
+                        >
+                          {isPlaying ? (
+                            <Pause className="w-3.5 h-3.5 text-white" />
+                          ) : (
+                            <Play className="w-3.5 h-3.5 text-[#00A99D] ml-0.5" />
+                          )}
+                        </div>
+                        {isSelected && (
+                          <div
+                            className="w-5 h-5 rounded-full flex items-center justify-center"
+                            style={{ backgroundColor: "#00A99D" }}
+                          >
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Male Voices */}
+            <p className="text-[10px] font-semibold text-[#8AADA6] uppercase tracking-widest mb-2">
+              Male Voices
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {maleVoices.map((voice) => {
+                const isSelected = selectedVoiceId === voice.id;
+                const isPlaying = playingVoiceId === voice.id;
+                return (
+                  <button
+                    key={voice.id}
+                    onClick={() => handleSelectVoice(voice.id)}
+                    disabled={savingVoice}
+                    className="p-3 text-left rounded-lg border transition-all disabled:opacity-60 hover:scale-[1.01]"
+                    style={{
+                      backgroundColor: isSelected ? "#F0F9F8" : "#FAFAFA",
+                      borderColor: isSelected ? "#00A99D" : "#D0EDE8",
+                      borderWidth: isSelected ? "2px" : "1px",
+                    }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold text-[#1B2A4A] text-sm font-sans">
+                            {voice.label}
+                          </p>
+                          {isPlaying && (
+                            <span className="relative flex h-2 w-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00A99D] opacity-75" />
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00A99D]" />
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-[#8AADA6] font-sans mt-0.5 truncate">
+                          {voice.description}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                        <div
+                          onClick={(e) => handlePlayPreview(voice.id, e)}
+                          className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-all hover:scale-110"
+                          style={{
+                            background: isPlaying
+                              ? "linear-gradient(135deg, #00A99D, #7DD9C0)"
+                              : "#F0F9F8",
+                          }}
+                        >
+                          {isPlaying ? (
+                            <Pause className="w-3.5 h-3.5 text-white" />
+                          ) : (
+                            <Play className="w-3.5 h-3.5 text-[#00A99D] ml-0.5" />
+                          )}
+                        </div>
+                        {isSelected && (
+                          <div
+                            className="w-5 h-5 rounded-full flex items-center justify-center"
+                            style={{ backgroundColor: "#00A99D" }}
+                          >
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </>
         )}
       </div>
 

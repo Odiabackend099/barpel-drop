@@ -15,22 +15,28 @@ Never make up tracking information. Use the tools to get real data.`;
 /** Default first message spoken by the AI when a call is answered */
 export const DEFAULT_FIRST_MESSAGE = "Thank you for calling {BUSINESS_NAME} support. How can I help you today?";
 
-/** ElevenLabs voice options available for Barpel AI assistants */
-export const ELEVENLABS_VOICES = [
-  { id: "EXAVITQu4vr4xnSDxMaL", label: "Bella", description: "Warm & Professional" },
-  { id: "21m00Tcm4TlvDq8ikWAM", label: "Rachel", description: "Clear & Friendly" },
-  { id: "TxGEqnHWrfWFTfGW9XjX", label: "Josh", description: "Confident & Direct" },
-  { id: "MF3mGyEYCl7XYWbV9V6O", label: "Elli", description: "Energetic & Helpful" },
+/** Vapi built-in voice options (provider: "vapi") for Barpel AI assistants */
+export const VAPI_VOICES = [
+  { id: "Clara", label: "Clara", gender: "female" as const, description: "American, 30s — warm, professional" },
+  { id: "Emma", label: "Emma", gender: "female" as const, description: "Asian American, 20s — warm, conversational" },
+  { id: "Savannah", label: "Savannah", gender: "female" as const, description: "American Southern, 20s — straightforward" },
+  { id: "Elliot", label: "Elliot", gender: "male" as const, description: "Canadian, 20s — friendly, professional, soothing" },
+  { id: "Kai", label: "Kai", gender: "male" as const, description: "American, 30s — friendly, relaxed, approachable" },
+  { id: "Rohan", label: "Rohan", gender: "male" as const, description: "Indian American, 20s — bright, energetic" },
+  { id: "Nico", label: "Nico", gender: "male" as const, description: "American, 20s — young, casual, natural" },
+  { id: "Sagar", label: "Sagar", gender: "male" as const, description: "Indian American, 20s — steady, professional" },
+  { id: "Godfrey", label: "Godfrey", gender: "male" as const, description: "American, 20s — young, energetic" },
+  { id: "Neil", label: "Neil", gender: "male" as const, description: "Indian American, 20s — clear, professional" },
 ] as const;
 
-/** Valid ElevenLabs voice IDs (whitelist for security validation) */
-export const VALID_VOICE_IDS = ELEVENLABS_VOICES.map((v) => v.id) as string[];
+/** Valid Vapi voice IDs (whitelist for security validation) */
+export const VALID_VOICE_IDS = VAPI_VOICES.map((v) => v.id) as string[];
 
 /** Valid AI models for Vapi assistants */
 export const VALID_AI_MODELS = ["gpt-4o", "gpt-4o-mini", "gpt-4.1", "gpt-4.1-mini"] as const;
 
 /** Valid voice providers for Vapi assistants */
-export const VALID_VOICE_PROVIDERS = ["11labs", "azure", "deepgram", "playht"] as const;
+export const VALID_VOICE_PROVIDERS = ["vapi", "11labs", "azure", "deepgram", "playht"] as const;
 
 /** Barpel brand color values */
 export const COLORS = {
@@ -58,31 +64,44 @@ export const CREDIT_PACKAGES = [
   { id: "scale", name: "Scale", minutes: 600, priceUsdCents: 17900, perMin: 0.30 },
 ] as const;
 
-/** AI persona quick-start templates */
+/**
+ * AI persona quick-start templates.
+ * Each template includes a matching greeting suggestion.
+ * {BUSINESS_NAME} is replaced with the merchant's brand name at apply time.
+ * All prompts are verified safe against sanitise.ts blocked patterns.
+ */
 export const PERSONA_TEMPLATES = [
   {
     id: "professional",
     label: "Professional & Formal",
+    description: "Corporate, respectful, structured responses",
+    greeting: "Good day. Thank you for calling {BUSINESS_NAME}. How may I assist you?",
     prompt:
-      "You are a professional customer service representative for [Brand]. Speak formally and courteously. Always address the customer respectfully and provide clear, concise information.",
+      "Speak in a formal, corporate tone. Address customers as Sir or Ma'am. Use complete sentences, no slang or filler words. For upset callers, acknowledge their concern, apologize sincerely, then resolve promptly. Use tools to look up real data — never guess or fabricate information. Keep responses under three sentences. Spell out numbers for clarity. Never collect payment details. End every call by confirming resolution and thanking them for choosing {BUSINESS_NAME}.",
   },
   {
     id: "friendly",
     label: "Chill & Friendly",
+    description: "Casual, warm, approachable for DTC brands",
+    greeting: "Hey there! Thanks for calling {BUSINESS_NAME}. What can I help you with today?",
     prompt:
-      "You are a laid-back, friendly support agent for [Brand]. Use casual language, make customers feel at ease. Keep the tone warm and approachable.",
+      'Be warm, casual, and upbeat. Use friendly language like "awesome" and "no worries." If a caller is frustrated, empathize first — say "I totally get it" — then fix their issue fast. Use tools to pull real order data — never make anything up. Keep it conversational and under three sentences per response. Spell out numbers. Never share other customers\' info or collect payment details. Wrap up with a cheerful sign-off and ask if there\'s anything else.',
   },
   {
     id: "luxury",
     label: "Luxury Brand",
+    description: "Sophisticated, VIP treatment, refined language",
+    greeting: "Welcome to {BUSINESS_NAME}. It is a pleasure to have you with us. How may I be of service?",
     prompt:
-      "You represent an exclusive, high-end brand. Speak with sophistication and elegance. Make every customer feel like a VIP. Use refined language and express genuine appreciation for their business.",
+      'Speak with elegance and refinement. Treat every caller as a valued VIP client. Use polished language — "certainly," "my pleasure," "absolutely." For frustrated callers, express genuine concern and prioritize their satisfaction above all. Use tools for accurate data — never speculate. Keep responses graceful and concise. Spell out numbers. Never collect payment info. Close by expressing sincere appreciation for their loyalty to {BUSINESS_NAME}.',
   },
   {
     id: "urgent",
-    label: "Urgent/Fast-Paced",
+    label: "Urgent / Fast-Paced",
+    description: "Efficient, direct, time-conscious support",
+    greeting: "Hi, {BUSINESS_NAME} support here. How can I help?",
     prompt:
-      "You are a fast, efficient support agent. Get straight to the point while remaining polite. Value the customer's time above all else and resolve issues quickly.",
+      "Be direct and efficient. Get to the solution fast — no small talk. Ask for the order number immediately when relevant. If a caller is upset, briefly acknowledge it, then jump straight to fixing the problem. Use tools to pull real data — never guess. One to two sentences max per response. Spell out numbers. Do not collect payment details or share other customers' data. Confirm resolution quickly and end the call.",
   },
 ] as const;
 

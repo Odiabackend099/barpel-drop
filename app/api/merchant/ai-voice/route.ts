@@ -25,7 +25,7 @@ import {
  * Body (all optional):
  *   custom_prompt     - AI personality system prompt (max 500 chars, sanitized)
  *   ai_first_message  - Greeting spoken when call connects (max 200 chars, sanitized)
- *   ai_voice_id       - ElevenLabs voice ID (whitelisted)
+ *   ai_voice_id       - Vapi native voice ID (whitelisted)
  *   ai_voice_provider - Voice provider (whitelisted)
  *   ai_model          - LLM model (whitelisted)
  */

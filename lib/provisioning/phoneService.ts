@@ -169,12 +169,12 @@ async function createVapiAssistant(
     options?.firstMessage ||
     DEFAULT_FIRST_MESSAGE.replace("{BUSINESS_NAME}", businessName);
 
-  // Voice config — use merchant's stored preference or default to ElevenLabs Bella
-  const voiceProvider = options?.voiceProvider ?? "11labs";
+  // Voice config — use merchant's stored preference or default to Vapi Clara
+  const voiceProvider = options?.voiceProvider ?? "vapi";
   const voiceId =
     options?.voiceId && VALID_VOICE_IDS.includes(options.voiceId)
       ? options.voiceId
-      : "EXAVITQu4vr4xnSDxMaL"; // Bella — neutral, professional
+      : "Clara"; // Clara — warm, professional (Vapi native voice)
 
   const llmModel = options?.model ?? "gpt-4o";
 
@@ -258,12 +258,10 @@ async function createVapiAssistant(
       keywords: ["order", "tracking", "refund", "delivery", "cancel"],
     },
 
-    // ElevenLabs voice — high quality, natural-sounding
+    // Voice configuration
     voice: {
       provider: voiceProvider,
       voiceId,
-      stability: 0.5,
-      similarityBoost: 0.75,
     },
 
     // Safety cap — prevent runaway billing from open lines
