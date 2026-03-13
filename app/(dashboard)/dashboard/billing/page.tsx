@@ -35,7 +35,7 @@ function Badge({ color, children }: { color: string; children: React.ReactNode }
 export default function BillingPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const [isCheckingOut, setIsCheckingOut] = useState<string | null>(null);
-  const { balanceMinutes, balanceSeconds, balance, usagePercent, transactions, loading } = useCredits();
+  const { balance, credits, usagePercent, transactions, loading } = useCredits();
 
   // Handle return from Stripe
   useEffect(() => {
@@ -105,10 +105,10 @@ export default function BillingPage() {
               <div>
                 <p className="text-sm text-muted-foreground mb-1 font-sans">Current Balance</p>
                 <p className="text-4xl font-bold text-[#1B2A4A]">
-                  {balanceMinutes}
-                  <span className="text-xl text-muted-foreground">min</span> {balanceSeconds}
-                  <span className="text-xl text-muted-foreground">s</span>
+                  {credits}
+                  <span className="text-xl text-muted-foreground ml-2">credits remaining</span>
                 </p>
+                <p className="text-sm text-muted-foreground mt-1">&asymp; {credits} minutes of AI support calls</p>
               </div>
               <div className="w-16 h-16 bg-[#C8F0E8] rounded-full flex items-center justify-center">
                 <CardIcon className="w-8 h-8 text-[#00A99D]" />
@@ -148,7 +148,7 @@ export default function BillingPage() {
             <div className="mt-4 space-y-2">
               <div className="flex items-center gap-2 text-sm text-[#4A7A6D] font-sans">
                 <Check className="w-4 h-4 text-[#00A99D]" />
-                WISMO calls
+                Order tracking calls
               </div>
               <div className="flex items-center gap-2 text-sm text-[#4A7A6D] font-sans">
                 <Check className="w-4 h-4 text-[#00A99D]" />

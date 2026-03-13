@@ -30,7 +30,6 @@ export function CallLogTable({ calls, expandedId, onToggle }: CallLogTableProps)
           <tr className="border-b border-[#D0EDE8]">
             <th className="text-left py-3 px-2 text-xs font-medium text-[#8AADA6]">Direction</th>
             <th className="text-left py-3 px-2 text-xs font-medium text-[#8AADA6]">Caller</th>
-            <th className="text-left py-3 px-2 text-xs font-medium text-[#8AADA6]">Order #</th>
             <th className="text-left py-3 px-2 text-xs font-medium text-[#8AADA6]">Type</th>
             <th className="text-left py-3 px-2 text-xs font-medium text-[#8AADA6]">Duration</th>
             <th className="text-left py-3 px-2 text-xs font-medium text-[#8AADA6]">Sentiment</th>
@@ -44,7 +43,8 @@ export function CallLogTable({ calls, expandedId, onToggle }: CallLogTableProps)
             const sentimentKey = call.sentiment as keyof typeof SENTIMENT_CONFIG;
             const sentiment = SENTIMENT_CONFIG[sentimentKey];
             const isExpanded = expandedId === call.id;
-            const emojiIcons: Record<string, string> = { happy: "\u{1F60A}", neutral: "\u{1F610}", angry: "\u{1F620}" };
+            const emojiIcons: Record<string, string> = { positive: "\u{1F60A}", neutral: "\u{1F610}", negative: "\u{1F620}" };
+            const CALL_TYPE_LABELS: Record<string, string> = { order_lookup: "Order Lookup", return_request: "Return Request", abandoned_cart_recovery: "Cart Recovery", general: "General" };
 
             return (
               <React.Fragment key={call.id}>
@@ -60,12 +60,11 @@ export function CallLogTable({ calls, expandedId, onToggle }: CallLogTableProps)
                     </Badge>
                   </td>
                   <td className="py-3 px-2 text-sm text-[#1B2A4A] font-mono">{call.caller_number}</td>
-                  <td className="py-3 px-2 text-sm text-[#1B2A4A] font-mono">{call.order_number || "-"}</td>
                   <td className="py-3 px-2">
-                    <Badge color={CALL_TYPE_COLORS[call.call_type] || "#8AADA6"}>{call.call_type}</Badge>
+                    <Badge color={CALL_TYPE_COLORS[call.call_type] || "#8AADA6"}>{CALL_TYPE_LABELS[call.call_type] || call.call_type}</Badge>
                   </td>
                   <td className="py-3 px-2 text-sm text-[#1B2A4A]">
-                    {Math.floor(call.duration_secs / 60)}m {call.duration_secs % 60}s
+                    {Math.floor(call.duration_seconds / 60)}m {call.duration_seconds % 60}s
                   </td>
                   <td className="py-3 px-2">
                     {sentiment ? (
@@ -95,10 +94,30 @@ export function CallLogTable({ calls, expandedId, onToggle }: CallLogTableProps)
                 </tr>
                 {isExpanded && call.transcript && (
                   <tr>
-                    <td colSpan={9} className="py-4 px-4">
-                      <div className="bg-[#F0F9F8] border border-[#D0EDE8] rounded-lg p-4">
-                        <p className="text-xs text-[#8AADA6] mb-2 font-medium uppercase tracking-wide">Transcript</p>
-                        <p className="text-sm text-[#1B2A4A] whitespace-pre-wrap">{call.transcript}</p>
+                    <td colSpan={8} className="py-4 px-4">
+                      <div className="space-y-3">
+                        {call.ai_summary && (
+                          <div className="bg-[#F0F9F8] border border-[#D0EDE8] rounded-lg p-4">
+                            <p className="text-xs text-[#8AADA6] mb-2 font-medium uppercase tracking-wide">AI Summary</p>
+                            <p className="text-sm text-[#1B2A4A]">{call.ai_summary}</p>
+                          </div>
+                        )}
+                        {call.tool_results && (call.tool_results as unknown[]).length > 0 && (
+                          <div className="bg-[#F0F9F8] border border-[#D0EDE8] rounded-lg p-4">
+                            <p className="text-xs text-[#8AADA6] mb-2 font-medium uppercase tracking-wide">Tool Results</p>
+                            <div className="space-y-1">
+                              {(call.tool_results as Array<{ name?: string; result?: string }>).map((tr, i) => (
+                                <p key={i} className="text-sm text-[#1B2A4A] font-mono">
+                                  <span className="text-[#00A99D] font-semibold">{tr.name || "tool"}</span>: {tr.result || JSON.stringify(tr)}
+                                </p>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        <div className="bg-[#F0F9F8] border border-[#D0EDE8] rounded-lg p-4">
+                          <p className="text-xs text-[#8AADA6] mb-2 font-medium uppercase tracking-wide">Transcript</p>
+                          <p className="text-sm text-[#1B2A4A] whitespace-pre-wrap">{call.transcript}</p>
+                        </div>
                       </div>
                     </td>
                   </tr>

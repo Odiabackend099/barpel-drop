@@ -42,14 +42,14 @@ export async function GET(request: NextRequest) {
   const toDate = searchParams.get("to");
   const search = searchParams.get("search");
 
-  const VALID_TYPES = ["wismo", "return", "abandoned_cart", "other"];
-  const VALID_SENTIMENTS = ["happy", "neutral", "angry"];
+  const VALID_TYPES = ["order_lookup", "return_request", "abandoned_cart_recovery", "general"];
+  const VALID_SENTIMENTS = ["positive", "neutral", "negative"];
   const VALID_DIRECTIONS = ["inbound", "outbound"];
 
   let query = supabase
     .from("call_logs")
     .select(
-      "id, direction, caller_number, customer_name, order_number, call_type, duration_secs, ai_summary, sentiment, credits_charged, started_at, ended_at",
+      "id, direction, caller_number, call_type, duration_seconds, ai_summary, sentiment, credits_charged, started_at, ended_at, ended_reason, tool_results",
       { count: "exact" }
     )
     .eq("merchant_id", merchant.id)
@@ -73,8 +73,8 @@ export async function GET(request: NextRequest) {
     query = query.lte("started_at", toDate + "T23:59:59.999Z");
   }
   if (search) {
-    // Search by order number
-    query = query.ilike("order_number", `%${search}%`);
+    // Search by AI summary
+    query = query.ilike("ai_summary", `%${search}%`);
   }
 
   const { data: calls, error, count } = await query;

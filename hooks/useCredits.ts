@@ -74,7 +74,8 @@ export function useCredits() {
 
   const balanceMinutes = Math.floor(balance / 60);
   const balanceSeconds = balance % 60;
+  const credits = Math.floor(balance / 60);
   const usagePercent = totalCapacity > 0 ? (balance / totalCapacity) * 100 : 0;
 
-  return { balance, balanceMinutes, balanceSeconds, totalCapacity, usagePercent, transactions, loading };
+  return { balance, balanceMinutes, balanceSeconds, credits, totalCapacity, usagePercent, transactions, loading };
 }

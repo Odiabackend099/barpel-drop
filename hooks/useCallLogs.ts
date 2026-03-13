@@ -46,9 +46,8 @@ export function useCallLogs() {
       if (filterSentiment !== "all" && call.sentiment !== filterSentiment) return false;
       if (
         searchQuery &&
-        !call.order_number?.toLowerCase().includes(searchQuery.toLowerCase()) &&
         !call.caller_number.toLowerCase().includes(searchQuery.toLowerCase()) &&
-        !call.customer_name.toLowerCase().includes(searchQuery.toLowerCase())
+        !call.ai_summary?.toLowerCase().includes(searchQuery.toLowerCase())
       )
         return false;
       return true;
@@ -65,10 +64,10 @@ export function useCallLogs() {
   const stats = useMemo(() => {
     return {
       total: filteredCalls.length,
-      angry: filteredCalls.filter((c) => c.sentiment === "angry").length,
+      negative: filteredCalls.filter((c) => c.sentiment === "negative").length,
       avgDuration:
         filteredCalls.length > 0
-          ? Math.round(filteredCalls.reduce((s, c) => s + c.duration_secs, 0) / filteredCalls.length)
+          ? Math.round(filteredCalls.reduce((s, c) => s + c.duration_seconds, 0) / filteredCalls.length)
           : 0,
       totalCredits: filteredCalls.reduce((s, c) => s + c.credits_charged, 0),
     };

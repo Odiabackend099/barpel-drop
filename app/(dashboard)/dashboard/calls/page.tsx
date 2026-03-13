@@ -53,8 +53,8 @@ export default function CallsPage() {
             <p className="text-lg font-bold text-[#1B2A4A]">{stats.total}</p>
           </div>
           <div className="px-4 py-2 bg-[#F0F9F8] rounded-lg border border-[#D0EDE8]">
-            <span className="text-xs text-[#8AADA6] font-sans">Angry</span>
-            <p className="text-lg font-bold text-[#E74C3C]">{stats.angry}</p>
+            <span className="text-xs text-[#8AADA6] font-sans">Negative</span>
+            <p className="text-lg font-bold text-[#E74C3C]">{stats.negative}</p>
           </div>
           <div className="px-4 py-2 bg-[#F0F9F8] rounded-lg border border-[#D0EDE8]">
             <span className="text-xs text-[#8AADA6] font-sans">Avg Duration</span>
@@ -80,13 +80,10 @@ export default function CallsPage() {
               className="px-3 py-2 bg-white border border-[#D0EDE8] rounded-lg text-sm text-[#1B2A4A] focus:border-[#00A99D] focus:outline-none"
             >
               <option value="all">All Types</option>
-              <option value="WISMO">WISMO</option>
-              <option value="Return/Refund">Return/Refund</option>
-              <option value="Abandoned Cart">Abandoned Cart</option>
-              <option value="Product Inquiry">Product Inquiry</option>
-              <option value="General Inquiry">General Inquiry</option>
-              <option value="Address Change">Address Change</option>
-              <option value="Payment Issue">Payment Issue</option>
+              <option value="order_lookup">Order Lookup</option>
+              <option value="return_request">Return Request</option>
+              <option value="abandoned_cart_recovery">Cart Recovery</option>
+              <option value="general">General</option>
             </select>
           </div>
           <div>
@@ -97,16 +94,16 @@ export default function CallsPage() {
               className="px-3 py-2 bg-white border border-[#D0EDE8] rounded-lg text-sm text-[#1B2A4A] focus:border-[#00A99D] focus:outline-none"
             >
               <option value="all">All</option>
-              <option value="angry">Angry</option>
+              <option value="negative">Negative</option>
               <option value="neutral">Neutral</option>
-              <option value="happy">Happy</option>
+              <option value="positive">Positive</option>
             </select>
           </div>
           <div className="flex-1 min-w-[200px]">
             <label className="text-xs text-[#8AADA6] mb-1 block font-sans">Search</label>
             <input
               type="text"
-              placeholder="Order # or phone..."
+              placeholder="Search summary or phone..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full px-3 py-2 bg-white border border-[#D0EDE8] rounded-lg text-sm text-[#1B2A4A] placeholder:text-[#8AADA6] focus:border-[#00A99D] focus:outline-none"

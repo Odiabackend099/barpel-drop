@@ -51,11 +51,11 @@ export const COLORS = {
   footerBg: "#1B2A4A",
 } as const;
 
-/** Credit packages available for purchase */
+/** Credit packages available for purchase (1 credit = 1 minute) */
 export const CREDIT_PACKAGES = [
-  { id: "starter", name: "Starter", minutes: 100, priceUsdCents: 1999, perMin: 0.2 },
-  { id: "growth", name: "Growth", minutes: 500, priceUsdCents: 7999, perMin: 0.16, popular: true },
-  { id: "scale", name: "Scale", minutes: 1500, priceUsdCents: 19999, perMin: 0.13 },
+  { id: "starter", name: "Starter", minutes: 50, priceUsdCents: 2900, perMin: 0.58 },
+  { id: "growth", name: "Growth", minutes: 200, priceUsdCents: 7900, perMin: 0.40, popular: true },
+  { id: "scale", name: "Scale", minutes: 600, priceUsdCents: 17900, perMin: 0.30 },
 ] as const;
 
 /** AI persona quick-start templates */
@@ -88,19 +88,15 @@ export const PERSONA_TEMPLATES = [
 
 /** Sentiment configuration for display */
 export const SENTIMENT_CONFIG = {
-  happy: { label: "Happy", color: "#00A99D", emoji: "satisfied" },
+  positive: { label: "Positive", color: "#00A99D", emoji: "satisfied" },
   neutral: { label: "Neutral", color: "#F5A623", emoji: "neutral" },
-  angry: { label: "Angry", color: "#E74C3C", emoji: "dissatisfied" },
+  negative: { label: "Negative", color: "#E74C3C", emoji: "dissatisfied" },
 } as const;
 
 /** Call type badge colors */
 export const CALL_TYPE_COLORS: Record<string, string> = {
-  WISMO: "#00A99D",
-  "Return/Refund": "#F5A623",
-  "Abandoned Cart": "#7DD9C0",
-  "Product Inquiry": "#1B2A4A",
-  "General Inquiry": "#8AADA6",
-  "Address Change": "#4A7A6D",
-  "Payment Issue": "#E74C3C",
-  other: "#8AADA6",
+  order_lookup: "#00A99D",
+  return_request: "#F5A623",
+  abandoned_cart_recovery: "#7DD9C0",
+  general: "#8AADA6",
 } as const;

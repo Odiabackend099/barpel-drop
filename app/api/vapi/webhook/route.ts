@@ -6,9 +6,14 @@ import { getTracking, formatTrackingMessage, isAfterShipEnabled } from "@/lib/af
 import { sendSms } from "@/lib/twilio/client";
 import { withRetry } from "@/lib/retry";
 
+const LOW_BALANCE_THRESHOLD_SECS = 300;
+const LOW_BALANCE_THROTTLE_HOURS = 24;
+const SHORT_CALL_THRESHOLD_SECS = 15;
+
 /**
- * Vapi mid-call webhook — handles tool calls during an active call.
- * Must respond within 5 seconds. Returns a fallback at 4 seconds if slow.
+ * Vapi serverUrl webhook — handles ALL Vapi server events:
+ * - tool-calls: mid-call tool execution (must respond within 5 seconds)
+ * - end-of-call-report: saves call data to golden call_logs table
  */
 export async function POST(request: Request) {
   // Step 1: Verify Vapi secret using constant-time comparison
@@ -20,8 +25,20 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const { type, toolCallList, call } = body;
 
+  // Vapi wraps all server events in a top-level "message" key.
+  // Source: https://docs.vapi.ai/server-url/events
+  const msg = body.message ?? body;
+  const { type, toolCallList, call } = msg;
+
+  const supabase = createAdminClient();
+
+  // Handle end-of-call-report: save everything to golden call_logs table
+  if (type === "end-of-call-report") {
+    return handleEndOfCallReport(msg, supabase);
+  }
+
+  // Handle tool-calls: mid-call tool execution
   if (type !== "tool-calls" || !toolCallList?.length) {
     return NextResponse.json({ ok: true });
   }
@@ -30,12 +47,14 @@ export async function POST(request: Request) {
   if (!merchantId) {
     return NextResponse.json({ error: "Missing merchant_id" }, { status: 400 });
   }
-
-  const supabase = createAdminClient();
   const results = [];
 
   for (const toolCall of toolCallList) {
-    const { name, arguments: args } = toolCall.function;
+    // Vapi sends: { id, name, arguments: {...} } — arguments is an object.
+    // Source: https://docs.vapi.ai/tools/custom-tools
+    const name: string = toolCall.name ?? toolCall.function?.name;
+    const rawArgs = toolCall.arguments ?? toolCall.function?.arguments;
+    const args = typeof rawArgs === "string" ? JSON.parse(rawArgs) : (rawArgs ?? {});
     const toolCallId: string = toolCall.id;
     let result: string;
 
@@ -218,3 +237,187 @@ async function handleGetStorePolicy(
 
   return "Our standard return policy allows returns within 30 days of delivery for items in original condition. Refunds are processed within 5-7 business days after we receive the returned item.";
 }
+
+// ============================================================================
+// END-OF-CALL-REPORT HANDLER
+// Saves every field from Vapi's end-of-call-report into one call_logs row.
+// This is the ONLY moment call data enters our system from Vapi.
+// ============================================================================
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+async function handleEndOfCallReport(
+  msg: Record<string, any>,
+  supabase: ReturnType<typeof createAdminClient>
+) {
+  const call = msg.call ?? {};
+  const artifact = msg.artifact ?? {};
+  const analysis = msg.analysis ?? {};
+  const endedReason: string | undefined = msg.endedReason;
+
+  // 1. Identify merchant via assistantId → merchants.vapi_agent_id
+  const assistantId: string | undefined = call.assistantId;
+  if (!assistantId) {
+    console.error("[webhook] end-of-call-report missing assistantId");
+    return NextResponse.json({ received: true });
+  }
+
+  const { data: merchant } = await supabase
+    .from("merchants")
+    .select("id, credit_balance, low_balance_notified_at, support_phone")
+    .eq("vapi_agent_id", assistantId)
+    .single();
+
+  if (!merchant) {
+    console.error("[webhook] Unknown assistantId:", assistantId);
+    return NextResponse.json({ received: true });
+  }
+
+  // 2. Calculate duration
+  const startedAt = call.startedAt ? new Date(call.startedAt) : null;
+  const endedAt = call.endedAt ? new Date(call.endedAt) : new Date();
+  const durationSeconds = startedAt
+    ? Math.max(0, Math.round((endedAt.getTime() - startedAt.getTime()) / 1000))
+    : 0;
+
+  // 3. Extract tool results from messages array
+  const allMessages: any[] = artifact.messages ?? [];
+  const toolResults = allMessages
+    .filter((m: any) => m.role === "tool_call_result")
+    .map((m: any) => ({ tool: m.name, result: m.result }));
+
+  // 4. Determine call type by which tool actually fired (deterministic)
+  let callType = "general";
+  if (toolResults.some((t: any) => t.tool === "lookup_order")) {
+    callType = "order_lookup";
+  } else if (toolResults.some((t: any) => t.tool === "initiate_return")) {
+    callType = "return_request";
+  }
+
+  // Check for abandoned cart recovery via pending_outbound_calls
+  const vapiCallId: string | undefined = call.id;
+  if (vapiCallId) {
+    const { data: pendingCall } = await supabase
+      .from("pending_outbound_calls")
+      .select("id")
+      .eq("vapi_call_id", vapiCallId)
+      .maybeSingle();
+    if (pendingCall) callType = "abandoned_cart_recovery";
+  }
+
+  // 5. Simple sentiment detection from transcript
+  const transcript: string = artifact.transcript ?? "";
+  const sentiment = detectSentiment(transcript);
+
+  // 6. Upsert into call_logs — idempotent via onConflict: 'vapi_call_id'
+  const { data: callLog, error: insertError } = await supabase
+    .from("call_logs")
+    .upsert(
+      {
+        merchant_id: merchant.id,
+        vapi_call_id: vapiCallId,
+        vapi_assistant_id: assistantId,
+        caller_number: call.customer?.number ?? null,
+        called_number: call.phoneNumber?.number ?? null,
+        direction: call.type === "outboundPhoneCall" ? "outbound" : "inbound",
+        started_at: call.startedAt ?? null,
+        ended_at: call.endedAt ?? null,
+        duration_seconds: durationSeconds,
+        ended_reason: endedReason ?? null,
+        transcript,
+        messages_raw: allMessages,
+        recording_url: artifact.recordingUrl ?? call.recordingUrl ?? null,
+        ai_summary: analysis.summary ?? null,
+        ai_success_evaluation: analysis.successEvaluation ?? null,
+        tool_results: toolResults,
+        call_type: callType,
+        sentiment,
+        credits_charged: 0,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "vapi_call_id" }
+    )
+    .select("id")
+    .single();
+
+  if (insertError) {
+    console.error("[webhook] call_logs upsert failed:", insertError.message);
+    // Still return 200 — Vapi does not retry on our errors
+    return NextResponse.json({ received: true });
+  }
+
+  // 7. Credit deduction — skip short calls (hang-ups, wrong numbers)
+  let creditsCharged = 0;
+  if (durationSeconds >= SHORT_CALL_THRESHOLD_SECS && callLog) {
+    try {
+      const { data: deducted } = await supabase.rpc("deduct_call_credits", {
+        p_merchant_id: merchant.id,
+        p_seconds: durationSeconds,
+        p_call_log_id: callLog.id,
+      });
+      creditsCharged = deducted ?? 0;
+    } catch {
+      // Deduction failed but call was logged — do not block 200
+    }
+
+    // Update call log with actual credits charged
+    await supabase
+      .from("call_logs")
+      .update({ credits_charged: creditsCharged })
+      .eq("id", callLog.id);
+  }
+
+  // 8. Low-balance SMS warning (24h throttle)
+  // Uses support_phone (NOT mobile_number which doesn't exist)
+  if (merchant.credit_balance < LOW_BALANCE_THRESHOLD_SECS) {
+    const lastNotified = merchant.low_balance_notified_at;
+    const hoursSince = lastNotified
+      ? (Date.now() - new Date(lastNotified).getTime()) / 3_600_000
+      : Infinity;
+
+    if (hoursSince > LOW_BALANCE_THROTTLE_HOURS && merchant.support_phone) {
+      const minutesRemaining = Math.floor(merchant.credit_balance / 60);
+
+      await sendSms(
+        merchant.support_phone,
+        `Your Barpel credits are running low. You have ${minutesRemaining} minutes remaining. Top up at ${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/billing`
+      ).catch(() => {
+        // SMS failure must not block call processing
+      });
+
+      await supabase
+        .from("merchants")
+        .update({ low_balance_notified_at: new Date().toISOString() })
+        .eq("id", merchant.id);
+    }
+  }
+
+  return NextResponse.json({ received: true, credits_charged: creditsCharged });
+}
+
+/**
+ * Detects sentiment from transcript using phrase patterns.
+ * Returns 'negative' | 'positive' | 'neutral' for the golden schema.
+ */
+function detectSentiment(transcript: string): "positive" | "neutral" | "negative" {
+  const text = transcript.toLowerCase();
+
+  const negativePatterns = [
+    "this is ridiculous", "unacceptable", "i want my money back",
+    "terrible", "never again", "this is a scam", "worst experience",
+    "completely unacceptable", "very frustrated",
+  ];
+
+  const positivePatterns = [
+    "thank you so much", "that's great", "perfect", "brilliant",
+    "really appreciate", "very helpful", "excellent service",
+    "amazing", "wonderful",
+  ];
+
+  const negativeScore = negativePatterns.filter((p) => text.includes(p)).length;
+  const positiveScore = positivePatterns.filter((p) => text.includes(p)).length;
+
+  if (negativeScore > positiveScore && negativeScore > 0) return "negative";
+  if (positiveScore > negativeScore && positiveScore > 0) return "positive";
+  return "neutral";
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */

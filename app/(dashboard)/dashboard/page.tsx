@@ -58,18 +58,25 @@ const MOCK_STATS: DashboardStats = {
   avg_handle_time: 143,
   chart_data: chartData,
   call_types: {
-    WISMO: 98,
-    "Return/Refund": 45,
-    "Abandoned Cart": 52,
-    Other: 52,
+    order_lookup: 98,
+    return_request: 45,
+    abandoned_cart_recovery: 52,
+    general: 52,
   },
 };
 
+const CALL_TYPE_LABELS: Record<string, string> = {
+  order_lookup: "Order Lookup",
+  return_request: "Return Request",
+  abandoned_cart_recovery: "Cart Recovery",
+  general: "General",
+};
+
 const breakdownColors: Record<string, string> = {
-  WISMO: "#00A99D",
-  "Return/Refund": "#F5A623",
-  "Abandoned Cart": "#7DD9C0",
-  Other: "#8AADA6",
+  order_lookup: "#00A99D",
+  return_request: "#F5A623",
+  abandoned_cart_recovery: "#7DD9C0",
+  general: "#8AADA6",
 };
 
 export default function DashboardPage() {
@@ -224,7 +231,7 @@ export default function DashboardPage() {
                   const percentage = total > 0 ? (count / total) * 100 : 0;
                   return (
                     <div key={type} className="flex items-center gap-3">
-                      <Badge color={breakdownColors[type] || "#8AADA6"}>{type}</Badge>
+                      <Badge color={breakdownColors[type] || "#8AADA6"}>{CALL_TYPE_LABELS[type] || type}</Badge>
                       <div className="flex-1 h-2 bg-[#F0F9F8] rounded-full overflow-hidden">
                         <div
                           className="h-full rounded-full transition-all"
