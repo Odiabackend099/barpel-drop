@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createVapiAssistantForTest } from "@/lib/provisioning/phoneService";
+import { getAssistant } from "@/lib/vapi/client";
 
 /**
  * POST /api/debug/vapi-setup
@@ -78,4 +79,47 @@ export async function POST() {
   }
 
   return NextResponse.json({ success: true, vapi_agent_id: vapiAgentId });
+}
+
+/**
+ * GET /api/debug/vapi-setup
+ * Returns the Vapi assistant state for the authenticated merchant (for E2E verification).
+ */
+export async function GET() {
+  const supabase = createClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const adminSupabase = createAdminClient();
+  const { data: merchant } = await adminSupabase
+    .from("merchants")
+    .select("vapi_agent_id, provisioning_status")
+    .eq("user_id", user.id)
+    .is("deleted_at", null)
+    .single();
+
+  if (!merchant?.vapi_agent_id) {
+    return NextResponse.json({ error: "No Vapi assistant configured" }, { status: 404 });
+  }
+
+  try {
+    const assistant = await getAssistant(merchant.vapi_agent_id);
+    return NextResponse.json({
+      vapi_agent_id: merchant.vapi_agent_id,
+      provisioning_status: merchant.provisioning_status,
+      vapi_firstMessage: assistant.firstMessage,
+      vapi_model: (assistant.model as Record<string, unknown>)?.model,
+      vapi_voice_provider: (assistant.voice as Record<string, unknown>)?.provider,
+      vapi_voice_id: (assistant.voice as Record<string, unknown>)?.voiceId,
+    });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return NextResponse.json({ error: `Vapi fetch failed: ${msg}` }, { status: 500 });
+  }
 }
