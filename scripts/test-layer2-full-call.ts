@@ -203,6 +203,30 @@ async function runLayer2() {
   console.log("\nFull transcript:");
   console.log(transcript || "(empty)");
 
+  // Save full results to file for CI/audit
+  const fs = await import("fs");
+  const pathMod = await import("path");
+  const outputDir = pathMod.join(process.cwd(), "test-results");
+  if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir);
+  const outputFile = pathMod.join(outputDir, `e2e-${Date.now()}.json`);
+  fs.writeFileSync(
+    outputFile,
+    JSON.stringify(
+      {
+        callId,
+        timestamp: new Date().toISOString(),
+        orderNumber: ORDER_NUMBER,
+        toolFired: true,
+        toolResult: orderLookupResult.result,
+        transcript,
+        duration: Math.round((Date.now() - start) / 1000),
+      },
+      null,
+      2
+    )
+  );
+  console.log(`\n💾 Results saved: ${outputFile}`);
+
   console.log(
     "\n✅ LAYER 2 PASSED — Full call transaction verified end-to-end"
   );

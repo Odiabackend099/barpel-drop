@@ -1,14 +1,18 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { buildAuthUrl } from "@/lib/shopify/oauth";
+import { buildInstallUrl } from "@/lib/shopify/oauth";
 
 /**
- * Initiates the Shopify OAuth flow.
- * Stores a nonce in the database for CSRF verification (not cookies — they
- * are unreliable on Vercel serverless across redirect hops).
+ * Initiates the Shopify OAuth flow — ONE button, NO shop domain input.
+ *
+ * The merchant clicks "Connect with Shopify" and is redirected to Shopify's
+ * login page. Shopify provides the shop domain in the callback — the merchant
+ * never types it.
+ *
+ * GET /api/shopify/oauth/start?returnTo=onboarding|integrations
  */
-export async function POST(request: Request) {
+export async function GET(request: Request) {
   const supabase = createClient();
 
   const {
@@ -16,24 +20,15 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL ?? "").trim();
+    return NextResponse.redirect(`${baseUrl}/login`);
   }
 
-  const { shopDomain, returnTo } = await request.json();
-  if (!shopDomain) {
-    return NextResponse.json(
-      { error: "Missing shopDomain" },
-      { status: 400 }
-    );
-  }
-
-  // Validate the domain format
-  if (!/^[a-z0-9-]+\.myshopify\.com$/i.test(shopDomain)) {
-    return NextResponse.json(
-      { error: "Invalid Shopify domain. Expected: your-store.myshopify.com" },
-      { status: 400 }
-    );
-  }
+  const { searchParams } = new URL(request.url);
+  const returnTo =
+    searchParams.get("returnTo") === "integrations"
+      ? "integrations"
+      : "onboarding";
 
   // Look up merchant for the authenticated user
   const { data: merchant } = await supabase
@@ -44,33 +39,36 @@ export async function POST(request: Request) {
     .single();
 
   if (!merchant) {
-    return NextResponse.json(
-      { error: "Merchant not found" },
-      { status: 404 }
-    );
+    const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL ?? "").trim();
+    if (returnTo === "integrations") {
+      return NextResponse.redirect(`${baseUrl}/dashboard/integrations?shopify_error=merchant_not_found`);
+    }
+    return NextResponse.redirect(`${baseUrl}/onboarding?step=2&shopify_error=merchant_not_found`);
   }
 
   const redirectUri = `${(process.env.NEXT_PUBLIC_BASE_URL ?? "").trim()}/api/shopify/oauth/callback`;
-  const { url, nonce } = buildAuthUrl(shopDomain, redirectUri);
+  const { url, nonce } = buildInstallUrl(redirectUri);
 
-  // Store nonce in database (replaces cookie-based approach)
+  // Store nonce in database — shop_domain is null because we don't know it yet.
+  // Shopify provides it in the callback; HMAC verification ensures authenticity.
   const adminSupabase = createAdminClient();
   const { error: stateError } = await adminSupabase
     .from("oauth_states")
     .insert({
       state: nonce,
       merchant_id: merchant.id,
-      shop_domain: shopDomain,
-      return_to: returnTo === "integrations" ? "integrations" : "onboarding",
+      shop_domain: null,
+      return_to: returnTo,
     });
 
   if (stateError) {
     console.error("[shopify oauth start] Failed to store state:", stateError);
-    return NextResponse.json(
-      { error: "Internal error" },
-      { status: 500 }
-    );
+    const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL ?? "").trim();
+    if (returnTo === "integrations") {
+      return NextResponse.redirect(`${baseUrl}/dashboard/integrations?shopify_error=internal`);
+    }
+    return NextResponse.redirect(`${baseUrl}/onboarding?step=2&shopify_error=internal`);
   }
 
-  return NextResponse.json({ url });
+  return NextResponse.redirect(url);
 }

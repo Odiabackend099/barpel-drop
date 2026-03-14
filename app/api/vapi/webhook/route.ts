@@ -6,7 +6,7 @@ import { getTracking, formatTrackingMessage, isAfterShipEnabled } from "@/lib/af
 import { sendSms } from "@/lib/twilio/client";
 import { withRetry } from "@/lib/retry";
 
-const LOW_BALANCE_THRESHOLD_SECS = 300;
+const LOW_BALANCE_THRESHOLD_SECS = 600; // 10 minutes — warn earlier so merchant can act
 const LOW_BALANCE_THROTTLE_HOURS = 24;
 const SHORT_CALL_THRESHOLD_SECS = 15;
 
@@ -47,6 +47,25 @@ export async function POST(request: Request) {
   if (!merchantId) {
     return NextResponse.json({ error: "Missing merchant_id" }, { status: 400 });
   }
+
+  // Zero-balance guard: if merchant has no credits, return a graceful message
+  // for ALL tool calls so Vapi doesn't hang waiting for remaining results
+  const { data: creditCheck } = await supabase
+    .from("merchants")
+    .select("credit_balance")
+    .eq("id", merchantId)
+    .single();
+
+  if (creditCheck && creditCheck.credit_balance <= 0) {
+    const zeroBalanceResults = toolCallList.map((tc: { id: string }) => ({
+      toolCallId: tc.id,
+      result:
+        "Thank you for calling. Our support line is temporarily unavailable. " +
+        "Please contact the store directly by email or visit our website.",
+    }));
+    return NextResponse.json({ results: zeroBalanceResults });
+  }
+
   const results = [];
 
   for (const toolCall of toolCallList) {
@@ -366,21 +385,31 @@ async function handleEndOfCallReport(
       .eq("id", callLog.id);
   }
 
-  // 8. Low-balance SMS warning (24h throttle)
-  // Uses support_phone (NOT mobile_number which doesn't exist)
-  if (merchant.credit_balance < LOW_BALANCE_THRESHOLD_SECS) {
+  // 8. Low-balance SMS warning (24h throttle, 10-minute threshold)
+  // Re-fetch credit_balance — the merchant object is stale after deduction
+  const { data: updatedMerchant } = await supabase
+    .from("merchants")
+    .select("credit_balance")
+    .eq("id", merchant.id)
+    .single();
+  const updatedBalance = updatedMerchant?.credit_balance ?? merchant.credit_balance;
+
+  if (updatedBalance < LOW_BALANCE_THRESHOLD_SECS) {
     const lastNotified = merchant.low_balance_notified_at;
     const hoursSince = lastNotified
       ? (Date.now() - new Date(lastNotified).getTime()) / 3_600_000
       : Infinity;
 
     if (hoursSince > LOW_BALANCE_THROTTLE_HOURS && merchant.support_phone) {
-      const minutesRemaining = Math.floor(merchant.credit_balance / 60);
+      const minutesRemaining = Math.floor(updatedBalance / 60);
+      const billingUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/billing`;
 
-      await sendSms(
-        merchant.support_phone,
-        `Your Barpel credits are running low. You have ${minutesRemaining} minutes remaining. Top up at ${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/billing`
-      ).catch(() => {
+      const smsBody =
+        updatedBalance <= 0
+          ? `Barpel Alert: You've used all your minutes for this month. Your AI line is paused. Top up at ${billingUrl}`
+          : `Barpel Alert: You have ${minutesRemaining} minutes left this month. Top up now to keep your AI line running: ${billingUrl}`;
+
+      await sendSms(merchant.support_phone, smsBody).catch(() => {
         // SMS failure must not block call processing
       });
 

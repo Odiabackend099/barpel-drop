@@ -142,8 +142,10 @@ export default function BillingPage() {
             <div className="text-center pt-2">
               <h3 className="text-lg font-bold text-[#1B2A4A] font-sans">{pkg.name}</h3>
               <p className="text-3xl font-bold text-[#1B2A4A] mt-2">${(pkg.priceUsdCents / 100).toFixed(2)}</p>
-              <p className="text-sm text-muted-foreground font-sans">{pkg.minutes} minutes</p>
-              <p className="text-xs text-muted-foreground mt-1 font-sans">${pkg.perMin.toFixed(2)}/min</p>
+              <p className="text-sm text-muted-foreground font-sans">{pkg.minutes} min/month</p>
+              <p className="text-xs text-muted-foreground mt-1 font-sans">
+                ${pkg.perMin.toFixed(2)}/min · Overage: +${"overage" in pkg ? (pkg as { overage: number }).overage.toFixed(2) : "0.99"}/min
+              </p>
             </div>
             <div className="mt-4 space-y-2">
               <div className="flex items-center gap-2 text-sm text-[#4A7A6D] font-sans">

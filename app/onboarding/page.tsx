@@ -21,7 +21,6 @@ import {
 import { BarpelLogo } from "@/components/brand/BarpelLogo";
 import { createClient } from "@/lib/supabase/client";
 import { CREDIT_PACKAGES } from "@/lib/constants";
-import { normalizeShopDomain } from "@/lib/shopify/oauth";
 
 const STEPS = [
   { icon: Store, label: "Business Name" },
@@ -86,7 +85,6 @@ function OnboardingContent() {
   const [shopifyDenied, setShopifyDenied] = useState(false);
   const [shopifyConnected, setShopifyConnected] = useState(false);
   const [connectedShopName, setConnectedShopName] = useState("");
-  const [shopDomain, setShopDomain] = useState("");
   const [connectingShopify, setConnectingShopify] = useState(false);
 
   // Step 3: credit balance from DB (Ticket 3)
@@ -109,10 +107,8 @@ function OnboardingContent() {
     if (searchParams.get("shopify_denied") === "1") {
       setShopifyDenied(true);
     }
-    if (searchParams.get("connected") === "shopify") {
-      setShopifyConnected(true);
-      setConnectedShopName(searchParams.get("shop_name") ?? "");
-    }
+    // shopifyConnected / connectedShopName are set from the integrations DB query below
+    // (the callback sends ?shopify_connected=1, but the DB is the source of truth)
     const shopifyErrorCode = searchParams.get("shopify_error");
     if (shopifyErrorCode) {
       const messages: Record<string, string> = {
@@ -149,7 +145,7 @@ function OnboardingContent() {
         const step = Math.min(Math.max(Number(data.onboarding_step) || 1, 1), 4);
         // If shopify was denied, errored, or just connected, stay on step 2 to show the relevant UI
         const resolvedStep =
-          searchParams.get("shopify_denied") === "1" || searchParams.get("connected") === "shopify" || searchParams.get("shopify_error")
+          searchParams.get("shopify_denied") === "1" || searchParams.get("shopify_error")
             ? 2
             : step;
         setCurrentStep(resolvedStep);
@@ -291,35 +287,11 @@ function OnboardingContent() {
     }
   }
 
-  async function handleConnectShopify() {
-    const fullDomain = normalizeShopDomain(shopDomain);
-
-    if (!/^[a-z0-9-]+\.myshopify\.com$/i.test(fullDomain)) {
-      setError("Enter just the store name, for example: powerfit-gadgets");
-      return;
-    }
-
+  function handleConnectShopify() {
     setConnectingShopify(true);
     setError("");
-    try {
-      const res = await fetch("/api/shopify/oauth/start", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ shopDomain: fullDomain }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Failed to start Shopify connection.");
-        return;
-      }
-      if (data.url) {
-        window.location.href = data.url;
-      }
-    } catch {
-      setError("Network error. Please try again.");
-    } finally {
-      setConnectingShopify(false);
-    }
+    // Navigate to the GET route — it handles auth and redirects to Shopify
+    window.location.href = "/api/shopify/oauth/start?returnTo=onboarding";
   }
 
   async function handleSkipShopify() {
@@ -572,38 +544,30 @@ function OnboardingContent() {
                         </div>
                       )}
 
-                      <div className="mb-4">
-                        <label className="text-xs text-[#8AADA6] mb-1 block font-sans">Your store name</label>
-                        <input
-                          type="text"
-                          value={shopDomain}
-                          onChange={(e) => { setShopDomain(e.target.value); setError(""); }}
-                          onKeyDown={(e) => e.key === "Enter" && shopDomain.trim() && handleConnectShopify()}
-                          placeholder="powerfit-gadgets"
-                          className="w-full px-4 py-3 rounded-xl border border-[#D0EDE8] bg-[#F0F9F8] text-sm text-navy placeholder:text-[#8AADA6] focus:outline-none focus:ring-2 focus:ring-teal/30 focus:border-teal transition-colors font-sans"
-                          autoFocus
-                        />
-                        <p className="text-xs text-[#8AADA6] mt-1 font-sans">
-                          This is the name before .myshopify.com in your store URL
-                        </p>
-                      </div>
+                      {error && (
+                        <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg">
+                          <p className="text-xs text-red-600">{error}</p>
+                        </div>
+                      )}
+
+                      <p className="text-sm text-[#4A7A6D] mb-6">
+                        Click below. Shopify will ask you to log in and approve access. That&apos;s it.
+                      </p>
 
                       <button
                         onClick={handleConnectShopify}
-                        disabled={connectingShopify || !shopDomain.trim()}
+                        disabled={connectingShopify}
                         className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-teal text-white font-semibold text-sm hover:bg-teal/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {connectingShopify ? "Connecting..." : "Connect My Shopify Store"}
+                        {connectingShopify ? "Connecting..." : "Connect with Shopify"}
                         <ArrowRight className="w-4 h-4" />
                       </button>
-
-                      {error && <p className="mt-2 text-xs text-red-500">{error}</p>}
 
                       <button
                         onClick={handleSkipShopify}
                         className="mt-4 text-sm text-[#8AADA6] hover:text-navy transition-colors mx-auto block"
                       >
-                        Skip for now
+                        Skip for now — connect later from your dashboard
                       </button>
 
                       <button

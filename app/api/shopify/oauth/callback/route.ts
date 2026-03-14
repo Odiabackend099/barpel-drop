@@ -77,8 +77,10 @@ export async function GET(request: Request) {
     return redirectError("csrf_mismatch");
   }
 
-  // Verify shop matches what was originally requested
-  if (oauthState.shop_domain !== shop) {
+  // Verify shop matches what was originally requested.
+  // When shop_domain is null (one-button flow), skip this check — the HMAC
+  // verification below already proves the shop param came from Shopify.
+  if (oauthState.shop_domain && oauthState.shop_domain !== shop) {
     await adminSupabase.from("oauth_states").delete().eq("state", state);
     return redirectError("shop_mismatch");
   }

@@ -10,6 +10,7 @@ export const BASE_PROMPT = `You are a professional AI support agent for {BUSINES
 
 Always be warm, professional, and concise. Resolve issues in under 60 seconds when possible.
 If you cannot find an order, ask for the order number politely.
+If you still cannot find an order after the customer provides a number, say: "I couldn't find that order number. Could you double-check the number from your confirmation email? It usually starts with a # symbol. If you'd like, I can take a note and have the store team follow up with you directly." If the customer agrees, collect their name and phone or email, then say: "Perfect. I've noted that down. The team will get back to you within 24 hours."
 Never make up tracking information. Use the tools to get real data.`;
 
 /** Default first message spoken by the AI when a call is answered */
@@ -57,11 +58,11 @@ export const COLORS = {
   footerBg: "#1B2A4A",
 } as const;
 
-/** Credit packages available for purchase (1 credit = 1 minute) */
+/** Credit packages — subscription model (1 credit = 1 minute) */
 export const CREDIT_PACKAGES = [
-  { id: "starter", name: "Starter", minutes: 50, priceUsdCents: 2900, perMin: 0.58 },
-  { id: "growth", name: "Growth", minutes: 200, priceUsdCents: 7900, perMin: 0.40, popular: true },
-  { id: "scale", name: "Scale", minutes: 600, priceUsdCents: 17900, perMin: 0.30 },
+  { id: "starter", name: "Starter", minutes: 30, priceUsdCents: 2900, perMin: 0.97, overage: 0.99 },
+  { id: "growth", name: "Growth", minutes: 100, priceUsdCents: 7900, perMin: 0.79, overage: 0.79, popular: true },
+  { id: "scale", name: "Scale", minutes: 250, priceUsdCents: 17900, perMin: 0.72, overage: 0.69 },
 ] as const;
 
 /**

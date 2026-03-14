@@ -12,7 +12,6 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { normalizeShopDomain } from "@/lib/shopify/oauth";
 import type { Integration } from "@/hooks/useIntegrations";
 
 function Badge({ color, children }: { color: string; children: React.ReactNode }) {
@@ -39,9 +38,7 @@ export function ShopifySection({
 }: ShopifySectionProps) {
   const [disconnectOpen, setDisconnectOpen] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
-  const [shopDomain, setShopDomain] = useState("");
   const [connecting, setConnecting] = useState(false);
-  const [connectError, setConnectError] = useState("");
 
   const shopName = shopifyIntegration?.shop_name || shopifyIntegration?.shop_domain || "Shopify";
 
@@ -60,31 +57,10 @@ export function ShopifySection({
     }
   };
 
-  const handleConnectShopify = async () => {
-    const fullDomain = normalizeShopDomain(shopDomain);
-    if (!/^[a-z0-9-]+\.myshopify\.com$/i.test(fullDomain)) {
-      setConnectError("Enter a valid store URL — e.g. your-store.myshopify.com");
-      return;
-    }
+  const handleConnectShopify = () => {
     setConnecting(true);
-    setConnectError("");
-    try {
-      const res = await fetch("/api/shopify/oauth/start", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ shopDomain: fullDomain, returnTo: "integrations" }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setConnectError(data.error || "Failed to start Shopify connection.");
-        return;
-      }
-      if (data.url) window.location.href = data.url;
-    } catch {
-      setConnectError("Network error. Please try again.");
-    } finally {
-      setConnecting(false);
-    }
+    // Navigate to the GET route — same OAuth flow as onboarding Step 2
+    window.location.href = "/api/shopify/oauth/start?returnTo=integrations";
   };
 
   const lastSyncText = shopifyIntegration?.last_synced_at
@@ -124,34 +100,21 @@ export function ShopifySection({
                 </div>
               )}
 
-              {/* Inline connect form — only shown when not connected */}
+              {/* One-button connect — no input field, no modal */}
               {!isShopifyConnected && (
                 <div className="mt-3">
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={shopDomain}
-                      onChange={(e) => { setShopDomain(e.target.value); setConnectError(""); }}
-                      onKeyDown={(e) => e.key === "Enter" && shopDomain.trim() && handleConnectShopify()}
-                      placeholder="yourstore.myshopify.com"
-                      className="flex-1 px-3 py-2 rounded-lg border border-[#D0EDE8] bg-[#F0F9F8] text-sm text-[#1B2A4A] placeholder:text-[#8AADA6] focus:outline-none focus:ring-2 focus:ring-[#00A99D]/30 focus:border-[#00A99D] transition-colors font-sans"
-                    />
-                    <Button
-                      size="sm"
-                      disabled={connecting || !shopDomain.trim()}
-                      onClick={handleConnectShopify}
-                      className="bg-gradient-to-r from-[#00A99D] to-[#7DD9C0] text-white whitespace-nowrap"
-                    >
-                      {connecting ? (
-                        <><Loader2 className="w-3 h-3 mr-1 animate-spin" /> Connecting…</>
-                      ) : (
-                        "Connect My Store"
-                      )}
-                    </Button>
-                  </div>
-                  {connectError && (
-                    <p className="text-xs text-red-500 mt-1 font-sans">{connectError}</p>
-                  )}
+                  <Button
+                    size="sm"
+                    disabled={connecting}
+                    onClick={handleConnectShopify}
+                    className="bg-gradient-to-r from-[#00A99D] to-[#7DD9C0] text-white whitespace-nowrap"
+                  >
+                    {connecting ? (
+                      <><Loader2 className="w-3 h-3 mr-1 animate-spin" /> Connecting…</>
+                    ) : (
+                      "Connect My Store"
+                    )}
+                  </Button>
                 </div>
               )}
             </div>

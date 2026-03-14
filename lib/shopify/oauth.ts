@@ -1,30 +1,22 @@
 import { generateNonce } from "@/lib/security";
 
-/** Normalize user input into a valid myshopify.com domain */
-export function normalizeShopDomain(input: string): string {
-  let domain = input.trim().toLowerCase();
-  domain = domain.replace(/^https?:\/\//, "");
-  domain = domain.replace(/\/+$/, "");
-  if (!domain.includes(".myshopify.com")) {
-    domain = `${domain}.myshopify.com`;
-  }
-  return domain;
-}
-
 const SHOPIFY_SCOPES =
   "read_orders,read_fulfillments,read_customers,read_checkouts";
 
 /**
- * Builds the Shopify OAuth authorisation URL.
+ * Builds a Shopify managed install URL — NO shop domain required from the merchant.
  *
- * @param shopDomain - The merchant's store domain (e.g. "mystore.myshopify.com")
- * @param redirectUri - The callback URL
- * @returns An object with the URL and the nonce for CSRF verification
+ * Shopify's managed install URL lets each merchant log into their OWN store
+ * and approve access. Shopify provides the shop domain in the OAuth callback.
+ * This is the correct multi-tenant approach used by Klaviyo, Gorgias, etc.
+ *
+ * Never use a hardcoded or env-configured shop domain here — that would
+ * route every merchant to the same store, breaking multi-tenancy entirely.
  */
-export function buildAuthUrl(
-  shopDomain: string,
-  redirectUri: string
-): { url: string; nonce: string } {
+export function buildInstallUrl(redirectUri: string): {
+  url: string;
+  nonce: string;
+} {
   const apiKey = process.env.SHOPIFY_API_KEY;
   if (!apiKey) throw new Error("Missing SHOPIFY_API_KEY");
 
@@ -38,7 +30,7 @@ export function buildAuthUrl(
   });
 
   return {
-    url: `https://${shopDomain}/admin/oauth/authorize?${params.toString()}`,
+    url: `https://admin.shopify.com/oauth/install?${params.toString()}`,
     nonce,
   };
 }
