@@ -144,7 +144,7 @@ async function purchaseTwilioNumber(
  * @param merchantId - Merchant UUID (stored in assistant metadata)
  * @param options - Optional overrides for first message, voice, and model
  */
-async function createVapiAssistant(
+export async function createVapiAssistant(
   businessName: string,
   customPrompt: string | null,
   merchantId: string,
@@ -246,6 +246,37 @@ async function createVapiAssistant(
             parameters: { type: "object", properties: {} },
           },
           server: { url: webhookUrl },
+        },
+        {
+          type: "function",
+          function: {
+            name: "search_products",
+            description:
+              "List available products from the store or search for a specific product by name. Use when customer asks what products are available, whether something is in stock, or how much something costs.",
+            parameters: {
+              type: "object",
+              properties: {
+                search_term: {
+                  type: "string",
+                  description:
+                    "The product name or keyword the customer asked about. Leave empty if customer asked generally about all products.",
+                },
+              },
+              required: [],
+            },
+          },
+          server: { url: webhookUrl },
+          messages: [
+            {
+              type: "request-start",
+              content: "Let me check our product catalogue for you.",
+            },
+            {
+              type: "request-failed",
+              content:
+                "I had trouble accessing our products. Please visit our website to browse.",
+            },
+          ],
         },
       ],
     },

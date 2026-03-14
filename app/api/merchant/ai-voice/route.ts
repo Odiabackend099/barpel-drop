@@ -260,7 +260,7 @@ export async function DELETE() {
 
   const { data: merchant, error: fetchError } = await adminSupabase
     .from("merchants")
-    .select("id, vapi_agent_id, vapi_phone_id, provisioning_status")
+    .select("id, vapi_agent_id, vapi_phone_id, provisioning_status, provisioning_mode")
     .eq("user_id", user.id)
     .is("deleted_at", null)
     .single();
@@ -301,6 +301,34 @@ export async function DELETE() {
     }
   }
 
+  // Step 2.5: Clean up BYOC Vault secrets if applicable
+  if (merchant.provisioning_mode === "byoc") {
+    for (const secretName of [
+      `twilio-byoc-sid-${merchant.id}`,
+      `twilio-byoc-token-${merchant.id}`,
+    ]) {
+      try {
+        const { data: rows } = await adminSupabase.rpc(
+          "vault_lookup_secret_by_name",
+          { p_name: secretName }
+        );
+        const secretId =
+          Array.isArray(rows) && rows[0]?.id
+            ? (rows[0].id as string)
+            : null;
+        if (secretId) {
+          await adminSupabase.rpc("vault_delete_secret_by_id", {
+            p_id: secretId,
+          });
+        }
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        vapiErrors.push(`Vault cleanup failed for ${secretName}: ${msg}`);
+        console.error(`[byoc] vault cleanup failed for ${secretName}:`, msg);
+      }
+    }
+  }
+
   // Step 3: Clear all Vapi references from DB regardless of Vapi errors
   // DB must be clean so merchant can re-provision
   const { error: clearError } = await adminSupabase
@@ -312,6 +340,7 @@ export async function DELETE() {
       support_phone: null,
       provisioning_status: "pending",
       provisioning_error: null,
+      provisioning_mode: "barpel",
     })
     .eq("id", merchant.id);
 

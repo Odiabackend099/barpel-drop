@@ -62,6 +62,7 @@ export interface MerchantData {
   ai_voice_id?: string;
   ai_voice_provider?: string;
   ai_model?: string;
+  provisioning_mode?: string;
 }
 
 // ============================================================================

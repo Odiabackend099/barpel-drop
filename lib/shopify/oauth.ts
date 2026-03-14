@@ -1,7 +1,7 @@
 import { generateNonce } from "@/lib/security";
 
 const SHOPIFY_SCOPES =
-  "read_orders,read_fulfillments,read_customers,read_checkouts";
+  "read_orders,read_fulfillments,read_customers,read_checkouts,read_products";
 
 /**
  * Builds a Shopify managed install URL — NO shop domain required from the merchant.

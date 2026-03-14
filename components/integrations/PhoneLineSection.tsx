@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Phone, Copy, RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
-import { Loader2 } from "lucide-react";
+import { Phone, Copy, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { TestCallModal } from "@/components/dashboard/TestCallModal";
 import { OutboundCallModal } from "@/components/dashboard/OutboundCallModal";
+import { BYOCModal } from "@/components/integrations/BYOCModal";
 import { getCarriersForCountry } from "@/lib/carriers";
 import type { MerchantData } from "@/lib/mockApi";
 
@@ -55,7 +55,7 @@ export function PhoneLineSection({ merchant }: PhoneLineSectionProps) {
   const [testCallOpen, setTestCallOpen] = useState(false);
   const [outboundCallOpen, setOutboundCallOpen] = useState(false);
   const [forwardingOpen, setForwardingOpen] = useState(false);
-  const [retrying, setRetrying] = useState(false);
+  const [byocOpen, setBYOCOpen] = useState(false);
 
   const phoneNumber = merchant?.support_phone || null;
   const provisioningStatus = merchant?.provisioning_status ?? "pending";
@@ -67,15 +67,6 @@ export function PhoneLineSection({ merchant }: PhoneLineSectionProps) {
     navigator.clipboard.writeText(phoneNumber);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  };
-
-  const retryProvisioning = async () => {
-    setRetrying(true);
-    try {
-      await fetch("/api/provisioning/retry", { method: "POST" });
-    } finally {
-      setRetrying(false);
-    }
   };
 
   // Strip spaces from number for USSD codes
@@ -161,21 +152,16 @@ export function PhoneLineSection({ merchant }: PhoneLineSectionProps) {
           </div>
         )}
 
-        {/* Retry button — failed state */}
+        {/* Connect button — failed state */}
         {(provisioningStatus === "failed" || (provisioningStatus === "active" && !phoneNumber)) && (
           <div className="mt-3">
             <Button
               variant="secondary"
               size="sm"
               className="bg-white/20 hover:bg-white/30 text-white border-white/30"
-              onClick={retryProvisioning}
-              disabled={retrying}
+              onClick={() => setBYOCOpen(true)}
             >
-              {retrying ? (
-                <><Loader2 className="w-3 h-3 mr-1 animate-spin" />Retrying...</>
-              ) : (
-                <><RefreshCw className="w-3 h-3 mr-1" />Retry Setup</>
-              )}
+              <Phone className="w-3 h-3 mr-1" />Connect a Number
             </Button>
           </div>
         )}
@@ -245,6 +231,10 @@ export function PhoneLineSection({ merchant }: PhoneLineSectionProps) {
       <OutboundCallModal
         open={outboundCallOpen}
         onClose={() => setOutboundCallOpen(false)}
+      />
+      <BYOCModal
+        open={byocOpen}
+        onClose={() => setBYOCOpen(false)}
       />
     </>
   );

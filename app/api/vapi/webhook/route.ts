@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { verifyVapiSecret } from "@/lib/security";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { lookupOrder } from "@/lib/shopify/client";
+import { searchProducts } from "@/lib/shopify/productSearch";
 import { getTracking, formatTrackingMessage, isAfterShipEnabled } from "@/lib/aftership/client";
 import { sendSms } from "@/lib/twilio/client";
 import { withRetry } from "@/lib/retry";
@@ -96,6 +97,10 @@ export async function POST(request: Request) {
         }
         case "get_store_policy": {
           result = await handleGetStorePolicy(supabase, merchantId);
+          break;
+        }
+        case "search_products": {
+          result = await handleSearchProducts(supabase, merchantId, args.search_term ?? null);
           break;
         }
         default:
@@ -257,6 +262,39 @@ async function handleGetStorePolicy(
   return "Our standard return policy allows returns within 30 days of delivery for items in original condition. Refunds are processed within 5-7 business days after we receive the returned item.";
 }
 
+async function handleSearchProducts(
+  supabase: ReturnType<typeof createAdminClient>,
+  merchantId: string,
+  searchTerm: string | null
+): Promise<string> {
+  const { data: integration } = await supabase
+    .from("integrations")
+    .select("shop_domain, access_token_secret_id, connection_active")
+    .eq("merchant_id", merchantId)
+    .eq("platform", "shopify")
+    .eq("connection_active", true)
+    .single();
+
+  if (!integration) {
+    return "I don't have access to our product catalogue right now. Please visit our website to browse.";
+  }
+
+  const { data: shopifyToken } = await supabase
+    .rpc("vault_read_secret_by_id", { p_id: integration.access_token_secret_id });
+  if (!shopifyToken) {
+    return "I'm unable to access our products right now. Please visit our website to browse.";
+  }
+
+  const timeoutPromise = new Promise<string>((_, reject) =>
+    setTimeout(() => reject(new Error("timeout")), 4500)
+  );
+
+  return Promise.race([
+    searchProducts(integration.shop_domain, shopifyToken, searchTerm),
+    timeoutPromise,
+  ]);
+}
+
 // ============================================================================
 // END-OF-CALL-REPORT HANDLER
 // Saves every field from Vapi's end-of-call-report into one call_logs row.
@@ -310,6 +348,8 @@ async function handleEndOfCallReport(
     callType = "order_lookup";
   } else if (toolResults.some((t: any) => t.tool === "initiate_return")) {
     callType = "return_request";
+  } else if (toolResults.some((t: any) => t.tool === "search_products")) {
+    callType = "product_search";
   }
 
   // Check for abandoned cart recovery via pending_outbound_calls

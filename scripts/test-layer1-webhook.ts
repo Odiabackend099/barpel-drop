@@ -48,50 +48,21 @@ if (!MERCHANT_ID) {
 
 const WEBHOOK_URL = `${BASE_URL}/api/vapi/webhook`;
 
-async function runLayer1() {
-  console.log("\n=== LAYER 1: WEBHOOK UNIT TEST ===");
-  console.log("Target:", WEBHOOK_URL);
-  console.log("Order:", ORDER_NUMBER);
-  console.log("Secret header:", WEBHOOK_SECRET ? "✅ set" : "⚠️  empty");
+/**
+ * Shared validation for all tool call tests.
+ * Returns true if all checks pass.
+ */
+function validateToolCallResult(
+  testName: string,
+  response: Response,
+  json: Record<string, unknown>,
+  toolCallId: string,
+  elapsed: number,
+  fallbackPatterns: string[] = []
+): boolean {
+  const result = (json?.results as Array<{ toolCallId: string; result: string }>)?.[0];
 
-  const toolCallId = `test_call_${Date.now()}`;
-
-  // VERIFIED payload format from: https://docs.vapi.ai/server-url/events
-  // All Vapi server events are wrapped in "message".
-  // toolCallList items: { id, name, arguments: object } — NOT function.arguments (OpenAI format)
-  const vapiPayload = {
-    message: {
-      type: "tool-calls",
-      toolCallList: [
-        {
-          id: toolCallId, // CRITICAL: toolCallId in response must exactly match this
-          name: "lookup_order",
-          arguments: { order_number: ORDER_NUMBER }, // object, not JSON string
-        },
-      ],
-      call: {
-        assistantId: ASSISTANT_ID,
-        id: `simulated_call_${Date.now()}`,
-        metadata: { merchant_id: MERCHANT_ID }, // required: webhook uses this to find merchant
-      },
-    },
-  };
-
-  const start = Date.now();
-
-  const response = await fetch(WEBHOOK_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-vapi-secret": WEBHOOK_SECRET, // Vapi sends this header for authentication
-    },
-    body: JSON.stringify(vapiPayload),
-  });
-
-  const elapsed = Date.now() - start;
-  const json = await response.json();
-
-  console.log("\n--- RESULTS ---");
+  console.log(`\n--- ${testName} RESULTS ---`);
   console.log(
     "HTTP Status:",
     response.status,
@@ -103,16 +74,12 @@ async function runLayer1() {
     elapsed < 5000 ? "✅" : "❌ TOO SLOW (Vapi timeout is 5s)"
   );
 
-  const result = json?.results?.[0];
-
   if (!result) {
     console.error("❌ FAIL: No results array in response");
     console.error("Got:", JSON.stringify(json));
-    process.exit(1);
+    return false;
   }
 
-  // VERIFIED: toolCallId must match exactly
-  // Source: https://docs.vapi.ai/server-url/events
   console.log(
     "toolCallId match:",
     result.toolCallId === toolCallId ? "✅" : "❌ ID MISMATCH — Vapi will ignore response"
@@ -121,9 +88,6 @@ async function runLayer1() {
     "result is string:",
     typeof result.result === "string" ? "✅" : "❌ MUST BE STRING"
   );
-
-  // VERIFIED: newlines in result cause Vapi to ignore the response
-  // Source: Vapi docs "Use single-line strings only. Line breaks cause parsing errors"
   console.log(
     "no newlines:",
     !result.result?.includes("\n")
@@ -131,35 +95,216 @@ async function runLayer1() {
       : "❌ NEWLINES FOUND — Vapi will ignore this response"
   );
 
-  // Check it contains real order data, not a fallback message
-  const isFallback =
-    result.result?.includes("couldn't find") ||
-    result.result?.includes("trouble accessing") ||
-    result.result?.includes("unable to access") ||
-    result.result?.includes("contact support");
+  const defaultFallbacks = [
+    "trouble accessing",
+    "unable to access",
+    "contact support",
+    "hasn't been set up",
+  ];
+  const allPatterns = [...defaultFallbacks, ...fallbackPatterns];
+  const isFallback = allPatterns.some((p) => result.result?.includes(p));
 
   console.log(
-    "real order data:",
+    "real data (not fallback):",
     !isFallback ? "✅" : "⚠️  FALLBACK — CHECK VAULT + SHOPIFY"
   );
   console.log("\nSpoken text the AI will say:");
   console.log('"' + result.result + '"');
 
-  if (
+  return (
     response.status === 200 &&
     result.toolCallId === toolCallId &&
     typeof result.result === "string" &&
     !result.result.includes("\n") &&
     !isFallback
-  ) {
-    console.log("\n✅ LAYER 1 PASSED — Webhook works correctly");
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Test 1: Order Lookup
+// ---------------------------------------------------------------------------
+
+async function testOrderLookup(): Promise<boolean> {
+  console.log("\n=== TEST 1: ORDER LOOKUP ===");
+  console.log("Target:", WEBHOOK_URL);
+  console.log("Order:", ORDER_NUMBER);
+
+  const toolCallId = `test_order_${Date.now()}`;
+
+  const vapiPayload = {
+    message: {
+      type: "tool-calls",
+      toolCallList: [
+        {
+          id: toolCallId,
+          name: "lookup_order",
+          arguments: { order_number: ORDER_NUMBER },
+        },
+      ],
+      call: {
+        assistantId: ASSISTANT_ID,
+        id: `simulated_call_${Date.now()}`,
+        metadata: { merchant_id: MERCHANT_ID },
+      },
+    },
+  };
+
+  const start = Date.now();
+  const response = await fetch(WEBHOOK_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-vapi-secret": WEBHOOK_SECRET,
+    },
+    body: JSON.stringify(vapiPayload),
+  });
+  const elapsed = Date.now() - start;
+  const json = await response.json();
+
+  return validateToolCallResult(
+    "ORDER LOOKUP",
+    response,
+    json,
+    toolCallId,
+    elapsed,
+    ["couldn't find"]
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Test 2: Product Search — General Listing
+// ---------------------------------------------------------------------------
+
+async function testProductSearchGeneral(): Promise<boolean> {
+  console.log("\n=== TEST 2: PRODUCT SEARCH — GENERAL LISTING ===");
+
+  const toolCallId = `test_products_general_${Date.now()}`;
+
+  const vapiPayload = {
+    message: {
+      type: "tool-calls",
+      toolCallList: [
+        {
+          id: toolCallId,
+          name: "search_products",
+          arguments: {},
+        },
+      ],
+      call: {
+        assistantId: ASSISTANT_ID,
+        id: `simulated_call_${Date.now()}`,
+        metadata: { merchant_id: MERCHANT_ID },
+      },
+    },
+  };
+
+  const start = Date.now();
+  const response = await fetch(WEBHOOK_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-vapi-secret": WEBHOOK_SECRET,
+    },
+    body: JSON.stringify(vapiPayload),
+  });
+  const elapsed = Date.now() - start;
+  const json = await response.json();
+
+  return validateToolCallResult(
+    "PRODUCT SEARCH (GENERAL)",
+    response,
+    json,
+    toolCallId,
+    elapsed
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Test 3: Product Search — Specific Term
+// ---------------------------------------------------------------------------
+
+async function testProductSearchSpecific(): Promise<boolean> {
+  console.log("\n=== TEST 3: PRODUCT SEARCH — SPECIFIC TERM ===");
+  console.log("Search term: projector");
+
+  const toolCallId = `test_products_specific_${Date.now()}`;
+
+  const vapiPayload = {
+    message: {
+      type: "tool-calls",
+      toolCallList: [
+        {
+          id: toolCallId,
+          name: "search_products",
+          arguments: { search_term: "projector" },
+        },
+      ],
+      call: {
+        assistantId: ASSISTANT_ID,
+        id: `simulated_call_${Date.now()}`,
+        metadata: { merchant_id: MERCHANT_ID },
+      },
+    },
+  };
+
+  const start = Date.now();
+  const response = await fetch(WEBHOOK_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-vapi-secret": WEBHOOK_SECRET,
+    },
+    body: JSON.stringify(vapiPayload),
+  });
+  const elapsed = Date.now() - start;
+  const json = await response.json();
+
+  return validateToolCallResult(
+    "PRODUCT SEARCH (SPECIFIC)",
+    response,
+    json,
+    toolCallId,
+    elapsed,
+    ["couldn't find a product"]
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Run all tests
+// ---------------------------------------------------------------------------
+
+async function runAllTests() {
+  console.log("\n========================================");
+  console.log("  LAYER 1: WEBHOOK UNIT TESTS");
+  console.log("========================================");
+  console.log("Target:", WEBHOOK_URL);
+  console.log("Secret header:", WEBHOOK_SECRET ? "✅ set" : "⚠️  empty");
+
+  const results: { name: string; passed: boolean }[] = [];
+
+  results.push({ name: "Order Lookup", passed: await testOrderLookup() });
+  results.push({ name: "Product Search (General)", passed: await testProductSearchGeneral() });
+  results.push({ name: "Product Search (Specific)", passed: await testProductSearchSpecific() });
+
+  console.log("\n========================================");
+  console.log("  SUMMARY");
+  console.log("========================================");
+
+  for (const r of results) {
+    console.log(`  ${r.passed ? "✅" : "❌"} ${r.name}`);
+  }
+
+  const allPassed = results.every((r) => r.passed);
+
+  if (allPassed) {
+    console.log("\n✅ ALL TESTS PASSED — Webhook works correctly");
   } else {
-    console.log("\n❌ LAYER 1 FAILED — Fix before proceeding to Layer 2");
+    console.log("\n❌ SOME TESTS FAILED — Fix before proceeding");
     process.exit(1);
   }
 }
 
-runLayer1().catch((err: Error) => {
+runAllTests().catch((err: Error) => {
   console.error("❌ Script error:", err.message);
   process.exit(1);
 });
