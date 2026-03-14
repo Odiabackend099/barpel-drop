@@ -244,8 +244,30 @@ export async function GET(request: Request) {
       }),
     });
   } catch (err) {
-    console.error("[shopify callback] Webhook registration failed:", err);
+    console.error("[shopify callback] checkouts/create webhook registration failed:", err);
     // Non-fatal — merchant can reconnect later
+  }
+
+  // Register orders/create webhook — cancels pending abandoned cart calls
+  // when customer completes purchase (prevents calling buyers)
+  try {
+    await fetch(`https://${shop}/admin/api/2026-01/webhooks.json`, {
+      method: "POST",
+      headers: {
+        "X-Shopify-Access-Token": accessToken,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        webhook: {
+          topic: "orders/create",
+          address: `${baseUrl}/api/outbound/order-completed`,
+          format: "json",
+        },
+      }),
+    });
+  } catch (err) {
+    console.error("[shopify callback] orders/create webhook registration failed:", err);
+    // Non-fatal
   }
 
   // Redirect based on where the OAuth flow started

@@ -57,5 +57,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: updateError.message }, { status: 500 });
   }
 
+  // When revoking consent, cancel all pending outbound calls for this merchant
+  if (body.revoke) {
+    await adminSupabase
+      .from("pending_outbound_calls")
+      .update({ status: "cancelled" })
+      .eq("merchant_id", merchant.id)
+      .eq("status", "pending");
+  }
+
   return NextResponse.json({ success: true });
 }

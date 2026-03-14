@@ -65,12 +65,19 @@ export async function GET(request: NextRequest) {
     .delete()
     .lt("processed_at", webhookCutoff);
 
+  // GDPR: Delete abandoned cart data older than 90 days
+  const { count: cartCount } = await supabase
+    .from("pending_outbound_calls")
+    .delete()
+    .lt("created_at", ninetyDaysAgo);
+
   // Log counts (Sentry would capture these in production)
   const summary = {
     transcripts_nulled: transcriptCount ?? 0,
     caller_numbers_redacted: callerNumberCount ?? 0,
     recordings_removed: recordingCount ?? 0,
     webhooks_deleted: webhookCount ?? 0,
+    cart_data_deleted: cartCount ?? 0,
   };
 
   return NextResponse.json({

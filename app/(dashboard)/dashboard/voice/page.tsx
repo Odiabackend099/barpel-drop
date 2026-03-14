@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Sparkles, Check, Mic, Trash2, AlertTriangle, Play, Pause, ChevronDown, Volume2 } from "lucide-react";
+import { Sparkles, Check, Mic, Trash2, AlertTriangle, Play, Pause as PauseIcon, ChevronDown, Volume2, PauseCircle, PlayCircle } from "lucide-react";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import Vapi from "@vapi-ai/web";
 import { PERSONA_TEMPLATES, VAPI_VOICES } from "@/lib/constants";
@@ -68,7 +68,7 @@ function SaveButton({
 }
 
 export default function VoicePage() {
-  const { merchant, loading, updateAiVoice, deleteAiVoice } = useMerchant();
+  const { merchant, loading, updateAiVoice, deleteAiVoice, togglePause } = useMerchant();
 
   // Section 1 — Greeting
   const [greeting, setGreeting] = useState("");
@@ -93,12 +93,14 @@ export default function VoicePage() {
   const [voiceDropdownOpen, setVoiceDropdownOpen] = useState(false);
   const vapiRef = useRef<Vapi | null>(null);
 
-  // Section 4 — Delete
+  // Section 4 — Pause / Delete
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isPausing, setIsPausing] = useState(false);
 
   const brandName = merchant?.business_name || "Your Store";
   const isActive = merchant?.provisioning_status === "active";
+  const isSuspended = merchant?.provisioning_status === "suspended";
 
   // Legacy ElevenLabs voice detection
   const isLegacyVoice =
@@ -274,8 +276,19 @@ export default function VoicePage() {
   const femaleVoices = VAPI_VOICES.filter((v) => v.gender === "female");
   const maleVoices = VAPI_VOICES.filter((v) => v.gender === "male");
 
-  // Provisioning banner — shown when phone line not yet active
-  if (!loading && !isActive) {
+  const handleTogglePause = async () => {
+    setIsPausing(true);
+    try {
+      await togglePause(!isSuspended);
+    } catch {
+      // Realtime will revert if it failed
+    } finally {
+      setIsPausing(false);
+    }
+  };
+
+  // Provisioning banner — shown when phone line not yet active (but not when suspended)
+  if (!loading && !isActive && !isSuspended) {
     return (
       <div className="space-y-6">
         <div>
@@ -323,6 +336,25 @@ export default function VoicePage() {
           Tell your AI how to speak to your customers.
         </p>
       </div>
+
+      {/* Suspended banner */}
+      {isSuspended && (
+        <div className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+          <PauseCircle className="w-5 h-5 text-amber-600 shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-amber-800">Your AI line is paused</p>
+            <p className="text-xs text-amber-600">Calls will not be answered until you resume.</p>
+          </div>
+          <button
+            onClick={handleTogglePause}
+            disabled={isPausing}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors disabled:opacity-50"
+          >
+            <PlayCircle className="w-3.5 h-3.5" />
+            Resume
+          </button>
+        </div>
+      )}
 
       {/* ------------------------------------------------------------------ */}
       {/* Section 1: Greeting                                                 */}
@@ -611,7 +643,7 @@ export default function VoicePage() {
                             }}
                           >
                             {isPlaying ? (
-                              <Pause className="w-3 h-3 text-white" />
+                              <PauseIcon className="w-3 h-3 text-white" />
                             ) : (
                               <Play className="w-3 h-3 text-[#00A99D] ml-0.5" />
                             )}
@@ -682,7 +714,7 @@ export default function VoicePage() {
                             }}
                           >
                             {isPlaying ? (
-                              <Pause className="w-3 h-3 text-white" />
+                              <PauseIcon className="w-3 h-3 text-white" />
                             ) : (
                               <Play className="w-3 h-3 text-[#00A99D] ml-0.5" />
                             )}
@@ -707,16 +739,69 @@ export default function VoicePage() {
       </div>
 
       {/* ------------------------------------------------------------------ */}
-      {/* Section 4: Danger Zone                                              */}
+      {/* Section 4: Pause + Danger Zone                                     */}
       {/* ------------------------------------------------------------------ */}
+
+      {/* Pause AI Line — soft option */}
+      {isActive && (
+        <div className="bg-white border border-amber-100 rounded-xl p-5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <PauseCircle className="w-4 h-4 text-amber-500" />
+                <h3 className="text-sm font-bold text-[#1B2A4A] font-sans">Pause AI Line</h3>
+              </div>
+              <p className="text-sm text-[#4A7A6D] font-sans">
+                Temporarily stop answering calls. Your number and AI configuration are preserved.
+              </p>
+            </div>
+            <button
+              onClick={handleTogglePause}
+              disabled={isPausing}
+              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl border border-amber-300 text-amber-600 hover:bg-amber-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <PauseCircle className="w-4 h-4" />
+              {isPausing ? "Pausing..." : "Pause"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Resume option when suspended */}
+      {isSuspended && (
+        <div className="bg-white border border-[#D0EDE8] rounded-xl p-5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <PlayCircle className="w-4 h-4 text-[#00A99D]" />
+                <h3 className="text-sm font-bold text-[#1B2A4A] font-sans">Resume AI Line</h3>
+              </div>
+              <p className="text-sm text-[#4A7A6D] font-sans">
+                Your AI line is paused. Resume to start answering calls again.
+              </p>
+            </div>
+            <button
+              onClick={handleTogglePause}
+              disabled={isPausing}
+              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl bg-gradient-to-r from-[#00A99D] to-[#7DD9C0] text-white hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <PlayCircle className="w-4 h-4" />
+              {isPausing ? "Resuming..." : "Resume"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Remove AI Phone Line — destructive */}
       <div className="bg-white border border-red-100 rounded-xl p-5 shadow-sm">
         <div className="flex items-center gap-2 mb-1">
           <Trash2 className="w-4 h-4 text-red-400" />
           <h3 className="text-sm font-bold text-red-600 font-sans">Remove AI Phone Line</h3>
         </div>
         <p className="text-sm text-[#4A7A6D] font-sans mb-4">
-          This will disconnect your AI support line and release your phone number. Your customers
-          will no longer be able to reach your AI assistant. You can set up a new line at any time.
+          This permanently removes your AI assistant and releases your phone number. Your customers
+          will not be able to reach your AI after this. You can set up a new line at any time from
+          the Integrations page.
         </p>
 
         {deleteError && (
@@ -747,17 +832,17 @@ export default function VoicePage() {
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Remove AI phone line?</AlertDialogTitle>
+              <AlertDialogTitle>Remove your AI phone line?</AlertDialogTitle>
               <AlertDialogDescription>
                 {merchant?.support_phone ? (
                   <>
-                    Your phone number <strong>{merchant.support_phone}</strong> will be released.
+                    Your number <strong>{merchant.support_phone}</strong> will be released. This cannot be undone.
                   </>
                 ) : (
-                  "Your AI phone number will be released."
+                  "Your AI phone number will be released. This cannot be undone."
                 )}{" "}
-                This cannot be undone. Your customers will no longer be able to reach your AI
-                assistant until you set up a new line.
+                Your customers will not be able to reach your AI assistant after this.
+                You can set up a new line at any time from the Integrations page.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -766,7 +851,7 @@ export default function VoicePage() {
                 onClick={handleDelete}
                 className="bg-red-600 hover:bg-red-700 text-white"
               >
-                Yes, Remove
+                Yes, Remove Everything
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

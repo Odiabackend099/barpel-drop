@@ -12,7 +12,14 @@ export function useCallLogs() {
   const [filterType, setFilterType] = useState("all");
   const [filterSentiment, setFilterSentiment] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(1);
+
+  // Debounce search by 300ms
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(searchQuery), 300);
+    return () => clearTimeout(t);
+  }, [searchQuery]);
 
   useEffect(() => {
     async function fetchCalls() {
@@ -45,14 +52,14 @@ export function useCallLogs() {
       if (filterType !== "all" && call.call_type !== filterType) return false;
       if (filterSentiment !== "all" && call.sentiment !== filterSentiment) return false;
       if (
-        searchQuery &&
-        !call.caller_number.toLowerCase().includes(searchQuery.toLowerCase()) &&
-        !call.ai_summary?.toLowerCase().includes(searchQuery.toLowerCase())
+        debouncedSearch &&
+        !call.caller_number.toLowerCase().includes(debouncedSearch.toLowerCase()) &&
+        !call.ai_summary?.toLowerCase().includes(debouncedSearch.toLowerCase())
       )
         return false;
       return true;
     });
-  }, [allCalls, filterType, filterSentiment, searchQuery]);
+  }, [allCalls, filterType, filterSentiment, debouncedSearch]);
 
   const paginatedCalls = useMemo(() => {
     const start = (page - 1) * PAGE_SIZE;

@@ -161,5 +161,31 @@ export function useMerchant() {
     );
   };
 
-  return { merchant, loading, error, updateCustomPrompt, updateAiVoice, deleteAiVoice };
+  /**
+   * Pauses/resumes the AI phone line by toggling provisioning_status
+   * between 'active' and 'suspended'.
+   */
+  const togglePause = async (pause: boolean) => {
+    if (useMock) {
+      setMerchant((prev) =>
+        prev ? { ...prev, provisioning_status: pause ? "suspended" : "active" } : null
+      );
+      return;
+    }
+
+    const res = await fetch("/api/merchant/ai-voice", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ provisioning_status: pause ? "suspended" : "active" }),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error((data as { error?: string }).error ?? "Failed to update AI line status");
+    }
+    setMerchant((prev) =>
+      prev ? { ...prev, provisioning_status: pause ? "suspended" : "active" } : null
+    );
+  };
+
+  return { merchant, loading, error, updateCustomPrompt, updateAiVoice, deleteAiVoice, togglePause };
 }

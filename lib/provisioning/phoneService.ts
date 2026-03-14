@@ -353,8 +353,7 @@ async function importNumberIntoVapi(
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          provider: "twilio",
-          number: phoneNumber,
+          twilioPhoneNumber: phoneNumber,
           twilioAccountSid: subAccountSid,
           twilioAuthToken: subAccountAuthToken,
           assistantId: agentId,

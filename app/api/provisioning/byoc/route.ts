@@ -59,7 +59,7 @@ export async function POST(request: Request) {
   const { data: merchant } = await supabase
     .from("merchants")
     .select(
-      "id, business_name, custom_prompt, ai_first_message, ai_voice_id, ai_voice_provider, ai_model, provisioning_status, provisioning_mode"
+      "id, business_name, custom_prompt, ai_first_message, ai_voice_id, ai_voice_provider, ai_model, provisioning_status, provisioning_mode, provisioning_attempted_at"
     )
     .eq("user_id", user.id)
     .is("deleted_at", null)
@@ -67,6 +67,18 @@ export async function POST(request: Request) {
 
   if (!merchant) {
     return NextResponse.json({ error: "Merchant not found" }, { status: 404 });
+  }
+
+  // --- Rate limit: 30-second cooldown between attempts ---
+  if (merchant.provisioning_attempted_at) {
+    const lastAttempt = new Date(merchant.provisioning_attempted_at).getTime();
+    const cooldown = 30 * 1000; // 30 seconds
+    if (Date.now() - lastAttempt < cooldown) {
+      return NextResponse.json(
+        { error: "Please wait 30 seconds before trying again." },
+        { status: 429 }
+      );
+    }
   }
 
   // --- Guards ---
@@ -212,8 +224,7 @@ export async function POST(request: Request) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            provider: "twilio",
-            number: phoneNumber,
+            twilioPhoneNumber: phoneNumber,
             twilioAccountSid: accountSid,
             twilioAuthToken: authToken,
             assistantId: vapiAgentId,

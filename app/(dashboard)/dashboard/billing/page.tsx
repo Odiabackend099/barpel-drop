@@ -13,13 +13,7 @@ import {
 import { CREDIT_PACKAGES } from "@/lib/constants";
 import { useCredits } from "@/hooks/useCredits";
 import { Skeleton } from "@/components/ui/skeleton";
-import { format, subDays } from "date-fns";
-
-// Stable mock usage data for development — generated at runtime, not imported from mockApi
-const usageData = Array.from({ length: 30 }, (_, i) => ({
-  date: format(subDays(new Date(), 29 - i), "MMM dd"),
-  credits: Math.floor(Math.random() * 200) + 50,
-}));
+import { format } from "date-fns";
 
 function Badge({ color, children }: { color: string; children: React.ReactNode }) {
   return (
@@ -35,7 +29,21 @@ function Badge({ color, children }: { color: string; children: React.ReactNode }
 export default function BillingPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const [isCheckingOut, setIsCheckingOut] = useState<string | null>(null);
-  const { balance, credits, usagePercent, transactions, loading } = useCredits();
+  const { balance, credits, transactions, usageData, loading } = useCredits();
+
+  // Format usage data for chart — convert ISO dates to "MMM dd"
+  const chartData = usageData.map((d) => ({
+    date: format(new Date(d.date), "MMM dd"),
+    credits: d.credits,
+  }));
+
+  // Color-coded progress bar — scales against 250 minutes (largest package)
+  const barPercent = Math.min((balance / 15000) * 100, 100);
+  const barColor = balance >= 600
+    ? "from-[#00A99D] to-[#7DD9C0]"     // green: 10+ minutes
+    : balance >= 60
+    ? "from-amber-400 to-amber-300"      // amber: 1-10 minutes
+    : "from-red-500 to-red-400";         // red: < 1 minute
 
   // Handle return from Stripe
   useEffect(() => {
@@ -79,7 +87,7 @@ export default function BillingPage() {
 
       <div>
         <h1 className="text-2xl font-bold text-[#1B2A4A] font-display tracking-tight mb-1">Billing</h1>
-        <p className="text-sm text-muted-foreground font-sans">Manage your voice credits</p>
+        <p className="text-sm text-muted-foreground font-sans">Your monthly plan and usage.</p>
       </div>
 
       {/* Low balance warning */}
@@ -88,6 +96,16 @@ export default function BillingPage() {
           <Zap className="w-4 h-4 text-amber-600 shrink-0" />
           <p className="text-sm text-amber-700">
             Running low — your AI will stop answering calls at 0 credits.
+          </p>
+        </div>
+      )}
+
+      {/* Zero balance warning */}
+      {!loading && balance <= 0 && (
+        <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <Zap className="w-4 h-4 text-red-600 shrink-0" />
+          <p className="text-sm text-red-700">
+            No credits remaining — top up to keep your AI line active.
           </p>
         </div>
       )}
@@ -116,8 +134,8 @@ export default function BillingPage() {
             </div>
             <div className="mt-4 h-2 bg-[#F0F9F8] rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-[#00A99D] to-[#7DD9C0] rounded-full transition-all"
-                style={{ width: `${Math.min(usagePercent, 100)}%` }}
+                className={`h-full bg-gradient-to-r ${barColor} rounded-full transition-all`}
+                style={{ width: `${Math.max(barPercent, balance > 0 ? 2 : 0)}%` }}
               />
             </div>
           </>
@@ -190,7 +208,7 @@ export default function BillingPage() {
         </div>
         <div className="h-48">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={usageData}>
+            <AreaChart data={chartData}>
               <defs>
                 <linearGradient id="usageGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#E74C3C" stopOpacity={0.2} />

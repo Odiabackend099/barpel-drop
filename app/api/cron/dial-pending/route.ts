@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { initiateOutboundCall } from "@/lib/vapi/client";
 
 const MIN_BALANCE_SECS = 30;
+const E164_REGEX = /^\+[1-9]\d{9,14}$/;
 
 /**
  * Cron job: dials pending outbound calls.
@@ -61,6 +62,15 @@ export async function GET(request: NextRequest) {
             ? "No Vapi phone configured"
             : "Insufficient credits",
         })
+        .eq("id", call.id);
+      continue;
+    }
+
+    // Validate phone number format before attempting call
+    if (!E164_REGEX.test(call.customer_phone ?? "")) {
+      await supabase
+        .from("pending_outbound_calls")
+        .update({ status: "failed", error_message: "Invalid phone number format" })
         .eq("id", call.id);
       continue;
     }

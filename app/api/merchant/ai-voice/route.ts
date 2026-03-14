@@ -47,6 +47,7 @@ export async function PATCH(request: Request) {
     ai_voice_id?: string;
     ai_voice_provider?: string;
     ai_model?: string;
+    provisioning_status?: string;
   };
 
   try {
@@ -122,6 +123,17 @@ export async function PATCH(request: Request) {
       );
     }
     dbUpdate.ai_model = body.ai_model;
+  }
+
+  // Handle pause/resume via provisioning_status
+  if (body.provisioning_status !== undefined) {
+    if (!["active", "suspended"].includes(body.provisioning_status)) {
+      return NextResponse.json(
+        { error: "provisioning_status must be 'active' or 'suspended'" },
+        { status: 400 }
+      );
+    }
+    dbUpdate.provisioning_status = body.provisioning_status;
   }
 
   if (Object.keys(dbUpdate).length === 0) {

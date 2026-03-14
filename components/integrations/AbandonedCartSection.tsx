@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ShoppingCart, Phone } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -39,34 +39,48 @@ export function AbandonedCartSection({
 }: AbandonedCartSectionProps) {
   const isEnabled = !!shopifyIntegration?.outbound_consent_confirmed_at;
   const [consentOpen, setConsentOpen] = useState(false);
+  const [disableOpen, setDisableOpen] = useState(false);
   const [toggling, setToggling] = useState(false);
   const [optimisticEnabled, setOptimisticEnabled] = useState<boolean | null>(null);
+  const [stats, setStats] = useState<{ detected: number; called: number; recovered: number } | null>(null);
 
   const displayEnabled = optimisticEnabled ?? isEnabled;
   const phoneNumber = merchant?.support_phone || null;
 
+  // Fetch stats when enabled
+  useEffect(() => {
+    if (!displayEnabled) return;
+    fetch("/api/integrations/cart-stats")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d) setStats(d); })
+      .catch(() => {});
+  }, [displayEnabled]);
+
   const handleToggle = async (checked: boolean) => {
     if (checked) {
-      // Show consent modal
       setConsentOpen(true);
     } else {
-      // Disable without confirmation
-      setOptimisticEnabled(false);
-      setToggling(true);
-      try {
-        const res = await fetch("/api/integrations/consent", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ platform: "shopify", revoke: true }),
-        });
-        if (!res.ok) {
-          setOptimisticEnabled(null); // revert
-        }
-      } catch {
-        setOptimisticEnabled(null); // revert
-      } finally {
-        setToggling(false);
+      setDisableOpen(true);
+    }
+  };
+
+  const handleConfirmDisable = async () => {
+    setDisableOpen(false);
+    setOptimisticEnabled(false);
+    setToggling(true);
+    try {
+      const res = await fetch("/api/integrations/consent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ platform: "shopify", revoke: true }),
+      });
+      if (!res.ok) {
+        setOptimisticEnabled(null);
       }
+    } catch {
+      setOptimisticEnabled(null);
+    } finally {
+      setToggling(false);
     }
   };
 
@@ -81,10 +95,10 @@ export function AbandonedCartSection({
         body: JSON.stringify({ platform: "shopify" }),
       });
       if (!res.ok) {
-        setOptimisticEnabled(null); // revert
+        setOptimisticEnabled(null);
       }
     } catch {
-      setOptimisticEnabled(null); // revert
+      setOptimisticEnabled(null);
     } finally {
       setToggling(false);
     }
@@ -149,11 +163,32 @@ export function AbandonedCartSection({
                 </div>
               </div>
             )}
+
+            {/* Stats section — shown when enabled */}
+            {displayEnabled && stats && (
+              <div className="border-t border-[#D0EDE8] pt-3 mt-3">
+                <p className="text-xs text-[#8AADA6] font-sans mb-2">Last 30 days</p>
+                <div className="flex flex-wrap gap-4">
+                  <div>
+                    <span className="text-xs text-[#8AADA6] font-sans">Carts detected</span>
+                    <p className="text-sm font-bold text-[#1B2A4A]">{stats.detected}</p>
+                  </div>
+                  <div>
+                    <span className="text-xs text-[#8AADA6] font-sans">Calls made</span>
+                    <p className="text-sm font-bold text-[#1B2A4A]">{stats.called}</p>
+                  </div>
+                  <div>
+                    <span className="text-xs text-[#8AADA6] font-sans">Recovered</span>
+                    <p className="text-sm font-bold text-[#1B2A4A]">{stats.recovered}</p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Consent Confirmation Modal */}
+      {/* Consent Confirmation Modal (enable) */}
       <Dialog open={consentOpen} onOpenChange={setConsentOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -172,6 +207,29 @@ export function AbandonedCartSection({
               className="bg-gradient-to-r from-[#00A99D] to-[#7DD9C0] text-white"
             >
               Yes, I confirm — Enable
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Disable Confirmation Modal */}
+      <Dialog open={disableOpen} onOpenChange={setDisableOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Pause Cart Recovery?</DialogTitle>
+            <DialogDescription className="pt-2">
+              Pending cart recovery calls will be cancelled. You can re-enable at any time.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setDisableOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmDisable}
+              className="bg-amber-500 text-white hover:bg-amber-600"
+            >
+              Yes, Pause
             </Button>
           </DialogFooter>
         </DialogContent>

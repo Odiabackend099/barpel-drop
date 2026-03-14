@@ -123,3 +123,11 @@ export const CALL_TYPE_COLORS: Record<string, string> = {
   product_search: "#5B9BD5",
   general: "#8AADA6",
 } as const;
+
+export const CALL_TYPE_LABELS: Record<string, string> = {
+  order_lookup: "Order Lookup",
+  return_request: "Return Request",
+  abandoned_cart_recovery: "Cart Recovery",
+  product_search: "Product Search",
+  general: "General",
+} as const;

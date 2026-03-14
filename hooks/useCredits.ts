@@ -10,6 +10,7 @@ export function useCredits() {
   const [balance, setBalance] = useState(0);
   const [totalCapacity, setTotalCapacity] = useState(0);
   const [transactions, setTransactions] = useState<CreditTransaction[]>([]);
+  const [usageData, setUsageData] = useState<{ date: string; credits: number }[]>([]);
   const [loading, setLoading] = useState(true);
   const userIdRef = useRef<string | null>(null);
 
@@ -45,6 +46,12 @@ export function useCredits() {
 
       if (data) setBalance(data.credit_balance ?? 0);
       setLoading(false);
+
+      // Fetch usage chart data
+      fetch("/api/credits/usage-chart")
+        .then((r) => r.ok ? r.json() : null)
+        .then((d) => { if (d?.usage) setUsageData(d.usage); })
+        .catch(() => {});
     }
 
     fetchBalance();
@@ -77,5 +84,5 @@ export function useCredits() {
   const credits = Math.floor(balance / 60);
   const usagePercent = totalCapacity > 0 ? (balance / totalCapacity) * 100 : 0;
 
-  return { balance, balanceMinutes, balanceSeconds, credits, totalCapacity, usagePercent, transactions, loading };
+  return { balance, balanceMinutes, balanceSeconds, credits, totalCapacity, usagePercent, transactions, usageData, loading };
 }

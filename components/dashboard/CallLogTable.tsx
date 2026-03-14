@@ -1,9 +1,17 @@
 "use client";
 
 import { PhoneIncoming, PhoneOutgoing, Eye } from "lucide-react";
-import { SENTIMENT_CONFIG, CALL_TYPE_COLORS } from "@/lib/constants";
+import { SENTIMENT_CONFIG, CALL_TYPE_COLORS, CALL_TYPE_LABELS } from "@/lib/constants";
 import type { CallLog } from "@/lib/mockApi";
 import React from "react";
+
+/** Mask phone number: show country code + last 4 digits */
+function maskPhone(num: string): string {
+  if (!num || num.length < 6) return num || "";
+  // Country code is +X or +XX or +XXX
+  const ccEnd = num.startsWith("+") ? (num.length > 12 ? 3 : 2) : 0;
+  return `${num.slice(0, ccEnd)} *** *** ${num.slice(-4)}`;
+}
 
 function Badge({ color, children }: { color: string; children: React.ReactNode }) {
   return (
@@ -44,7 +52,6 @@ export function CallLogTable({ calls, expandedId, onToggle }: CallLogTableProps)
             const sentiment = SENTIMENT_CONFIG[sentimentKey];
             const isExpanded = expandedId === call.id;
             const emojiIcons: Record<string, string> = { positive: "\u{1F60A}", neutral: "\u{1F610}", negative: "\u{1F620}" };
-            const CALL_TYPE_LABELS: Record<string, string> = { order_lookup: "Order Lookup", return_request: "Return Request", abandoned_cart_recovery: "Cart Recovery", general: "General" };
 
             return (
               <React.Fragment key={call.id}>
@@ -59,7 +66,7 @@ export function CallLogTable({ calls, expandedId, onToggle }: CallLogTableProps)
                       {call.direction === "inbound" ? "IN" : "OUT"}
                     </Badge>
                   </td>
-                  <td className="py-3 px-2 text-sm text-[#1B2A4A] font-mono">{call.caller_number}</td>
+                  <td className="py-3 px-2 text-sm text-[#1B2A4A] font-mono">{maskPhone(call.caller_number)}</td>
                   <td className="py-3 px-2">
                     <Badge color={CALL_TYPE_COLORS[call.call_type] || "#8AADA6"}>{CALL_TYPE_LABELS[call.call_type] || call.call_type}</Badge>
                   </td>
@@ -81,6 +88,8 @@ export function CallLogTable({ calls, expandedId, onToggle }: CallLogTableProps)
                     {call.transcript && (
                       <button
                         onClick={() => onToggle(call.id)}
+                        aria-expanded={isExpanded}
+                        aria-label="View call details"
                         className={`p-1.5 rounded-lg transition-colors ${
                           isExpanded
                             ? "bg-[#00A99D]/20 text-[#00A99D]"
