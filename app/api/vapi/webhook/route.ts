@@ -289,10 +289,19 @@ async function handleSearchProducts(
     setTimeout(() => reject(new Error("timeout")), 4500)
   );
 
-  return Promise.race([
-    searchProducts(integration.shop_domain, shopifyToken, searchTerm),
-    timeoutPromise,
-  ]);
+  try {
+    return await Promise.race([
+      searchProducts(integration.shop_domain, shopifyToken, searchTerm),
+      timeoutPromise,
+    ]);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg === "timeout") {
+      return "Let me check our products, one moment please.";
+    }
+    console.error("[webhook] search_products error:", msg);
+    return "I had trouble accessing our product catalogue. Please visit our website to browse.";
+  }
 }
 
 // ============================================================================

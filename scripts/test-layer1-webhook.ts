@@ -100,6 +100,9 @@ function validateToolCallResult(
     "unable to access",
     "contact support",
     "hasn't been set up",
+    "I apologize",
+    "unable to look that up",
+    "try again in a moment",
   ];
   const allPatterns = [...defaultFallbacks, ...fallbackPatterns];
   const isFallback = allPatterns.some((p) => result.result?.includes(p));
