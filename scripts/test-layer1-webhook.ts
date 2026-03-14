@@ -228,7 +228,7 @@ async function testProductSearchGeneral(): Promise<boolean> {
 
 async function testProductSearchSpecific(): Promise<boolean> {
   console.log("\n=== TEST 3: PRODUCT SEARCH — SPECIFIC TERM ===");
-  console.log("Search term: projector");
+  console.log("Search term: snowboard");
 
   const toolCallId = `test_products_specific_${Date.now()}`;
 
@@ -239,7 +239,7 @@ async function testProductSearchSpecific(): Promise<boolean> {
         {
           id: toolCallId,
           name: "search_products",
-          arguments: { search_term: "projector" },
+          arguments: { search_term: "snowboard" },
         },
       ],
       call: {

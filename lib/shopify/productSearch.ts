@@ -35,7 +35,7 @@ export async function searchProducts(
   } else {
     graphqlQuery = SEARCH_PRODUCT_QUERY;
     variables = {
-      searchQuery: `title:${searchTerm} status:ACTIVE`,
+      searchQuery: `${searchTerm} status:active`,
       first: 3,
     };
   }
