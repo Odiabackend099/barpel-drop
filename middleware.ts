@@ -68,6 +68,11 @@ export async function middleware(request: NextRequest) {
   // the merchant directly to the App URL (/) with hmac + host params but no
   // code. Detect this and forward to the OAuth start route so they can
   // re-authorize and get a fresh access token stored in Vault.
+  //
+  // Shopify sends two different host formats depending on context:
+  //   Format A (managed install): "admin.shopify.com/admin/stores/{shop}.myshopify.com"
+  //   Format B (Shopify admin "Open app"): "admin.shopify.com/store/{shop-handle}"
+  // Format B URLs also include a `shop` query param directly — use that first.
   if (
     pathname === "/" &&
     request.nextUrl.searchParams.has("hmac") &&
@@ -75,20 +80,33 @@ export async function middleware(request: NextRequest) {
     !request.nextUrl.searchParams.has("code") &&
     user
   ) {
-    const hostB64 = request.nextUrl.searchParams.get("host") ?? "";
-    try {
-      const hostDecoded = Buffer.from(hostB64, "base64").toString("utf-8");
-      // host format: "admin.shopify.com/admin/stores/{shop}"
-      const shopMatch = hostDecoded.match(/\/stores\/([^/]+myshopify\.com)/);
-      const shop = shopMatch?.[1] ?? "";
-      if (shop) {
-        const startUrl = new URL("/api/shopify/oauth/start", request.url);
-        startUrl.searchParams.set("returnTo", "integrations");
-        startUrl.searchParams.set("shop", shop);
-        return NextResponse.redirect(startUrl);
+    // Layer 1: use `shop` query param directly if valid (.myshopify.com)
+    const shopParam = request.nextUrl.searchParams.get("shop") ?? "";
+    const isValidShopParam = /^[a-zA-Z0-9-]+\.myshopify\.com$/.test(shopParam);
+    let shop = isValidShopParam ? shopParam : "";
+
+    // Layer 2: decode from `host` — handles both Format A and Format B
+    if (!shop) {
+      const hostB64 = request.nextUrl.searchParams.get("host") ?? "";
+      try {
+        const hostDecoded = Buffer.from(hostB64, "base64").toString("utf-8");
+        const storesMatch = hostDecoded.match(/\/stores\/([a-zA-Z0-9-]+\.myshopify\.com)/);
+        const storeMatch = hostDecoded.match(/\/store\/([a-zA-Z0-9-]+)/);
+        if (storesMatch?.[1]) {
+          shop = storesMatch[1];
+        } else if (storeMatch?.[1]) {
+          shop = `${storeMatch[1]}.myshopify.com`;
+        }
+      } catch {
+        // Cannot decode host — fall through to landing page
       }
-    } catch {
-      // Cannot decode host — fall through to landing page
+    }
+
+    if (shop) {
+      const startUrl = new URL("/api/shopify/oauth/start", request.url);
+      startUrl.searchParams.set("returnTo", "integrations");
+      startUrl.searchParams.set("shop", shop);
+      return NextResponse.redirect(startUrl);
     }
   }
 

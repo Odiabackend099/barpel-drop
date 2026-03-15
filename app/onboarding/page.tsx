@@ -203,6 +203,53 @@ function OnboardingContent() {
     };
   }, [userId]);
 
+  // Shopify connection polling — when merchant is on step 2 and not yet connected,
+  // poll the integrations table every 3s (up to 30s) so the UI auto-updates if
+  // OAuth completes in a different tab or window.
+  useEffect(() => {
+    if (currentStep !== 2 || shopifyConnected || loadingStep) return;
+
+    let merchantId: string | null = null;
+    let pollCount = 0;
+    const pollInterval = setInterval(async () => {
+      pollCount++;
+
+      if (!merchantId) {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data: m } = await supabase
+          .from("merchants")
+          .select("id")
+          .eq("user_id", user.id)
+          .single();
+        merchantId = m?.id ?? null;
+      }
+
+      if (merchantId) {
+        const { data: shopifyInt } = await supabase
+          .from("integrations")
+          .select("shop_name, connection_active")
+          .eq("merchant_id", merchantId)
+          .eq("platform", "shopify")
+          .eq("connection_active", true)
+          .maybeSingle();
+
+        if (shopifyInt) {
+          setShopifyConnected(true);
+          setConnectedShopName(shopifyInt.shop_name ?? "");
+          clearInterval(pollInterval);
+          return;
+        }
+      }
+
+      if (pollCount >= 10) clearInterval(pollInterval);
+    }, 3000);
+
+    return () => clearInterval(pollInterval);
+  }, [currentStep, shopifyConnected, loadingStep, supabase]);
+
   // Ticket 4: Polling fallback — if Realtime doesn't deliver within 10s, poll every 5s
   useEffect(() => {
     if (currentStep !== 4) return;
