@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { buildInstallUrl } from "@/lib/shopify/oauth";
+import { buildInstallUrl, buildDirectInstallUrl } from "@/lib/shopify/oauth";
 
 /**
  * Initiates the Shopify OAuth flow — ONE button, NO shop domain input.
@@ -47,7 +47,16 @@ export async function GET(request: Request) {
   }
 
   const redirectUri = `${(process.env.NEXT_PUBLIC_BASE_URL ?? "").trim()}/api/shopify/oauth/callback`;
-  const { url, nonce } = buildInstallUrl(redirectUri);
+
+  // When shop is known (e.g. from a Shopify app-load redirect that sent the
+  // merchant to the App URL), use the direct shop OAuth URL. This forces
+  // re-authorization even when the app is already installed — the managed
+  // install URL (admin.shopify.com/oauth/install) would just loop back.
+  const knownShop = searchParams.get("shop") ?? "";
+  const isValidShop = /^[a-zA-Z0-9-]+\.myshopify\.com$/.test(knownShop);
+  const { url, nonce } = isValidShop
+    ? buildDirectInstallUrl(knownShop, redirectUri)
+    : buildInstallUrl(redirectUri);
 
   // Store nonce in database — shop_domain is null because we don't know it yet.
   // Shopify provides it in the callback; HMAC verification ensures authenticity.

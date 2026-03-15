@@ -36,6 +36,36 @@ export function buildInstallUrl(redirectUri: string): {
 }
 
 /**
+ * Builds a direct Shopify OAuth URL for a known shop domain.
+ *
+ * Used when the shop is already known (e.g. from a Shopify app-load redirect
+ * that sends hmac+host to the App URL). Unlike buildInstallUrl(), this goes
+ * directly to the shop's OAuth endpoint and always prompts re-authorization —
+ * even if the app is already installed. This is the correct reconnect path.
+ */
+export function buildDirectInstallUrl(
+  shopDomain: string,
+  redirectUri: string
+): { url: string; nonce: string } {
+  const apiKey = process.env.SHOPIFY_API_KEY;
+  if (!apiKey) throw new Error("Missing SHOPIFY_API_KEY");
+
+  const nonce = generateNonce(16);
+
+  const params = new URLSearchParams({
+    client_id: apiKey,
+    scope: SHOPIFY_SCOPES,
+    redirect_uri: redirectUri,
+    state: nonce,
+  });
+
+  return {
+    url: `https://${shopDomain}/admin/oauth/authorize?${params.toString()}`,
+    nonce,
+  };
+}
+
+/**
  * Exchanges the OAuth code for a permanent access token.
  *
  * @param shopDomain - The store domain
