@@ -20,7 +20,7 @@ export async function initiateOutboundCall(
 
   const response = await withRetry(
     () =>
-      fetch("https://api.vapi.ai/call/phone", {
+      fetch("https://api.vapi.ai/call", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${apiKey}`,
@@ -30,6 +30,11 @@ export async function initiateOutboundCall(
           assistantId,
           phoneNumberId,
           customer: { number: customerPhone },
+          // assistantOverrides.variableValues injects context into {{variable}} prompt placeholders.
+          // metadata is stored on the call record but is NOT injected into the assistant prompt.
+          assistantOverrides: {
+            variableValues: metadata,
+          },
           metadata,
         }),
       }),

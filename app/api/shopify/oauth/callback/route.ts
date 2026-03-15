@@ -115,7 +115,7 @@ export async function GET(request: Request) {
   // Fetch shop display name from Shopify (non-fatal — falls back to domain)
   let shopName = shop;
   try {
-    const shopRes = await fetch(`https://${shop}/admin/api/2026-01/shop.json`, {
+    const shopRes = await fetch(`https://${shop}/admin/api/2025-01/shop.json`, {
       headers: { "X-Shopify-Access-Token": accessToken },
     });
     if (shopRes.ok) {
@@ -231,7 +231,7 @@ export async function GET(request: Request) {
 
   // B-14: Register Shopify abandoned cart webhook
   try {
-    await fetch(`https://${shop}/admin/api/2026-01/webhooks.json`, {
+    await fetch(`https://${shop}/admin/api/2025-01/webhooks.json`, {
       method: "POST",
       headers: {
         "X-Shopify-Access-Token": accessToken,
@@ -253,7 +253,7 @@ export async function GET(request: Request) {
   // Register orders/create webhook — cancels pending abandoned cart calls
   // when customer completes purchase (prevents calling buyers)
   try {
-    await fetch(`https://${shop}/admin/api/2026-01/webhooks.json`, {
+    await fetch(`https://${shop}/admin/api/2025-01/webhooks.json`, {
       method: "POST",
       headers: {
         "X-Shopify-Access-Token": accessToken,

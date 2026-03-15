@@ -221,14 +221,15 @@ export async function POST(request: Request) {
 
     const importResp = await withRetry(
       () =>
-        fetch("https://api.vapi.ai/phone-number/import", {
+        fetch("https://api.vapi.ai/phone-number", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${vapiKey}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            twilioPhoneNumber: phoneNumber,
+            provider: "twilio",
+            number: phoneNumber,
             twilioAccountSid: accountSid,
             twilioAuthToken: authToken,
             assistantId: vapiAgentId,
