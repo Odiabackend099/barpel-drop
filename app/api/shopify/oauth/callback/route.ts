@@ -85,10 +85,9 @@ export async function GET(request: Request) {
     return redirectError("shop_mismatch");
   }
 
-  // Delete the used state (single-use token — prevents replay attacks)
-  await adminSupabase.from("oauth_states").delete().eq("state", state);
-
   // ── Verify Shopify HMAC — OAuth callback uses hex encoding (NOT base64) ──
+  // NOTE: State is deleted AFTER HMAC verification to prevent replay attacks
+  // where an attacker causes state deletion before the legitimate request.
   const apiSecret = process.env.SHOPIFY_API_SECRET;
   if (!apiSecret || !hmac) {
     return redirectError("missing_secret");
@@ -101,6 +100,9 @@ export async function GET(request: Request) {
   if (!verifyHmacSha256(message, apiSecret, hmac)) {
     return redirectError("invalid_hmac");
   }
+
+  // Delete the used state only after HMAC verification (single-use token — prevents replay attacks)
+  await adminSupabase.from("oauth_states").delete().eq("state", state);
 
   // Exchange code for permanent access token
   let accessToken: string;

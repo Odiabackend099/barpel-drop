@@ -423,7 +423,7 @@ async function handleEndOfCallReport(
         credits_charged: 0,
         updated_at: new Date().toISOString(),
       },
-      { onConflict: "vapi_call_id" }
+      { onConflict: "merchant_id,vapi_call_id" }
     )
     .select("id")
     .single();

@@ -22,27 +22,31 @@ export async function POST(request: Request) {
 
   const supabase = createAdminClient();
 
-  // Get per-shop webhook secret from Vault (same pattern as abandoned-cart)
-  let webhookSecret = process.env.SHOPIFY_API_SECRET ?? "";
-
-  if (shopDomain) {
-    const { data: integration } = await supabase
-      .from("integrations")
-      .select("webhook_secret_vault_id")
-      .eq("shop_domain", shopDomain)
-      .eq("platform", "shopify")
-      .maybeSingle();
-
-    if (integration?.webhook_secret_vault_id) {
-      const { data: decryptedSecret } = await supabase
-        .rpc("vault_read_secret_by_id", { p_id: integration.webhook_secret_vault_id });
-      if (decryptedSecret) {
-        webhookSecret = decryptedSecret;
-      }
-    }
+  // Get per-shop webhook secret from Vault — reject unknown shops, no global fallback.
+  if (!shopDomain) {
+    return NextResponse.json({ error: "Missing shop domain" }, { status: 401 });
   }
 
-  if (!verifyShopifyWebhook(rawBody, webhookSecret, shopifyHmac)) {
+  const { data: hmacIntegration } = await supabase
+    .from("integrations")
+    .select("webhook_secret_vault_id")
+    .eq("shop_domain", shopDomain)
+    .eq("platform", "shopify")
+    .maybeSingle();
+
+  if (!hmacIntegration?.webhook_secret_vault_id) {
+    return NextResponse.json({ error: "Unknown shop" }, { status: 401 });
+  }
+
+  const { data: vaultSecret } = await supabase
+    .rpc("vault_read_secret_by_id", { p_id: hmacIntegration.webhook_secret_vault_id });
+
+  if (!vaultSecret) {
+    console.error("[order-completed] Vault read failed for shop:", shopDomain);
+    return NextResponse.json({ error: "Vault unavailable" }, { status: 503 });
+  }
+
+  if (!verifyShopifyWebhook(rawBody, vaultSecret, shopifyHmac)) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
 

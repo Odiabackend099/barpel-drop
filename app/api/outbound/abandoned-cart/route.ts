@@ -23,29 +23,36 @@ export async function POST(request: Request) {
 
   const supabase = createAdminClient();
 
-  // B-16: Get per-shop webhook secret from Vault
-  let webhookSecret = process.env.SHOPIFY_API_SECRET ?? "";
+  // B-16: Get per-shop webhook secret from Vault.
+  // Reject unknown shops — never fall back to global SHOPIFY_API_SECRET,
+  // as that would allow any Shopify app holder to inject forged webhook data.
+  if (!shopDomain) {
+    return NextResponse.json({ error: "Missing shop domain" }, { status: 401 });
+  }
 
-  if (shopDomain) {
-    const { data: integration } = await supabase
-      .from("integrations")
-      .select("webhook_secret_vault_id, merchant_id")
-      .eq("shop_domain", shopDomain)
-      .eq("platform", "shopify")
-      .maybeSingle();
+  const { data: hmacIntegration } = await supabase
+    .from("integrations")
+    .select("webhook_secret_vault_id, merchant_id")
+    .eq("shop_domain", shopDomain)
+    .eq("platform", "shopify")
+    .maybeSingle();
 
-    if (integration?.webhook_secret_vault_id) {
-      // Read webhook secret from Vault via public RPC (vault schema not exposed through PostgREST)
-      const { data: decryptedSecret } = await supabase
-        .rpc("vault_read_secret_by_id", { p_id: integration.webhook_secret_vault_id });
-      if (decryptedSecret) {
-        webhookSecret = decryptedSecret;
-      }
-    }
+  if (!hmacIntegration?.webhook_secret_vault_id) {
+    // Unknown shop or no vault secret stored — reject to prevent spoofed webhooks
+    return NextResponse.json({ error: "Unknown shop" }, { status: 401 });
+  }
+
+  // Read webhook secret from Vault via public RPC (vault schema not exposed through PostgREST)
+  const { data: vaultSecret } = await supabase
+    .rpc("vault_read_secret_by_id", { p_id: hmacIntegration.webhook_secret_vault_id });
+
+  if (!vaultSecret) {
+    console.error("[abandoned-cart] Vault read failed for shop:", shopDomain);
+    return NextResponse.json({ error: "Vault unavailable" }, { status: 503 });
   }
 
   // B-16: Use base64 HMAC verification for Shopify webhooks (NOT hex)
-  if (!verifyShopifyWebhook(rawBody, webhookSecret, shopifyHmac)) {
+  if (!verifyShopifyWebhook(rawBody, vaultSecret, shopifyHmac)) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
 
