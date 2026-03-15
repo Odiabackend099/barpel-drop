@@ -49,15 +49,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missing merchant_id" }, { status: 400 });
   }
 
-  // Zero-balance guard: if merchant has no credits, return a graceful message
-  // for ALL tool calls so Vapi doesn't hang waiting for remaining results
+  // Zero-balance and suspended guard: if merchant has no credits or line is
+  // suspended, return a graceful message for ALL tool calls
   const { data: creditCheck } = await supabase
     .from("merchants")
-    .select("credit_balance")
+    .select("credit_balance, provisioning_status")
     .eq("id", merchantId)
     .single();
 
-  if (creditCheck && creditCheck.credit_balance <= 0) {
+  // Unknown merchant — return safe fallback for all tool calls
+  if (!creditCheck) {
+    const unknownResults = toolCallList.map((tc: { id: string }) => ({
+      toolCallId: tc.id,
+      result:
+        "I apologize, but I'm unable to assist at the moment. Please try again later.",
+    }));
+    return NextResponse.json({ results: unknownResults });
+  }
+
+  if (creditCheck.credit_balance <= 0) {
     const zeroBalanceResults = toolCallList.map((tc: { id: string }) => ({
       toolCallId: tc.id,
       result:
@@ -65,6 +75,17 @@ export async function POST(request: Request) {
         "Please contact the store directly by email or visit our website.",
     }));
     return NextResponse.json({ results: zeroBalanceResults });
+  }
+
+  // Suspended guard: merchant paused their AI line — decline all tool calls
+  if (creditCheck.provisioning_status === "suspended") {
+    const suspendedResults = toolCallList.map((tc: { id: string }) => ({
+      toolCallId: tc.id,
+      result:
+        "Thank you for calling. Our support line is temporarily unavailable. " +
+        "Please contact the store directly or visit our website.",
+    }));
+    return NextResponse.json({ results: suspendedResults });
   }
 
   const results = [];

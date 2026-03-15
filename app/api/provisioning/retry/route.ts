@@ -21,7 +21,7 @@ export async function POST() {
 
   const { data: merchant } = await supabase
     .from("merchants")
-    .select("id, provisioning_status")
+    .select("id, provisioning_status, provisioning_mode")
     .eq("user_id", user.id)
     .is("deleted_at", null)
     .single();
@@ -37,6 +37,20 @@ export async function POST() {
       provisioning_status: "active",
       message: "Already provisioned",
     });
+  }
+
+  // BYOC merchants cannot be retried via this endpoint — provisionMerchantLine()
+  // uses Barpel's Twilio subaccount, not the merchant's own credentials.
+  if (merchant.provisioning_mode === "byoc") {
+    return NextResponse.json(
+      {
+        success: false,
+        provisioning_status: merchant.provisioning_status,
+        error:
+          "BYOC lines cannot be retried here. Please reconnect your number from the Integrations page.",
+      },
+      { status: 422 }
+    );
   }
 
   const result = await provisionMerchantLine(merchant.id);

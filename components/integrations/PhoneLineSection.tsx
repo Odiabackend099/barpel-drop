@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Phone, Copy, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { Phone, Copy, ChevronDown, ChevronUp, Loader2, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { TestCallModal } from "@/components/dashboard/TestCallModal";
@@ -23,11 +23,19 @@ function StatusBadge({ status }: { status: string }) {
       </span>
     );
   }
-  if (status === "pending" || status === "provisioning") {
+  if (status === "provisioning") {
     return (
       <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-200">
         <Loader2 className="w-3 h-3 animate-spin" />
         Setting up your number...
+      </span>
+    );
+  }
+  if (status === "pending") {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-200">
+        <span className="w-2 h-2 rounded-full bg-amber-300" />
+        Not yet set up
       </span>
     );
   }
@@ -42,7 +50,7 @@ function StatusBadge({ status }: { status: string }) {
   if (status === "needs_address") {
     return (
       <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-200">
-        <Loader2 className="w-3 h-3 animate-spin" />
+        <Clock className="w-3 h-3" />
         Being set up manually
       </span>
     );
@@ -56,11 +64,24 @@ export function PhoneLineSection({ merchant }: PhoneLineSectionProps) {
   const [outboundCallOpen, setOutboundCallOpen] = useState(false);
   const [forwardingOpen, setForwardingOpen] = useState(false);
   const [byocOpen, setBYOCOpen] = useState(false);
+  const [triggeringSetup, setTriggeringSetup] = useState(false);
 
   const phoneNumber = merchant?.support_phone || null;
   const provisioningStatus = merchant?.provisioning_status ?? "pending";
   const isActive = provisioningStatus === "active" && phoneNumber;
   const carriers = getCarriersForCountry(merchant?.country);
+
+  const handleTriggerSetup = async () => {
+    if (triggeringSetup) return;
+    setTriggeringSetup(true);
+    try {
+      await fetch("/api/provisioning/retry", { method: "POST" });
+    } catch {
+      // Silently ignore — user can try again
+    } finally {
+      setTriggeringSetup(false);
+    }
+  };
 
   const handleCopy = () => {
     if (!phoneNumber) return;
@@ -88,8 +109,10 @@ export function PhoneLineSection({ merchant }: PhoneLineSectionProps) {
               <p className="text-sm opacity-80 font-sans">Your AI Support Line</p>
               {isActive ? (
                 <p className="text-2xl font-bold tracking-tight font-mono">{phoneNumber}</p>
-              ) : provisioningStatus === "pending" || provisioningStatus === "provisioning" ? (
+              ) : provisioningStatus === "provisioning" ? (
                 <p className="text-lg font-medium opacity-80 font-sans">Setting up your number...</p>
+              ) : provisioningStatus === "pending" ? (
+                <p className="text-sm opacity-80 font-sans">Your AI line isn&apos;t set up yet</p>
               ) : provisioningStatus === "needs_address" ? (
                 <p className="text-sm opacity-80 font-sans">
                   Your number is being set up manually. We&apos;ll notify you within 24 hours.
@@ -152,6 +175,30 @@ export function PhoneLineSection({ merchant }: PhoneLineSectionProps) {
           </div>
         )}
 
+        {/* Setup buttons — pending state */}
+        {provisioningStatus === "pending" && (
+          <div className="mt-3 flex gap-2 flex-wrap">
+            <Button
+              variant="secondary"
+              size="sm"
+              className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+              onClick={handleTriggerSetup}
+              disabled={triggeringSetup}
+            >
+              <Phone className="w-3 h-3 mr-1" />
+              {triggeringSetup ? "Setting up..." : "Set Up AI Line"}
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+              onClick={() => setBYOCOpen(true)}
+            >
+              Connect Your Own Number
+            </Button>
+          </div>
+        )}
+
         {/* Connect button — failed state */}
         {(provisioningStatus === "failed" || (provisioningStatus === "active" && !phoneNumber)) && (
           <div className="mt-3">
@@ -162,6 +209,23 @@ export function PhoneLineSection({ merchant }: PhoneLineSectionProps) {
               onClick={() => setBYOCOpen(true)}
             >
               <Phone className="w-3 h-3 mr-1" />Connect a Number
+            </Button>
+          </div>
+        )}
+
+        {/* BYOC alternative — needs_address state */}
+        {provisioningStatus === "needs_address" && (
+          <div className="mt-3">
+            <p className="text-xs text-white/70 mb-2">
+              While we set up your UK number manually, you can connect your own Twilio number instantly:
+            </p>
+            <Button
+              variant="secondary"
+              size="sm"
+              className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+              onClick={() => setBYOCOpen(true)}
+            >
+              <Phone className="w-3 h-3 mr-1" />Connect Your Own Number
             </Button>
           </div>
         )}

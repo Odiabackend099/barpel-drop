@@ -343,9 +343,9 @@ function OnboardingContent() {
         router.push("/dashboard");
         return;
       }
-      // Fire provisioning from client — server awaits it, Realtime/polling picks up updates
+      // Provisioning is now triggered server-side by /api/onboarding/complete.
+      // Just update UI state — Realtime/polling picks up status changes.
       setProvisioningStatus("provisioning");
-      fetch("/api/provisioning/retry", { method: "POST" }).catch(() => {});
     } catch {
       setError("Network error. Please try again.");
     } finally {

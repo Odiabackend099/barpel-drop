@@ -59,7 +59,7 @@ export async function POST(request: Request) {
   const { data: merchant } = await supabase
     .from("merchants")
     .select(
-      "id, business_name, custom_prompt, ai_first_message, ai_voice_id, ai_voice_provider, ai_model, provisioning_status, provisioning_mode, provisioning_attempted_at"
+      "id, business_name, custom_prompt, ai_first_message, ai_voice_id, ai_voice_provider, ai_model, provisioning_status, provisioning_mode, provisioning_attempted_at, vapi_agent_id"
     )
     .eq("user_id", user.id)
     .is("deleted_at", null)
@@ -192,24 +192,28 @@ export async function POST(request: Request) {
 
   // --- Provision: Create Vapi assistant + import number ---
   try {
-    // Step 1: Create Vapi assistant (reuse from phoneService)
-    const vapiAgentId = await createVapiAssistant(
-      merchant.business_name ?? "Support",
-      merchant.custom_prompt ?? null,
-      merchant.id,
-      {
-        firstMessage: merchant.ai_first_message ?? null,
-        voiceId: merchant.ai_voice_id ?? null,
-        voiceProvider: merchant.ai_voice_provider ?? null,
-        model: merchant.ai_model ?? null,
-      }
-    );
+    // Step 1: Create Vapi assistant — skip if one already exists from a previous
+    // partial attempt (prevents orphaned assistants in Vapi on retry)
+    let vapiAgentId: string = merchant.vapi_agent_id ?? "";
+    if (!merchant.vapi_agent_id) {
+      vapiAgentId = await createVapiAssistant(
+        merchant.business_name ?? "Support",
+        merchant.custom_prompt ?? null,
+        merchant.id,
+        {
+          firstMessage: merchant.ai_first_message ?? null,
+          voiceId: merchant.ai_voice_id ?? null,
+          voiceProvider: merchant.ai_voice_provider ?? null,
+          model: merchant.ai_model ?? null,
+        }
+      );
 
-    // Save assistant ID immediately (resume point if import fails)
-    await adminSupabase
-      .from("merchants")
-      .update({ vapi_agent_id: vapiAgentId })
-      .eq("id", merchant.id);
+      // Save assistant ID immediately (resume point if import fails)
+      await adminSupabase
+        .from("merchants")
+        .update({ vapi_agent_id: vapiAgentId })
+        .eq("id", merchant.id);
+    }
 
     // Step 2: Import merchant's Twilio number into Vapi
     const vapiKey = process.env.VAPI_PRIVATE_KEY;
@@ -242,6 +246,9 @@ export async function POST(request: Request) {
     }
 
     const vapiPhone = await importResp.json();
+    if (!vapiPhone?.id) {
+      throw new Error("Vapi number import response missing phone ID");
+    }
 
     // Step 3: Write to SAME columns as auto-provisioning
     await adminSupabase

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { sanitiseMerchantPrompt } from "@/lib/sanitise";
-import { updateAssistantPrompt } from "@/lib/vapi/client";
+import { getAssistant, updateAssistant } from "@/lib/vapi/client";
 import { BASE_PROMPT } from "@/lib/constants";
 
 /**
@@ -89,7 +89,8 @@ export async function PATCH(request: Request) {
     );
   }
 
-  // If custom_prompt changed and merchant has a Vapi agent, update the system prompt
+  // If custom_prompt changed and merchant has a Vapi agent, sync to Vapi
+  // using GET-then-PATCH to avoid wiping tools, temperature, and other model fields
   if (sanitizedPrompt !== undefined && merchant.vapi_agent_id) {
     const basePrompt = BASE_PROMPT.replace("{BUSINESS_NAME}", merchant.business_name ?? "Support");
     const fullSystemPrompt = sanitizedPrompt
@@ -97,9 +98,21 @@ export async function PATCH(request: Request) {
       : basePrompt;
 
     // Fire and forget — do not block the response if Vapi update fails
-    updateAssistantPrompt(merchant.vapi_agent_id, fullSystemPrompt).catch((e: Error) => {
-      console.error("[vapi] prompt sync failed:", e.message);
-    });
+    (async () => {
+      try {
+        const existing = await getAssistant(merchant.vapi_agent_id!);
+        const existingModel = (existing.model as Record<string, unknown>) ?? {};
+        await updateAssistant(merchant.vapi_agent_id!, {
+          model: {
+            ...existingModel,
+            messages: [{ role: "system", content: fullSystemPrompt }],
+          },
+        });
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e);
+        console.error("[vapi] prompt sync failed:", msg);
+      }
+    })();
   }
 
   // Return merchant without vapi_agent_id (internal field)

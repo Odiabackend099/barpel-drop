@@ -47,48 +47,6 @@ export async function initiateOutboundCall(
 }
 
 /**
- * Updates a Vapi assistant's system prompt.
- *
- * @deprecated Prefer `updateAssistant` for multi-field updates — this function sends
- * `{ model: { messages: [...] } }` which replaces the entire model object on Vapi's
- * side (Vapi does not merge nested objects). Safe only for prompt-only updates where
- * you intend to replace the full model config.
- *
- * @param assistantId - The Vapi assistant ID
- * @param systemPrompt - The new system prompt text
- */
-export async function updateAssistantPrompt(
-  assistantId: string,
-  systemPrompt: string
-): Promise<void> {
-  const apiKey = process.env.VAPI_PRIVATE_KEY;
-  if (!apiKey) throw new Error("Missing VAPI_PRIVATE_KEY");
-
-  const response = await withRetry(
-    () =>
-      fetch(`https://api.vapi.ai/assistant/${assistantId}`, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: {
-            messages: [{ role: "system", content: systemPrompt }],
-          },
-        }),
-      }),
-    3,
-    "vapi_update_prompt"
-  );
-
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Vapi prompt update failed (${response.status}): ${text}`);
-  }
-}
-
-/**
  * Fetches the full Vapi assistant object.
  * Required before PATCH to avoid wiping nested fields (Vapi replaces, not merges).
  *

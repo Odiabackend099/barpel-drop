@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
   // Fetch pending calls that are due now
   const { data: pendingCalls } = await supabase
     .from("pending_outbound_calls")
-    .select("*, merchants!inner(id, vapi_agent_id, vapi_phone_id, credit_balance)")
+    .select("*, merchants!inner(id, vapi_agent_id, vapi_phone_id, credit_balance, provisioning_status)")
     .eq("status", "pending")
     .lte("scheduled_for", new Date().toISOString())
     .limit(10);
@@ -44,19 +44,23 @@ export async function GET(request: NextRequest) {
       vapi_agent_id: string | null;
       vapi_phone_id: string | null;
       credit_balance: number;
+      provisioning_status: string | null;
     };
 
-    // Skip if merchant doesn't have enough credits or no Vapi config
+    // Skip if merchant doesn't have enough credits, no Vapi config, or line is suspended
     if (
       !merchant?.vapi_agent_id ||
       !merchant?.vapi_phone_id ||
-      merchant.credit_balance < MIN_BALANCE_SECS
+      merchant.credit_balance < MIN_BALANCE_SECS ||
+      merchant.provisioning_status === "suspended"
     ) {
       await supabase
         .from("pending_outbound_calls")
         .update({
           status: "failed",
-          error_message: !merchant?.vapi_agent_id
+          error_message: merchant.provisioning_status === "suspended"
+            ? "Merchant line is suspended"
+            : !merchant?.vapi_agent_id
             ? "No Vapi agent configured"
             : !merchant?.vapi_phone_id
             ? "No Vapi phone configured"

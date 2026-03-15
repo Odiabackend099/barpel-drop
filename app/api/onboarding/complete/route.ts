@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { provisionMerchantLine } from "@/lib/provisioning/phoneService";
 
 /**
  * POST /api/onboarding/complete
@@ -79,6 +80,13 @@ export async function POST() {
       onboarding_step: 4,
     })
     .eq("id", merchant.id);
+
+  // Trigger provisioning server-side (non-blocking). This ensures provisioning
+  // starts even if the browser closes immediately after this response.
+  // The onboarding page's Realtime subscription picks up status changes.
+  provisionMerchantLine(merchant.id).catch((err: unknown) => {
+    console.error("[onboarding] provisioning trigger failed:", err);
+  });
 
   return NextResponse.json({ success: true });
 }
