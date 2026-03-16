@@ -24,7 +24,7 @@ const fadeInUp = {
 };
 
 const keyMetrics = [
-  { value: '73%', label: 'Reduction in support tickets', icon: TrendingDown },
+  { value: '24/7', label: 'Automated phone coverage', icon: TrendingDown },
   { value: '$5.8K', label: 'Monthly savings', icon: DollarSign },
   { value: '1 day', label: 'Setup time', icon: Calendar },
   { value: '10,000+', label: 'Monthly orders handled', icon: Package },
@@ -54,7 +54,7 @@ const timeline = [
   {
     day: 'Month 1',
     title: 'Measurable Results',
-    description: 'Support tickets down 73%. Monthly support costs reduced from $8K to $2.2K. Customer satisfaction stable at 91%.',
+    description: 'Round-the-clock AI coverage achieved. Monthly support costs reduced from $8K to $2.2K. Customer satisfaction stable at 91%.',
   },
 ];
 
@@ -71,7 +71,7 @@ export default function DropshipDirectCaseStudy() {
   return (
     <ContentPageLayout
       title="DropshipDirect Case Study"
-      subtitle="How a high-volume dropshipping store reduced support tickets by 73% and saved $5.8K per month with Barpel AI."
+      subtitle="How a high-volume dropshipping store achieved 24/7 automated support and saved $5.8K per month with Barpel AI."
     >
       {/* Back Link */}
       <motion.div {...fadeInUp} className="mb-8">

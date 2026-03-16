@@ -78,7 +78,7 @@ const itemVariants = {
 
 export default function Footer() {
   return (
-    <footer className="bg-slate-50 border-t border-slate-200">
+    <footer className="bg-[#0f172a] border-t border-white/10">
       <motion.div
         className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12"
         initial="hidden"
@@ -90,8 +90,8 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 lg:gap-12">
           {/* Brand Column */}
           <motion.div variants={itemVariants} className="col-span-2 md:col-span-3 lg:col-span-2">
-            <Logo size="lg" showText={true} className="mb-4" />
-            <p className="text-sm text-slate-500 mb-6 max-w-xs leading-relaxed">
+            <Logo size="lg" showText={true} variant="light" className="mb-4" />
+            <p className="text-sm text-white/60 mb-6 max-w-xs leading-relaxed">
               AI-powered voice support for modern e-commerce. Handle customer
               calls automatically, 24/7.
             </p>
@@ -104,7 +104,7 @@ export default function Footer() {
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-teal-500 hover:text-white transition-all duration-200"
+                  className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center text-white/60 hover:bg-teal-500 hover:text-white transition-all duration-200"
                   aria-label={social.label}
                   whileHover={{ scale: 1.1, y: -2 }}
                   whileTap={{ scale: 0.95 }}
@@ -121,7 +121,7 @@ export default function Footer() {
           {/* Link Columns */}
           {Object.values(footerLinks).map((section, sectionIndex) => (
             <motion.div key={section.title} variants={itemVariants}>
-              <h3 className="text-sm font-semibold text-slate-900 mb-4 tracking-tight">
+              <h3 className="text-sm font-semibold text-white mb-4 tracking-tight">
                 {section.title}
               </h3>
               <ul className="space-y-2.5">
@@ -135,7 +135,7 @@ export default function Footer() {
                   >
                     <Link
                       href={link.href}
-                      className="text-sm text-slate-500 hover:text-teal-600 transition-colors duration-150"
+                      className="text-sm text-white/50 hover:text-teal-400 transition-colors duration-150"
                     >
                       {link.label}
                     </Link>
@@ -149,34 +149,34 @@ export default function Footer() {
         {/* Bottom Bar */}
         <motion.div
           variants={itemVariants}
-          className="mt-12 pt-8 border-t border-slate-200"
+          className="mt-12 pt-8 border-t border-white/10"
         >
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-white/40">
               © 2026 Barpel AI Inc. All rights reserved.
             </p>
             <div className="flex flex-wrap justify-center gap-6">
               <Link
                 href="/privacy"
-                className="text-xs text-slate-500 hover:text-teal-600 transition-colors duration-150"
+                className="text-xs text-white/50 hover:text-teal-400 transition-colors duration-150"
               >
                 Privacy Policy
               </Link>
               <Link
                 href="/terms"
-                className="text-xs text-slate-500 hover:text-teal-600 transition-colors duration-150"
+                className="text-xs text-white/50 hover:text-teal-400 transition-colors duration-150"
               >
                 Terms of Service
               </Link>
               <Link
                 href="/data-processing"
-                className="text-xs text-slate-500 hover:text-teal-600 transition-colors duration-150"
+                className="text-xs text-white/50 hover:text-teal-400 transition-colors duration-150"
               >
                 Data Processing
               </Link>
               <Link
                 href="/cookies"
-                className="text-xs text-slate-500 hover:text-teal-600 transition-colors duration-150"
+                className="text-xs text-white/50 hover:text-teal-400 transition-colors duration-150"
               >
                 Cookies
               </Link>

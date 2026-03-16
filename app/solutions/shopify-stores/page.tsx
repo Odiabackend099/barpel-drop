@@ -89,7 +89,7 @@ const features = [
 ];
 
 const stats = [
-  { value: '500+', label: 'Shopify stores using Barpel' },
+  { value: '100+', label: 'Shopify stores using Barpel' },
   { value: '4.2x', label: 'Cart recovery improvement' },
   { value: '4.9/5', label: 'App Store rating' },
   { value: '99.9%', label: 'Uptime guarantee' },
@@ -288,7 +288,7 @@ export default function ShopifyStoresPage() {
           Install Barpel on your Shopify store today
         </h2>
         <p className="body-large text-slate-600 max-w-xl mx-auto mb-8">
-          Join 500+ Shopify merchants who trust Barpel for AI-powered phone support.
+          Join 100+ Shopify merchants who trust Barpel for AI-powered phone support.
           Free trial includes all features — no credit card required.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">

@@ -104,7 +104,7 @@ const milestones = [
   { year: '2024', title: 'Founded', desc: 'Barpel AI is founded with the vision of AI-first customer service for e-commerce.' },
   { year: '2024', title: 'Seed Funding', desc: 'Raised $4.2M seed round led by top-tier commerce and AI investors.' },
   { year: '2025', title: 'Public Launch', desc: 'Launched publicly with Shopify integration and multilingual voice support.' },
-  { year: '2025', title: '500+ Merchants', desc: 'Crossed 500 active merchants and 2 million AI-handled calls.' },
+  { year: '2025', title: '100+ Merchants', desc: 'Crossed 100 active merchants and growing rapidly.' },
   { year: '2026', title: 'Series A', desc: 'Raised $18M Series A to expand the platform and enter new markets.' },
 ];
 
@@ -154,7 +154,7 @@ export default function AboutPage() {
                 They joined forces with a clear goal: build an AI voice assistant so good that customers cannot tell the difference, and so simple that any merchant can set it up in minutes. Within months, they had a prototype handling real calls for a handful of Shopify stores. The results were immediate. Resolution rates climbed, support costs dropped, and customer satisfaction actually improved.
               </p>
               <p className="body-large">
-                Today, Barpel powers voice support for 500+ e-commerce brands, handling millions of customer interactions in 30+ languages. We are just getting started.
+                Today, Barpel powers voice support for 100+ e-commerce brands, handling customer interactions in 30+ languages. We are just getting started.
               </p>
             </div>
           </div>

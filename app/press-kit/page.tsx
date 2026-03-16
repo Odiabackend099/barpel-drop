@@ -36,7 +36,7 @@ const companyFacts = [
   { icon: Users, label: 'Team Size', value: '30+ people' },
   { icon: Globe, label: 'Headquarters', value: 'San Francisco, CA' },
   { icon: Phone, label: 'Calls Handled', value: '2M+' },
-  { icon: BarChart3, label: 'Active Merchants', value: '500+' },
+  { icon: BarChart3, label: 'Active Merchants', value: '100+' },
   { icon: Award, label: 'Languages Supported', value: '30+' },
 ];
 

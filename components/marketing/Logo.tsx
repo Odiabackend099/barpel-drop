@@ -46,7 +46,7 @@ export default function Logo({ size = 'md', showText = true, className = '', ani
           animate={animated ? { opacity: 1, x: 0 } : {}}
           transition={{ delay: 0.1, duration: 0.3 }}
         >
-          Barpel<span className={`font-normal ml-1 ${variant === 'light' ? 'text-white/60' : 'text-slate-400'}`}>AI</span>
+          Barpel<span className={`font-bold ml-1 ${variant === 'light' ? 'text-[#0d9488]' : 'text-[#0d9488]'}`}>AI</span>
         </motion.span>
       )}
     </div>

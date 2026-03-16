@@ -37,7 +37,7 @@ const blogPosts = [
     slug: 'reduce-support-tickets-with-ai',
     title: '5 Ways to Reduce Support Tickets with AI',
     excerpt:
-      'Learn the proven strategies that top e-commerce brands use to cut their support ticket volume by up to 73% using AI voice agents.',
+      'Learn the proven strategies that top e-commerce brands use to dramatically reduce support ticket volume using AI voice agents.',
     category: 'Best Practices',
     date: 'March 8, 2026',
     readTime: '5 min read',

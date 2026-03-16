@@ -14,8 +14,8 @@ const containerVariants = {
   },
 };
 
-const stepVariants = {
-  hidden: { opacity: 0, x: -40, scale: 0.95 },
+const getStepVariants = (index: number) => ({
+  hidden: { opacity: 0, x: index % 2 === 0 ? -40 : 40, scale: 0.95 },
   visible: {
     opacity: 1,
     x: 0,
@@ -25,7 +25,7 @@ const stepVariants = {
       ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
     },
   },
-};
+});
 
 const steps = [
   {
@@ -47,7 +47,7 @@ const steps = [
 
 export default function HowItWorks() {
   return (
-    <section id="how-it-works" className="section-padding bg-gradient-to-br from-off-white to-teal-50/30">
+    <section id="how-it-works" className="section-padding bg-[#f0fdfa]">
       <div className="container-default">
         <div>
           {/* Section Header */}
@@ -80,7 +80,7 @@ export default function HowItWorks() {
                 <motion.div
                   key={step.title}
                   className="flex gap-5"
-                  variants={stepVariants}
+                  variants={getStepVariants(index)}
                 >
                   {/* Step Number & Line */}
                   <div className="flex flex-col items-center">
@@ -125,7 +125,7 @@ export default function HowItWorks() {
               {/* Trust Badge */}
               <motion.div
                 className="flex items-center gap-4 pt-4"
-                variants={stepVariants}
+                variants={getStepVariants(0)}
               >
                 <div className="flex -space-x-2">
                   {[1, 2, 3, 4].map((i) => (

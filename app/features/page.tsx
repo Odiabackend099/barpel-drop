@@ -294,7 +294,7 @@ export default function FeaturesPage() {
           Ready to transform your customer support?
         </h2>
         <p className="body-large text-text-secondary mb-8 max-w-xl mx-auto">
-          Join 500+ e-commerce brands that use Barpel to handle customer calls automatically.
+          Join 100+ e-commerce brands that use Barpel to handle customer calls automatically.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link href="/signup" className="btn-primary">

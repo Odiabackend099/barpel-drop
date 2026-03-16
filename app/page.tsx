@@ -14,7 +14,7 @@ import Footer from "@/components/marketing/sections/Footer";
 export const metadata: Metadata = {
   title: "Barpel AI - AI-Powered Voice Support for E-Commerce | 24/7 Customer Service",
   description:
-    "Transform your e-commerce customer support with Barpel AI. Automated voice calls for order tracking, returns, and abandoned cart recovery. 73% reduction in support tickets.",
+    "Transform your e-commerce customer support with Barpel AI. Automated voice calls for order tracking, returns, and abandoned cart recovery. 24/7 coverage, under 3s response time.",
 };
 
 export default function HomePage() {

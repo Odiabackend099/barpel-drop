@@ -85,7 +85,7 @@ const features = [
 ];
 
 const stats = [
-  { value: '73%', label: 'Fewer support tickets' },
+  { value: '24/7', label: 'Automated phone coverage' },
   { value: '24/7', label: 'Coverage in every timezone' },
   { value: '30+', label: 'Languages supported' },
   { value: '<2min', label: 'Average resolution time' },
@@ -234,16 +234,16 @@ export default function DropshippersPage() {
                 <span className="text-sm font-semibold text-teal-600 uppercase tracking-wide">Case Study</span>
               </div>
               <h3 className="text-2xl font-bold text-brand-navy mb-4">
-                DropshipDirect reduced support tickets by 73%
+                DropshipDirect automated support with 24/7 AI coverage
               </h3>
               <p className="text-slate-600 mb-6 leading-relaxed">
                 With over 10,000 monthly orders and 3 full-time support agents costing $8K per month,
                 DropshipDirect was drowning in &quot;Where is my order?&quot; calls. After implementing
-                Barpel AI, they cut support tickets by 73% and saved $5.8K monthly.
+                Barpel AI, they automated routine calls around the clock and saved $5.8K monthly.
               </p>
               <div className="flex flex-wrap gap-4 mb-6">
                 {[
-                  { label: 'Tickets reduced', value: '73%' },
+                  { label: 'Response time', value: '< 3s' },
                   { label: 'Monthly savings', value: '$5.8K' },
                   { label: 'Setup time', value: '1 day' },
                 ].map((metric) => (

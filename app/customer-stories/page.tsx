@@ -19,12 +19,12 @@ const fadeInUp = {
 const stories = [
   {
     company: 'DropshipDirect',
-    stat: '73%',
-    statLabel: 'Reduction in support tickets',
+    stat: '24/7',
+    statLabel: 'Automated phone coverage',
     description:
-      'A high-volume dropshipping store with 10,000+ monthly orders was drowning in &quot;Where is my order?&quot; calls. After implementing Barpel AI, they eliminated three-quarters of their support workload and reassigned two full-time agents to growth initiatives.',
+      'A high-volume dropshipping store with 10,000+ monthly orders was drowning in &quot;Where is my order?&quot; calls. After implementing Barpel AI, they automated the majority of routine calls and reassigned two full-time agents to growth initiatives.',
     industry: 'Dropshipping',
-    results: ['73% fewer tickets', '$5.8K monthly savings', '1-day setup'],
+    results: ['24/7 AI coverage', '$5.8K monthly savings', '1-day setup'],
     href: '/case-studies/dropship-direct',
     gradient: 'from-brand-navy to-brand-teal',
     bgColor: 'bg-brand-navy',
@@ -76,7 +76,7 @@ const stories = [
 ];
 
 const overallStats = [
-  { value: '500+', label: 'Businesses using Barpel' },
+  { value: '100+', label: 'Businesses using Barpel' },
   { value: '2M+', label: 'Calls handled by AI' },
   { value: '94%', label: 'Average CSAT score' },
   { value: '$12M+', label: 'Saved in support costs' },

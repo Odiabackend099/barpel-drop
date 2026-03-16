@@ -9,43 +9,43 @@ const features = [
     icon: Package,
     title: 'Instant Order Tracking',
     description: 'Customers call and get real-time order status, tracking numbers, and delivery estimates — no waiting, no human agents.',
-    color: 'from-blue-500 to-blue-400',
-    bgColor: 'bg-blue-50',
+    iconBg: 'bg-teal-500',
+    iconColor: 'text-white',
   },
   {
     icon: RefreshCw,
     title: 'Hassle-Free Returns',
     description: 'AI explains your return policy, collects photos via SMS, and initiates the return process automatically.',
-    color: 'from-teal-500 to-teal-400',
-    bgColor: 'bg-teal-50',
+    iconBg: 'bg-amber-500',
+    iconColor: 'text-white',
   },
   {
     icon: ShoppingCart,
     title: 'Smart Cart Recovery',
     description: 'AI calls customers 15 minutes after cart abandonment, answers questions, and helps complete the purchase.',
-    color: 'from-purple-500 to-purple-400',
-    bgColor: 'bg-purple-50',
+    iconBg: 'bg-green-500',
+    iconColor: 'text-white',
   },
   {
     icon: Search,
     title: 'Live Product Lookup',
     description: 'Customers ask about products, stock levels, and pricing. AI searches your catalog in real-time.',
-    color: 'from-orange-500 to-orange-400',
-    bgColor: 'bg-orange-50',
+    iconBg: 'bg-blue-500',
+    iconColor: 'text-white',
   },
   {
     icon: Globe,
     title: 'Speak Any Language',
     description: 'Natural conversations in 30+ languages. Your AI assistant sounds human, not robotic.',
-    color: 'from-pink-500 to-pink-400',
-    bgColor: 'bg-pink-50',
+    iconBg: 'bg-indigo-500',
+    iconColor: 'text-white',
   },
   {
     icon: Clock,
     title: 'Always On',
     description: 'Never miss a customer call. Handle peak seasons, holidays, and timezone differences effortlessly.',
-    color: 'from-green-500 to-green-400',
-    bgColor: 'bg-green-50',
+    iconBg: 'bg-purple-500',
+    iconColor: 'text-white',
   },
 ];
 
@@ -69,12 +69,12 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
       animate={isInView ? { opacity: 1, y: 0, rotate: 0 } : { opacity: 0, y: 50, rotate: 2 }}
       transition={{ duration: 0.5, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
       whileHover={{
-        y: -8,
+        y: -4,
         boxShadow: "0 20px 40px -8px rgba(0,0,0,0.1), 0 0 20px rgba(0,169,157,0.15)",
-        transition: { duration: 0.3, ease: "easeOut" },
+        transition: { duration: 0.2, ease: "easeOut" },
       }}
       onMouseMove={handleMouseMove}
-      className="group relative bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-slate-100 hover:border-teal-300/50 hover:bg-teal-50/40 overflow-hidden transition-colors duration-300"
+      className="group relative bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-slate-100 hover:border-[#0d9488] hover:bg-[rgba(13,148,136,0.06)] overflow-hidden transition-all duration-200"
     >
       {/* Mouse-following glow */}
       <div
@@ -87,11 +87,10 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
       <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-teal-400 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       {/* Icon */}
       <motion.div
-        className={`relative w-12 h-12 rounded-xl ${feature.bgColor} flex items-center justify-center mb-5 transition-all duration-300 group-hover:scale-110`}
+        className={`relative w-12 h-12 rounded-xl ${feature.iconBg} flex items-center justify-center mb-5 transition-all duration-200 group-hover:brightness-110 group-hover:scale-110`}
         whileHover={{ rotate: 5 }}
       >
-        <feature.icon className={`w-6 h-6 bg-gradient-to-br ${feature.color} bg-clip-text`} style={{ color: 'inherit' }} />
-        <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-20 rounded-xl`} />
+        <feature.icon className={`w-6 h-6 ${feature.iconColor}`} />
       </motion.div>
 
       {/* Content */}
@@ -132,7 +131,7 @@ export default function Features() {
   const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0]);
 
   return (
-    <section id="features" ref={sectionRef} className="section-padding bg-gradient-to-b from-slate-50 via-teal-50/40 to-white relative overflow-hidden">
+    <section id="features" ref={sectionRef} className="section-padding bg-white relative overflow-hidden">
       {/* Background Decoration */}
       <motion.div
         className="absolute top-0 right-0 w-96 h-96 bg-teal-100/30 rounded-full blur-3xl pointer-events-none"

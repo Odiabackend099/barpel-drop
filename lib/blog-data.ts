@@ -72,7 +72,7 @@ export const blogPosts: BlogPost[] = [
     slug: "reduce-support-tickets-with-ai",
     title: "5 Ways to Reduce Support Tickets with AI",
     excerpt:
-      "Learn the proven strategies that top e-commerce brands use to cut their support ticket volume by up to 73% using AI voice agents.",
+      "Learn the proven strategies that top e-commerce brands use to dramatically reduce support ticket volume using AI voice agents.",
     category: "Best Practices",
     date: "March 8, 2026",
     readTime: "5 min read",
@@ -83,7 +83,7 @@ export const blogPosts: BlogPost[] = [
         heading: "Why Ticket Volume Is the Wrong Metric to Optimize Alone",
         paragraphs: [
           "Before diving into reduction strategies, it is important to reframe the goal. The objective is not simply to have fewer tickets \u2014 it is to resolve customer issues faster and more completely so that tickets are never created in the first place. When done correctly, reducing ticket volume improves customer satisfaction, increases repeat purchase rates, and frees your human support team to handle the high-value interactions that actually require empathy and judgment.",
-          "The five strategies below work together as a system. Individually, each can reduce ticket volume by 10\u201320%. Combined, brands routinely see reductions of 50\u201373%, with the remaining tickets being genuinely complex issues that benefit from human attention.",
+          "The five strategies below work together as a system. Individually, each can reduce ticket volume by 10\u201320%. Combined, brands routinely see significant reductions, with the remaining tickets being genuinely complex issues that benefit from human attention.",
         ],
       },
       {
