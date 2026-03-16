@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { provisionMerchantLine } from "@/lib/provisioning/phoneService";
+import { checkProvisioningGates } from "@/lib/provisioning/gates";
 
 /**
  * POST /api/provisioning/retry
  * Triggers a provisioning retry for the authenticated merchant.
  * Resumes from the failed step — does not restart from scratch.
+ * Accepts optional JSON body with { country } to set merchant country before provisioning.
  */
-export async function POST() {
+export async function POST(request: Request) {
   const supabase = createClient();
 
   const {
@@ -30,15 +33,6 @@ export async function POST() {
     return NextResponse.json({ error: "Merchant not found" }, { status: 404 });
   }
 
-  // Only retry if currently failed or pending — do not re-provision active merchants
-  if (merchant.provisioning_status === "active") {
-    return NextResponse.json({
-      success: true,
-      provisioning_status: "active",
-      message: "Already provisioned",
-    });
-  }
-
   // BYOC merchants cannot be retried via this endpoint — provisionMerchantLine()
   // uses Barpel's Twilio subaccount, not the merchant's own credentials.
   if (merchant.provisioning_mode === "byoc") {
@@ -51,6 +45,44 @@ export async function POST() {
       },
       { status: 422 }
     );
+  }
+
+  // Security gates — blocks if already active, free provision used, rate limited,
+  // or email not verified. Also records the attempt on pass.
+  const adminSupabase = createAdminClient();
+  const gateResult = await checkProvisioningGates(
+    merchant.id,
+    user.id,
+    adminSupabase
+  );
+
+  if (!gateResult.allowed) {
+    return NextResponse.json(
+      {
+        error: gateResult.error,
+        ...(gateResult.requiresUpgrade ? { requiresUpgrade: true } : {}),
+      },
+      { status: gateResult.status ?? 400 }
+    );
+  }
+
+  // Accept optional country from request body
+  let body: { country?: string } = {};
+  try {
+    body = await request.json();
+  } catch {
+    // No body is fine — country is optional
+  }
+
+  if (body.country) {
+    const validCountries = ["GB", "US", "CA", "NG", "GH", "KE"];
+    if (!validCountries.includes(body.country)) {
+      return NextResponse.json({ error: "Invalid country" }, { status: 400 });
+    }
+    await adminSupabase
+      .from("merchants")
+      .update({ country: body.country })
+      .eq("id", merchant.id);
   }
 
   const result = await provisionMerchantLine(merchant.id);

@@ -92,6 +92,7 @@ export function BYOCModal({ open, onClose }: BYOCModalProps) {
               value={accountSid}
               onChange={(e) => setAccountSid(e.target.value.trim())}
               disabled={loading}
+              autoComplete="off"
               className="font-mono text-sm"
             />
             <p className="text-xs text-muted-foreground font-sans">
@@ -112,6 +113,7 @@ export function BYOCModal({ open, onClose }: BYOCModalProps) {
                 value={authToken}
                 onChange={(e) => setAuthToken(e.target.value.trim())}
                 disabled={loading}
+                autoComplete="new-password"
                 className="font-mono text-sm pr-10"
               />
               <button
@@ -143,6 +145,7 @@ export function BYOCModal({ open, onClose }: BYOCModalProps) {
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value.trim())}
               disabled={loading}
+              autoComplete="off"
               className="font-mono text-sm"
             />
             <p className="text-xs text-muted-foreground font-sans">

@@ -8,9 +8,10 @@ import {
   Plug,
   Bot,
   CreditCard,
-  ChevronLeft,
-  ChevronRight,
+  PanelLeftClose,
+  PanelLeftOpen,
   Zap,
+  Settings,
 } from "lucide-react";
 import { BarpelLogo } from "@/components/brand/BarpelLogo";
 import { useCredits } from "@/hooks/useCredits";
@@ -21,6 +22,7 @@ const navItems = [
   { href: "/dashboard/integrations", icon: Plug, label: "Integrations" },
   { href: "/dashboard/voice", icon: Bot, label: "AI Voice" },
   { href: "/dashboard/billing", icon: CreditCard, label: "Billing" },
+  { href: "/dashboard/settings", icon: Settings, label: "Settings" },
 ];
 
 interface SidebarProps {
@@ -68,16 +70,28 @@ export function Sidebar({ open, onClose, collapsed, onToggleCollapse }: SidebarP
           ${open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
       >
-        {/* Header */}
-        <div className="p-4 border-b border-[#D0EDE8]">
-          <div className="flex items-center gap-3">
-            <BarpelLogo size={collapsed ? 28 : 36} />
-            {!collapsed && (
-              <div>
-                <div className="text-sm font-bold text-[#1B2A4A] font-display">BARPEL DROP AI</div>
-                <div className="text-[10px] text-[#8AADA6] tracking-wide font-sans">MERCHANT DASHBOARD</div>
-              </div>
-            )}
+        {/* Header — logo + brand + collapse toggle (always at top) */}
+        <div className="p-3 border-b border-[#D0EDE8]">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <BarpelLogo size={collapsed ? 26 : 32} />
+              {!collapsed && (
+                <div className="min-w-0">
+                  <div className="text-sm font-bold text-[#1B2A4A] font-display truncate">BARPEL DROP AI</div>
+                  <div className="text-[10px] text-[#8AADA6] tracking-wide font-sans">MERCHANT DASHBOARD</div>
+                </div>
+              )}
+            </div>
+            <button
+              onClick={onToggleCollapse}
+              title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              className="shrink-0 p-1.5 rounded-md text-[#8AADA6] hover:text-[#1B2A4A] hover:bg-[#D0EDE8]/50 transition-colors"
+            >
+              {collapsed
+                ? <PanelLeftOpen className="w-4 h-4" />
+                : <PanelLeftClose className="w-4 h-4" />
+              }
+            </button>
           </div>
         </div>
 
@@ -110,7 +124,7 @@ export function Sidebar({ open, onClose, collapsed, onToggleCollapse }: SidebarP
           {collapsed ? (
             <Link
               href="/dashboard/billing"
-              title={creditsLoading ? "Loading..." : `${balanceMinutes} min remaining`}
+              title={creditsLoading ? "Loading..." : `${balanceMinutes} credits`}
               className={`flex items-center justify-center p-2 rounded-lg ${isLow ? "animate-pulse" : ""}`}
             >
               <Zap className={`w-4 h-4 ${isLow ? "text-red-500" : "text-[#00A99D]"}`} />
@@ -129,36 +143,27 @@ export function Sidebar({ open, onClose, collapsed, onToggleCollapse }: SidebarP
                   </div>
                   <div className="flex items-center justify-between">
                     <span className={`text-xs font-medium ${isLow ? "text-red-600" : "text-[#4A7A6D]"} font-sans`}>
-                      {balanceMinutes} min remaining
+                      {balanceMinutes} credits
                     </span>
-                  </div>
-                  {balance < 300 && (
                     <Link
                       href="/dashboard/billing"
-                      className="text-[10px] text-[#00A99D] hover:underline font-sans mt-1 block"
+                      className="text-[10px] text-[#00A99D] hover:underline font-sans"
                     >
                       Top up &rarr;
                     </Link>
-                  )}
+                  </div>
                 </>
               )}
             </div>
           )}
         </div>
 
-        {/* Collapse toggle + footer */}
-        <div className="border-t border-[#D0EDE8]">
-          <button
-            onClick={onToggleCollapse}
-            className="w-full flex items-center justify-center p-3 text-[#8AADA6] hover:text-[#1B2A4A] transition-colors"
-            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-          </button>
-          {!collapsed && (
-            <p className="text-[10px] text-[#8AADA6] text-center pb-3 font-sans">Powered by Vapi + Twilio</p>
-          )}
-        </div>
+        {/* Footer */}
+        {!collapsed && (
+          <p className="text-[10px] text-[#8AADA6] text-center py-3 font-sans border-t border-[#D0EDE8]">
+            Powered by Vapi + Twilio
+          </p>
+        )}
       </aside>
     </>
   );

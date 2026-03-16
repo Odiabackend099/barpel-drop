@@ -1,18 +1,16 @@
 import { NextResponse } from "next/server";
+import { waitUntil } from "@vercel/functions";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { provisionMerchantLine } from "@/lib/provisioning/phoneService";
+import { checkProvisioningGates } from "@/lib/provisioning/gates";
 
 /**
  * POST /api/onboarding/complete
  *
- * Runs abuse-prevention gates, marks onboarding complete,
- * then returns so the client can fire provisioning separately.
- *
- * Gates:
- *  1. Email must be verified
- *  2. Already-active merchants return idempotent success
- *  3. Rate limit: no double-provisioning within 10 minutes
+ * Marks onboarding complete and triggers managed provisioning.
+ * Uses the shared checkProvisioningGates() for consistent abuse prevention
+ * (email verification, free-trial one-shot limit, 24h rate limit).
  */
 export async function POST() {
   const supabase = createClient();
@@ -28,22 +26,10 @@ export async function POST() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // ── Gate 1: Email verified ────────────────────────────────────────────
-  const { data: authData } = await adminSupabase.auth.admin.getUserById(
-    user.id
-  );
-
-  if (!authData?.user?.email_confirmed_at) {
-    return NextResponse.json(
-      { error: "Please verify your email first." },
-      { status: 403 }
-    );
-  }
-
   // ── Fetch merchant ────────────────────────────────────────────────────
   const { data: merchant } = await adminSupabase
     .from("merchants")
-    .select("id, provisioning_status, provisioning_attempted_at")
+    .select("id, provisioning_status")
     .eq("user_id", user.id)
     .is("deleted_at", null)
     .single();
@@ -52,24 +38,29 @@ export async function POST() {
     return NextResponse.json({ error: "Merchant not found" }, { status: 404 });
   }
 
-  // ── Gate 2: Already active (idempotent) ───────────────────────────────
+  // ── Already active — idempotent success ───────────────────────────────
+  // Return before running gates so the onboarding page can advance to Step 5.
   if (merchant.provisioning_status === "active") {
     return NextResponse.json({ success: true, already_active: true });
   }
 
-  // ── Gate 3: Rate limit — prevent double provisioning ──────────────────
-  if (
-    merchant.provisioning_status === "provisioning" &&
-    merchant.provisioning_attempted_at
-  ) {
-    const elapsed =
-      Date.now() - new Date(merchant.provisioning_attempted_at).getTime();
-    if (elapsed < 10 * 60 * 1000) {
-      return NextResponse.json(
-        { error: "Provisioning already in progress. Please wait." },
-        { status: 429 }
-      );
-    }
+  // ── Security gates ────────────────────────────────────────────────────
+  // Covers: provisioning-in-progress (409), free-trial one-shot (402),
+  // rate limit 3/24h (429), email not verified (403), + records attempt.
+  const gateResult = await checkProvisioningGates(
+    merchant.id,
+    user.id,
+    adminSupabase
+  );
+
+  if (!gateResult.allowed) {
+    return NextResponse.json(
+      {
+        error: gateResult.error,
+        ...(gateResult.requiresUpgrade ? { requiresUpgrade: true } : {}),
+      },
+      { status: gateResult.status ?? 400 }
+    );
   }
 
   // ── Mark onboarding complete ──────────────────────────────────────────
@@ -77,16 +68,18 @@ export async function POST() {
     .from("merchants")
     .update({
       onboarded_at: new Date().toISOString(),
-      onboarding_step: 4,
+      onboarding_step: 5,
     })
     .eq("id", merchant.id);
 
-  // Trigger provisioning server-side (non-blocking). This ensures provisioning
-  // starts even if the browser closes immediately after this response.
+  // Trigger provisioning server-side. waitUntil keeps the Vercel Lambda alive
+  // until provisioning completes even after the HTTP response is sent.
   // The onboarding page's Realtime subscription picks up status changes.
-  provisionMerchantLine(merchant.id).catch((err: unknown) => {
-    console.error("[onboarding] provisioning trigger failed:", err);
-  });
+  waitUntil(
+    provisionMerchantLine(merchant.id).catch((err: unknown) => {
+      console.error("[onboarding] provisioning trigger failed:", err);
+    })
+  );
 
   return NextResponse.json({ success: true });
 }

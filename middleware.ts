@@ -110,8 +110,8 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Redirect authenticated users away from /login
-  if (pathname === "/login" && user) {
+  // Redirect authenticated users away from /login and /signup
+  if ((pathname === "/login" || pathname === "/signup") && user) {
     const { data: merchant } = await supabase
       .from("merchants")
       .select("onboarded_at")

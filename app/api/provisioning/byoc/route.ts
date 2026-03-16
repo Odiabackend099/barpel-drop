@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createVapiAssistant } from "@/lib/provisioning/phoneService";
 import { withRetry } from "@/lib/retry";
+import { checkProvisioningGates } from "@/lib/provisioning/gates";
 
 /**
  * POST /api/provisioning/byoc
@@ -69,33 +70,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Merchant not found" }, { status: 404 });
   }
 
-  // --- Rate limit: 30-second cooldown between attempts ---
-  if (merchant.provisioning_attempted_at) {
-    const lastAttempt = new Date(merchant.provisioning_attempted_at).getTime();
-    const cooldown = 30 * 1000; // 30 seconds
-    if (Date.now() - lastAttempt < cooldown) {
-      return NextResponse.json(
-        { error: "Please wait 30 seconds before trying again." },
-        { status: 429 }
-      );
-    }
-  }
+  // --- Security gates (status, free provision, rate limit, email verification) ---
+  const adminSupabase = createAdminClient();
+  const gateResult = await checkProvisioningGates(
+    merchant.id,
+    user.id,
+    adminSupabase
+  );
 
-  // --- Guards ---
-  if (merchant.provisioning_status === "provisioning") {
-    return NextResponse.json(
-      { error: "Provisioning is in progress. Please wait." },
-      { status: 409 }
-    );
-  }
-
-  if (merchant.provisioning_status === "active") {
+  if (!gateResult.allowed) {
     return NextResponse.json(
       {
-        error:
-          "You already have an active phone line. Remove it first before connecting a new one.",
+        error: gateResult.error,
+        ...(gateResult.requiresUpgrade ? { requiresUpgrade: true } : {}),
       },
-      { status: 409 }
+      { status: gateResult.status ?? 400 }
     );
   }
 
@@ -127,8 +116,6 @@ export async function POST(request: Request) {
       { status: 502 }
     );
   }
-
-  const adminSupabase = createAdminClient();
 
   // --- Store credentials in Vault (upsert pattern) ---
   const secrets = [
@@ -260,12 +247,9 @@ export async function POST(request: Request) {
         provisioning_status: "active",
         provisioning_mode: "byoc",
         provisioning_error: null,
+        has_used_free_provision: true,
       })
       .eq("id", merchant.id);
-
-    console.log(
-      `[byoc] Provisioned ${merchant.business_name}: ${phoneNumber}`
-    );
 
     return NextResponse.json({
       success: true,
@@ -287,7 +271,7 @@ export async function POST(request: Request) {
       .eq("id", merchant.id);
 
     return NextResponse.json(
-      { error: errorMessage },
+      { error: "Provisioning failed. Please try again or contact support." },
       { status: 500 }
     );
   }

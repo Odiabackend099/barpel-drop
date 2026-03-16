@@ -7,7 +7,7 @@ import { BASE_PROMPT } from "@/lib/constants";
 /**
  * PATCH /api/merchant/update
  * Updates the authenticated merchant's profile.
- * Body: { business_name?, country?, custom_prompt? }
+ * Body: { business_name?, country?, custom_prompt?, notification_preferences? }
  * Sanitises custom_prompt before saving. Updates Vapi assistant if prompt changed.
  */
 export async function PATCH(request: Request) {
@@ -22,7 +22,12 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let body: { business_name?: string; country?: string; custom_prompt?: string };
+  let body: {
+    business_name?: string;
+    country?: string;
+    custom_prompt?: string;
+    notification_preferences?: Record<string, unknown>;
+  };
   try {
     body = await request.json();
   } catch {
@@ -30,8 +35,13 @@ export async function PATCH(request: Request) {
   }
 
   const VALID_COUNTRIES = ["NG", "GB", "US", "CA", "GH", "KE"];
+  const VALID_NOTIFICATION_KEYS = [
+    "low_balance_sms",
+    "monthly_summary_email",
+    "payment_receipt_email",
+  ];
 
-  const updates: Record<string, string> = {};
+  const updates: Record<string, unknown> = {};
   let sanitizedPrompt: string | undefined;
 
   if (body.business_name !== undefined) {
@@ -66,6 +76,33 @@ export async function PATCH(request: Request) {
     }
     updates.custom_prompt = result.sanitized;
     sanitizedPrompt = result.sanitized;
+  }
+
+  if (body.notification_preferences !== undefined) {
+    const prefs = body.notification_preferences;
+    if (typeof prefs !== "object" || prefs === null || Array.isArray(prefs)) {
+      return NextResponse.json(
+        { error: "notification_preferences must be an object" },
+        { status: 400 }
+      );
+    }
+    const sanitized: Record<string, boolean> = {};
+    for (const [key, value] of Object.entries(prefs)) {
+      if (!VALID_NOTIFICATION_KEYS.includes(key)) {
+        return NextResponse.json(
+          { error: `Unknown notification key: ${key}` },
+          { status: 400 }
+        );
+      }
+      if (typeof value !== "boolean") {
+        return NextResponse.json(
+          { error: `notification_preferences.${key} must be a boolean` },
+          { status: 400 }
+        );
+      }
+      sanitized[key] = value;
+    }
+    updates.notification_preferences = sanitized;
   }
 
   if (Object.keys(updates).length === 0) {

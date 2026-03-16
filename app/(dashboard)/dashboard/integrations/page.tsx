@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useMerchant } from "@/hooks/useMerchant";
@@ -10,6 +10,7 @@ import { PhoneLineSection } from "@/components/integrations/PhoneLineSection";
 import { ShopifySection } from "@/components/integrations/ShopifySection";
 import { AbandonedCartSection } from "@/components/integrations/AbandonedCartSection";
 import { ComingSoonSection } from "@/components/integrations/ComingSoonSection";
+import { CountrySelectorModal } from "@/components/integrations/CountrySelectorModal";
 
 function ShopifyConnectedToast() {
   const searchParams = useSearchParams();
@@ -24,13 +25,44 @@ function ShopifyConnectedToast() {
 }
 
 export default function IntegrationsPage() {
-  const { merchant, loading: merchantLoading } = useMerchant();
+  const { merchant, loading: merchantLoading, deleteAiVoice, togglePause } =
+    useMerchant();
   const {
     shopifyIntegration,
     isShopifyConnected,
     loading: intLoading,
     refetch,
   } = useIntegrations(merchant?.id);
+
+  const [countryModalOpen, setCountryModalOpen] = useState(false);
+  const [provisioningError, setProvisioningError] = useState<string | null>(
+    null
+  );
+
+  const handleCountrySelect = async (country: string) => {
+    setCountryModalOpen(false);
+    setProvisioningError(null);
+    try {
+      const res = await fetch("/api/provisioning/retry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ country }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        if (data.requiresUpgrade) {
+          toast.error(
+            "Your free provision has been used. Upgrade your plan to get a new number."
+          );
+        } else {
+          toast.error(data.error || "Provisioning failed");
+        }
+        setProvisioningError(data.error || null);
+      }
+    } catch {
+      toast.error("Network error. Please check your connection.");
+    }
+  };
 
   if (merchantLoading || intLoading) {
     return (
@@ -59,7 +91,25 @@ export default function IntegrationsPage() {
         </p>
       </div>
 
-      <PhoneLineSection merchant={merchant} />
+      {provisioningError && (
+        <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+          {provisioningError}
+        </div>
+      )}
+
+      <PhoneLineSection
+        merchant={merchant}
+        onDelete={deleteAiVoice}
+        onTogglePause={togglePause}
+        onOpenCountrySelector={() => setCountryModalOpen(true)}
+      />
+
+      <CountrySelectorModal
+        open={countryModalOpen}
+        onClose={() => setCountryModalOpen(false)}
+        onSelect={handleCountrySelect}
+        defaultCountry={merchant?.country}
+      />
 
       <ShopifySection
         shopifyIntegration={shopifyIntegration}

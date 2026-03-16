@@ -1,9 +1,30 @@
 "use client";
 
 import { useState } from "react";
-import { Phone, Copy, ChevronDown, ChevronUp, Loader2, Clock } from "lucide-react";
+import {
+  Phone,
+  Copy,
+  ChevronDown,
+  ChevronUp,
+  Loader2,
+  Clock,
+  PauseCircle,
+  PlayCircle,
+  Trash2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { TestCallModal } from "@/components/dashboard/TestCallModal";
 import { OutboundCallModal } from "@/components/dashboard/OutboundCallModal";
 import { BYOCModal } from "@/components/integrations/BYOCModal";
@@ -12,6 +33,9 @@ import type { MerchantData } from "@/lib/mockApi";
 
 interface PhoneLineSectionProps {
   merchant: MerchantData | null;
+  onDelete: () => Promise<void>;
+  onTogglePause: (pause: boolean) => Promise<void>;
+  onOpenCountrySelector: () => void;
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -19,7 +43,15 @@ function StatusBadge({ status }: { status: string }) {
     return (
       <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-100">
         <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
-        Active — Your AI is answering calls
+        Active
+      </span>
+    );
+  }
+  if (status === "suspended") {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-200">
+        <PauseCircle className="w-3 h-3" />
+        Paused
       </span>
     );
   }
@@ -32,12 +64,7 @@ function StatusBadge({ status }: { status: string }) {
     );
   }
   if (status === "pending") {
-    return (
-      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-200">
-        <span className="w-2 h-2 rounded-full bg-amber-300" />
-        Not yet set up
-      </span>
-    );
+    return null;
   }
   if (status === "failed") {
     return (
@@ -58,30 +85,26 @@ function StatusBadge({ status }: { status: string }) {
   return null;
 }
 
-export function PhoneLineSection({ merchant }: PhoneLineSectionProps) {
+export function PhoneLineSection({
+  merchant,
+  onDelete,
+  onTogglePause,
+  onOpenCountrySelector,
+}: PhoneLineSectionProps) {
   const [copied, setCopied] = useState(false);
   const [testCallOpen, setTestCallOpen] = useState(false);
   const [outboundCallOpen, setOutboundCallOpen] = useState(false);
   const [forwardingOpen, setForwardingOpen] = useState(false);
   const [byocOpen, setBYOCOpen] = useState(false);
-  const [triggeringSetup, setTriggeringSetup] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [pausing, setPausing] = useState(false);
 
   const phoneNumber = merchant?.support_phone || null;
   const provisioningStatus = merchant?.provisioning_status ?? "pending";
-  const isActive = provisioningStatus === "active" && phoneNumber;
+  const isSuspended = provisioningStatus === "suspended";
+  const isActive =
+    (provisioningStatus === "active" || isSuspended) && phoneNumber;
   const carriers = getCarriersForCountry(merchant?.country);
-
-  const handleTriggerSetup = async () => {
-    if (triggeringSetup) return;
-    setTriggeringSetup(true);
-    try {
-      await fetch("/api/provisioning/retry", { method: "POST" });
-    } catch {
-      // Silently ignore — user can try again
-    } finally {
-      setTriggeringSetup(false);
-    }
-  };
 
   const handleCopy = () => {
     if (!phoneNumber) return;
@@ -90,7 +113,24 @@ export function PhoneLineSection({ merchant }: PhoneLineSectionProps) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Strip spaces from number for USSD codes
+  const handleRelease = async () => {
+    setDeleting(true);
+    try {
+      await onDelete();
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleTogglePause = async () => {
+    setPausing(true);
+    try {
+      await onTogglePause(!isSuspended);
+    } finally {
+      setPausing(false);
+    }
+  };
+
   const cleanNumber = phoneNumber?.replace(/\s/g, "") ?? "";
 
   return (
@@ -106,28 +146,50 @@ export function PhoneLineSection({ merchant }: PhoneLineSectionProps) {
               <Phone className="w-5 h-5 text-white" />
             </div>
             <div>
-              <p className="text-sm opacity-80 font-sans">Your AI Support Line</p>
-              {isActive ? (
-                <p className="text-2xl font-bold tracking-tight font-mono">{phoneNumber}</p>
-              ) : provisioningStatus === "provisioning" ? (
-                <p className="text-lg font-medium opacity-80 font-sans">Setting up your number...</p>
-              ) : provisioningStatus === "pending" ? (
-                <p className="text-sm opacity-80 font-sans">Your AI line isn&apos;t set up yet</p>
-              ) : provisioningStatus === "needs_address" ? (
+              <p className="text-sm opacity-80 font-sans">
+                Your AI Support Line
+              </p>
+
+              {/* STATE 4 + suspended: Show phone number */}
+              {isActive && (
+                <p className="text-2xl font-bold tracking-tight font-mono">
+                  {phoneNumber}
+                </p>
+              )}
+
+              {/* STATE 2: Provisioning */}
+              {provisioningStatus === "provisioning" && (
+                <p className="text-lg font-medium opacity-80 font-sans">
+                  Setting up your number...
+                </p>
+              )}
+
+              {/* STATE 1: Pending */}
+              {provisioningStatus === "pending" && (
                 <p className="text-sm opacity-80 font-sans">
-                  Your number is being set up manually. We&apos;ll notify you within 24 hours.
+                  Get a phone number for your AI to answer calls
                 </p>
-              ) : provisioningStatus === "failed" ? (
+              )}
+
+              {/* needs_address sub-state */}
+              {provisioningStatus === "needs_address" && (
+                <p className="text-sm opacity-80 font-sans">
+                  Your UK number requires manual setup. Expected within 24
+                  hours.
+                </p>
+              )}
+
+              {/* STATE 3: Failed */}
+              {provisioningStatus === "failed" && (
                 <p className="text-sm text-red-200 font-sans">
-                  {merchant?.provisioning_error || "An error occurred during setup."}
+                  {merchant?.provisioning_error ||
+                    "An error occurred during setup."}
                 </p>
-              ) : provisioningStatus === "active" && !phoneNumber ? (
-                <p className="text-sm text-red-200 font-sans">
-                  Something went wrong with your phone setup. Please retry.
-                </p>
-              ) : null}
+              )}
             </div>
           </div>
+
+          {/* Copy button — active/suspended only */}
           {isActive && (
             <Button
               variant="secondary"
@@ -136,7 +198,7 @@ export function PhoneLineSection({ merchant }: PhoneLineSectionProps) {
               className="bg-white/20 hover:bg-white/30 text-white border-white/30"
             >
               <Copy className="w-3 h-3 mr-1" />
-              {copied ? "Copied!" : "Copy"}
+              {copied ? "Copied!" : "Copy Number"}
             </Button>
           )}
         </div>
@@ -146,47 +208,144 @@ export function PhoneLineSection({ merchant }: PhoneLineSectionProps) {
           <StatusBadge status={provisioningStatus} />
         </div>
 
-        {/* Description */}
-        {isActive && (
+        {/* AI Assistant info — active/suspended */}
+        {isActive && merchant?.business_name && (
           <p className="mt-2 text-sm opacity-70 font-sans">
-            Share this number with your customers as your store&apos;s support line
+            AI Assistant: {merchant.business_name} Support
           </p>
         )}
 
-        {/* Action buttons — active state */}
-        {isActive && merchant?.vapi_agent_id && (
-          <div className="mt-4 flex gap-2 flex-wrap">
-            <Button
-              variant="secondary"
-              size="sm"
-              className="bg-white/20 hover:bg-white/30 text-white border-white/30"
-              onClick={() => setTestCallOpen(true)}
-            >
-              Test in Browser
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              className="bg-white/20 hover:bg-white/30 text-white border-white/30"
-              onClick={() => setOutboundCallOpen(true)}
-            >
-              Call a Number
-            </Button>
+        {/* Provisioning progress bar — provisioning state */}
+        {provisioningStatus === "provisioning" && (
+          <div className="mt-4">
+            <div className="h-1.5 bg-white/20 rounded-full overflow-hidden">
+              <div className="h-full bg-white/60 rounded-full animate-pulse w-2/3" />
+            </div>
+            <p className="text-xs opacity-60 mt-2 font-sans">
+              Usually under 30 seconds
+            </p>
           </div>
         )}
 
-        {/* Setup buttons — pending state */}
+        {/* ── ACTION BUTTONS ── */}
+
+        {/* STATE 4: Active — Test, Call, Pause, Release */}
+        {isActive && (
+          <div className="mt-4 flex gap-2 flex-wrap">
+            {merchant?.vapi_agent_id && (
+              <>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                  onClick={() => setTestCallOpen(true)}
+                >
+                  Test in Browser
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                  onClick={() => setOutboundCallOpen(true)}
+                >
+                  Call a Number
+                </Button>
+              </>
+            )}
+
+            {/* Pause / Resume */}
+            <Button
+              variant="secondary"
+              size="sm"
+              className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+              onClick={handleTogglePause}
+              disabled={pausing}
+            >
+              {isSuspended ? (
+                <>
+                  <PlayCircle className="w-3 h-3 mr-1" />
+                  {pausing ? "Resuming..." : "Resume AI Line"}
+                </>
+              ) : (
+                <>
+                  <PauseCircle className="w-3 h-3 mr-1" />
+                  {pausing ? "Pausing..." : "Pause AI Line"}
+                </>
+              )}
+            </Button>
+
+            {/* Release Number */}
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="bg-red-500/30 hover:bg-red-500/50 text-white border-red-400/30"
+                >
+                  <Trash2 className="w-3 h-3 mr-1" />
+                  Release Number
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    Release your AI phone number?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Your number{" "}
+                    <span className="font-mono font-semibold text-foreground">
+                      {phoneNumber}
+                    </span>{" "}
+                    will be permanently released. Customers will no longer be
+                    able to reach your AI. You can get a new number at any time.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleRelease}
+                    disabled={deleting}
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    {deleting ? "Releasing..." : "Yes, Release Number"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        )}
+
+        {/* STATE 1: Pending — Get AI Number + BYOC */}
         {provisioningStatus === "pending" && (
+          <div className="mt-4 flex flex-col gap-2">
+            <Button
+              size="sm"
+              onClick={onOpenCountrySelector}
+              className="bg-white text-[#00A99D] hover:bg-white/90 font-semibold w-fit"
+            >
+              <Phone className="w-3 h-3 mr-1" />
+              Get My AI Number
+            </Button>
+            <button
+              onClick={() => setBYOCOpen(true)}
+              className="text-xs text-white/70 hover:text-white underline underline-offset-2 w-fit font-sans"
+            >
+              Already have a Twilio number? Bring your own &rarr;
+            </button>
+          </div>
+        )}
+
+        {/* STATE 3: Failed — Try Again + BYOC */}
+        {provisioningStatus === "failed" && (
           <div className="mt-3 flex gap-2 flex-wrap">
             <Button
               variant="secondary"
               size="sm"
               className="bg-white/20 hover:bg-white/30 text-white border-white/30"
-              onClick={handleTriggerSetup}
-              disabled={triggeringSetup}
+              onClick={onOpenCountrySelector}
             >
               <Phone className="w-3 h-3 mr-1" />
-              {triggeringSetup ? "Setting up..." : "Set Up AI Line"}
+              Try Again
             </Button>
             <Button
               variant="secondary"
@@ -194,30 +353,17 @@ export function PhoneLineSection({ merchant }: PhoneLineSectionProps) {
               className="bg-white/20 hover:bg-white/30 text-white border-white/30"
               onClick={() => setBYOCOpen(true)}
             >
-              Connect Your Own Number
+              Use My Own Number
             </Button>
           </div>
         )}
 
-        {/* Connect button — failed state */}
-        {(provisioningStatus === "failed" || (provisioningStatus === "active" && !phoneNumber)) && (
-          <div className="mt-3">
-            <Button
-              variant="secondary"
-              size="sm"
-              className="bg-white/20 hover:bg-white/30 text-white border-white/30"
-              onClick={() => setBYOCOpen(true)}
-            >
-              <Phone className="w-3 h-3 mr-1" />Connect a Number
-            </Button>
-          </div>
-        )}
-
-        {/* BYOC alternative — needs_address state */}
+        {/* needs_address sub-state — BYOC alternative */}
         {provisioningStatus === "needs_address" && (
           <div className="mt-3">
             <p className="text-xs text-white/70 mb-2">
-              While we set up your UK number manually, you can connect your own Twilio number instantly:
+              While we set up your UK number manually, you can connect your own
+              Twilio number instantly:
             </p>
             <Button
               variant="secondary"
@@ -225,12 +371,13 @@ export function PhoneLineSection({ merchant }: PhoneLineSectionProps) {
               className="bg-white/20 hover:bg-white/30 text-white border-white/30"
               onClick={() => setBYOCOpen(true)}
             >
-              <Phone className="w-3 h-3 mr-1" />Connect Your Own Number
+              <Phone className="w-3 h-3 mr-1" />
+              Connect Your Own Number
             </Button>
           </div>
         )}
 
-        {/* Call forwarding subsection */}
+        {/* Call forwarding subsection — active/suspended only */}
         {isActive && carriers.length > 0 && (
           <div className="mt-4 border-t border-white/20 pt-4">
             <button
@@ -248,8 +395,9 @@ export function PhoneLineSection({ merchant }: PhoneLineSectionProps) {
             {forwardingOpen && (
               <div className="mt-3 space-y-3">
                 <p className="text-sm opacity-80 font-sans">
-                  Turn on call forwarding from your existing number to your Barpel line.
-                  Your customers call your store number as usual — Barpel&apos;s AI answers automatically.
+                  Turn on call forwarding from your existing number to your
+                  Barpel line. Your customers call your store number as usual —
+                  Barpel&apos;s AI answers automatically.
                 </p>
 
                 <Tabs defaultValue={carriers[0]?.name} className="w-full">
@@ -265,7 +413,11 @@ export function PhoneLineSection({ merchant }: PhoneLineSectionProps) {
                     ))}
                   </TabsList>
                   {carriers.map((carrier) => (
-                    <TabsContent key={carrier.name} value={carrier.name} className="mt-3">
+                    <TabsContent
+                      key={carrier.name}
+                      value={carrier.name}
+                      className="mt-3"
+                    >
                       <div className="bg-white/10 rounded-lg p-3">
                         <p className="text-sm font-mono text-white">
                           {carrier.getInstructions(cleanNumber)}
@@ -276,7 +428,8 @@ export function PhoneLineSection({ merchant }: PhoneLineSectionProps) {
                 </Tabs>
 
                 <p className="text-xs opacity-60 font-sans">
-                  These codes may vary by region. Contact your carrier if they don&apos;t work.
+                  These codes may vary by region. Contact your carrier if they
+                  don&apos;t work.
                 </p>
               </div>
             )}
@@ -296,10 +449,7 @@ export function PhoneLineSection({ merchant }: PhoneLineSectionProps) {
         open={outboundCallOpen}
         onClose={() => setOutboundCallOpen(false)}
       />
-      <BYOCModal
-        open={byocOpen}
-        onClose={() => setBYOCOpen(false)}
-      />
+      <BYOCModal open={byocOpen} onClose={() => setBYOCOpen(false)} />
     </>
   );
 }

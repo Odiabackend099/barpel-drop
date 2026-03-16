@@ -15,17 +15,17 @@ import {
   Phone,
   ChevronDown,
   ChevronUp,
-  RefreshCw,
-  AlertCircle,
 } from "lucide-react";
 import { BarpelLogo } from "@/components/brand/BarpelLogo";
 import { createClient } from "@/lib/supabase/client";
 import { CREDIT_PACKAGES } from "@/lib/constants";
+import { BYOCModal } from "@/components/integrations/BYOCModal";
 
 const STEPS = [
   { icon: Store, label: "Business Name" },
   { icon: Sparkles, label: "Connect Store" },
   { icon: CreditCard, label: "Get Minutes" },
+  { icon: Phone, label: "AI Phone Line" },
   { icon: Rocket, label: "Ready!" },
 ];
 
@@ -93,12 +93,13 @@ function OnboardingContent() {
   // Step 4: provisioning status (Ticket 4)
   const [provisioningStatus, setProvisioningStatus] = useState("pending");
   const [provisioningError, setProvisioningError] = useState("");
-  const [retrying, setRetrying] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
 
-  // Step 4 tab state
+  // Step 5 tab state
   const [activeTab, setActiveTab] = useState<"A" | "B" | "C">("A");
   const [showForwarding, setShowForwarding] = useState(false);
+  // Step 4: BYOC modal
+  const [byocOpen, setBYOCOpen] = useState(false);
 
   const supabase = createClient();
 
@@ -142,7 +143,7 @@ function OnboardingContent() {
         .single();
 
       if (data) {
-        const step = Math.min(Math.max(Number(data.onboarding_step) || 1, 1), 4);
+        const step = Math.min(Math.max(Number(data.onboarding_step) || 1, 1), 5);
         // If shopify was denied, errored, or just connected, stay on step 2 to show the relevant UI
         const resolvedStep =
           searchParams.get("shopify_denied") === "1" || searchParams.get("shopify_error")
@@ -192,7 +193,21 @@ function OnboardingContent() {
           const n = payload.new as any;
           if (n?.user_id !== userId) return;
           if (n.support_phone) setPhoneNumber(n.support_phone);
-          if (n.provisioning_status) setProvisioningStatus(n.provisioning_status);
+          // Guard against backwards transitions: once provisioning has started,
+          // don't allow a stale DB event (e.g. from Gate 5 updating provision_count
+          // without changing provisioning_status) to revert the UI back to "pending".
+          if (n.provisioning_status) {
+            setProvisioningStatus((prev) => {
+              const order = ["pending", "provisioning", "needs_address", "failed", "active", "suspended"];
+              const prevIdx = order.indexOf(prev);
+              const newIdx = order.indexOf(n.provisioning_status);
+              // Only update if the new status is equal or further along,
+              // OR if it's an explicit terminal state (failed/needs_address/active)
+              const isTerminal = ["failed", "needs_address", "active", "suspended"].includes(n.provisioning_status);
+              if (isTerminal || newIdx >= prevIdx) return n.provisioning_status;
+              return prev;
+            });
+          }
           setProvisioningError(n.provisioning_error ?? "");
         }
       )
@@ -202,6 +217,15 @@ function OnboardingContent() {
       sub.removeChannel(channel);
     };
   }, [userId]);
+
+  // Auto-advance from step 4 to step 5 when provisioning completes
+  useEffect(() => {
+    if (currentStep === 4 && provisioningStatus === "active" && phoneNumber) {
+      // Small delay so the "Phone line ready!" message is visible briefly
+      const t = setTimeout(() => setCurrentStep(5), 1500);
+      return () => clearTimeout(t);
+    }
+  }, [currentStep, provisioningStatus, phoneNumber]);
 
   // Shopify connection polling — when merchant is on step 2 and not yet connected,
   // poll the integrations table every 3s (up to 30s) so the UI auto-updates if
@@ -252,7 +276,7 @@ function OnboardingContent() {
 
   // Ticket 4: Polling fallback — if Realtime doesn't deliver within 10s, poll every 5s
   useEffect(() => {
-    if (currentStep !== 4) return;
+    if (currentStep !== 4 && currentStep !== 5) return;
     const terminal = ["active", "failed", "needs_address"];
     if (terminal.includes(provisioningStatus)) return;
 
@@ -342,8 +366,7 @@ function OnboardingContent() {
   }
 
   async function handleSkipShopify() {
-    // Setting onboarded_at here means /onboarding won't show again even if tab is closed
-    await saveToDb({ onboarding_step: 3, onboarded_at: new Date().toISOString() });
+    await saveToDb({ onboarding_step: 3 });
     goToStep(3);
   }
 
@@ -368,8 +391,7 @@ function OnboardingContent() {
   }
 
   async function handleSkipBilling() {
-    // Setting onboarded_at here means /onboarding won't show again even if tab is closed
-    await saveToDb({ onboarding_step: 4, onboarded_at: new Date().toISOString() });
+    await saveToDb({ onboarding_step: 4 });
     goToStep(4);
   }
 
@@ -404,16 +426,6 @@ function OnboardingContent() {
     router.push("/dashboard");
   }
 
-  // Ticket 4: Retry provisioning
-  async function handleRetryProvisioning() {
-    if (retrying) return;
-    setRetrying(true);
-    setError("");
-    setProvisioningStatus("provisioning");
-    fetch("/api/provisioning/retry", { method: "POST" }).catch(() => {});
-    setTimeout(() => setRetrying(false), 2000);
-  }
-
   function handleCopyPhone() {
     navigator.clipboard.writeText(phoneNumber);
     setCopied(true);
@@ -440,7 +452,7 @@ function OnboardingContent() {
             <BarpelLogo size={28} />
             <span className="font-display font-bold text-navy text-lg tracking-tight">Barpel</span>
           </div>
-          <span className="text-xs text-[#8AADA6]">Step {currentStep} of 4</span>
+          <span className="text-xs text-[#8AADA6]">Step {currentStep} of 5</span>
         </div>
       </header>
 
@@ -689,33 +701,79 @@ function OnboardingContent() {
               </motion.div>
             )}
 
-            {/* ─── Step 4: Ready! ─── */}
+            {/* ─── Step 4: AI Phone Line ─── */}
             {currentStep === 4 && (
               <motion.div key="step4" {...fadeSlide} transition={{ duration: 0.3 }}>
                 <div className="bg-white rounded-2xl border border-[#D0EDE8] p-8 shadow-sm">
-                  <div className="w-16 h-16 rounded-full bg-[#C8F0E8] flex items-center justify-center mx-auto mb-6">
-                    <Rocket className="w-8 h-8 text-teal" />
+                  <div className="w-12 h-12 rounded-xl bg-[#F0F9F8] flex items-center justify-center mx-auto mb-6">
+                    <Phone className="w-6 h-6 text-teal" />
                   </div>
 
-                  {/* ── Before provisioning: show Finish Setup button ── */}
-                  {provisioningStatus === "pending" && (
+                  {/* Before provisioning — show options */}
+                  {(provisioningStatus === "pending" || provisioningStatus === "failed") && (
                     <>
                       <h2 className="font-display text-2xl font-bold text-navy mb-2 text-center tracking-tight">
-                        Ready to go live!
+                        Get Your AI Phone Line
                       </h2>
                       <p className="text-sm text-[#4A7A6D] mb-6 text-center">
-                        Click below to set up your AI support line. This takes about 30 seconds.
+                        Your AI is ready. Now give it a number to answer calls on.
                       </p>
+
+                      {provisioningStatus === "failed" && (
+                        <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg">
+                          <p className="text-xs text-red-600 text-center">
+                            {provisioningError || "Previous setup failed."} Try again below.
+                          </p>
+                        </div>
+                      )}
 
                       {error && <p className="mb-4 text-xs text-red-500 text-center">{error}</p>}
 
+                      {/* Primary: Get AI Number */}
                       <button
                         onClick={handleCompleteOnboarding}
                         disabled={saving}
                         className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-teal text-white font-semibold text-sm hover:bg-teal/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {saving ? "Starting..." : "Finish Setup"}
-                        <ArrowRight className="w-4 h-4" />
+                        <Phone className="w-4 h-4" />
+                        {saving ? "Setting up..." : "Get My AI Number \u2014 Free"}
+                      </button>
+                      <p className="text-center text-xs text-[#8AADA6] mt-1.5">
+                        This uses your free trial minutes.
+                      </p>
+
+                      <div className="flex items-center gap-3 my-5">
+                        <div className="flex-1 h-px bg-[#D0EDE8]" />
+                        <span className="text-xs text-[#8AADA6]">or</span>
+                        <div className="flex-1 h-px bg-[#D0EDE8]" />
+                      </div>
+
+                      {/* Secondary: BYOC */}
+                      <p className="text-sm text-[#4A7A6D] text-center mb-2">
+                        Already have a Twilio number?
+                      </p>
+                      <button
+                        onClick={() => setBYOCOpen(true)}
+                        className="w-full flex items-center justify-center gap-2 py-3 rounded-full border border-[#D0EDE8] text-[#4A7A6D] font-medium text-sm hover:bg-[#F0F9F8] transition-colors"
+                      >
+                        Bring My Own Number
+                      </button>
+
+                      <div className="flex items-center gap-3 my-5">
+                        <div className="flex-1 h-px bg-[#D0EDE8]" />
+                        <span className="text-xs text-[#8AADA6]">or</span>
+                        <div className="flex-1 h-px bg-[#D0EDE8]" />
+                      </div>
+
+                      {/* Tertiary: Skip */}
+                      <button
+                        onClick={async () => {
+                          await saveToDb({ onboarding_step: 5, onboarded_at: new Date().toISOString() });
+                          goToStep(5);
+                        }}
+                        className="text-sm text-[#8AADA6] hover:text-navy transition-colors mx-auto block"
+                      >
+                        Skip for now &mdash; set up from dashboard
                       </button>
 
                       <button
@@ -727,7 +785,7 @@ function OnboardingContent() {
                     </>
                   )}
 
-                  {/* ── Provisioning in progress ── */}
+                  {/* Provisioning in progress */}
                   {provisioningStatus === "provisioning" && (
                     <>
                       <h2 className="font-display text-2xl font-bold text-navy mb-2 text-center tracking-tight">
@@ -745,8 +803,60 @@ function OnboardingContent() {
                     </>
                   )}
 
-                  {/* ── Provisioning complete: show phone number ── */}
+                  {/* Provisioning complete — auto-advance to step 5 */}
                   {provisioningStatus === "active" && phoneNumber && (
+                    <div className="flex flex-col items-center gap-3 py-4">
+                      <Check className="w-8 h-8 text-teal" />
+                      <p className="text-sm text-[#4A7A6D]">Phone line ready!</p>
+                      <button
+                        onClick={() => goToStep(5)}
+                        className="mt-2 flex items-center justify-center gap-2 py-3 px-6 rounded-full bg-teal text-white font-semibold text-sm hover:bg-teal/90 transition-colors"
+                      >
+                        Continue
+                        <ArrowRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* needs_address */}
+                  {provisioningStatus === "needs_address" && (
+                    <>
+                      <h2 className="font-display text-2xl font-bold text-navy mb-2 text-center tracking-tight">
+                        Almost there!
+                      </h2>
+                      <div className="py-4">
+                        <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl">
+                          <p className="text-sm text-blue-700 text-center">
+                            Your UK number is being set up manually. You&apos;ll receive it within 24 hours.
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={async () => {
+                          await saveToDb({ onboarding_step: 5, onboarded_at: new Date().toISOString() });
+                          goToStep(5);
+                        }}
+                        className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-teal text-white font-semibold text-sm hover:bg-teal/90 transition-colors"
+                      >
+                        Continue to Dashboard
+                        <ArrowRight className="w-4 h-4" />
+                      </button>
+                    </>
+                  )}
+                </div>
+              </motion.div>
+            )}
+
+            {/* ─── Step 5: Ready! ─── */}
+            {currentStep === 5 && (
+              <motion.div key="step5" {...fadeSlide} transition={{ duration: 0.3 }}>
+                <div className="bg-white rounded-2xl border border-[#D0EDE8] p-8 shadow-sm">
+                  <div className="w-16 h-16 rounded-full bg-[#C8F0E8] flex items-center justify-center mx-auto mb-6">
+                    <Rocket className="w-8 h-8 text-teal" />
+                  </div>
+
+                  {/* Provisioned or BYOC — show phone number */}
+                  {provisioningStatus === "active" && phoneNumber ? (
                     <>
                       <h2 className="font-display text-2xl font-bold text-navy mb-2 text-center tracking-tight">
                         You&apos;re all set!
@@ -783,7 +893,7 @@ function OnboardingContent() {
                       {isAfrica && (
                         <div className="mb-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
                           <p className="text-xs text-blue-700">
-                            This is a virtual UK number. Your customers can call it internationally. We recommend setting up call forwarding below so customers can reach you on a local number.
+                            This is a virtual UK number. Your customers can call it internationally. We recommend setting up call forwarding from the Integrations page.
                           </p>
                         </div>
                       )}
@@ -806,7 +916,6 @@ function OnboardingContent() {
                           ))}
                         </div>
 
-                        {/* Option A */}
                         {activeTab === "A" && (
                           <div className="mt-4 p-4 bg-[#F0F9F8] rounded-xl border border-[#D0EDE8] space-y-3 text-sm text-[#1B2A4A]">
                             <p className="font-semibold">Share your AI support number in these locations:</p>
@@ -821,15 +930,9 @@ function OnboardingContent() {
                                 <span className="font-medium text-navy">Order confirmation email</span> — Add &ldquo;Questions about your order? Call us at [number]&rdquo;
                               </li>
                             </ul>
-                            <div className="p-3 bg-amber-50 border border-amber-100 rounded-lg">
-                              <p className="text-xs text-amber-700">
-                                <strong>Note:</strong> Do NOT add it to Shopify Settings &rarr; Contact Information — that field is cosmetic only and won&apos;t be seen by customers.
-                              </p>
-                            </div>
                           </div>
                         )}
 
-                        {/* Option B */}
                         {activeTab === "B" && (
                           <div className="mt-4 p-4 bg-[#F0F9F8] rounded-xl border border-[#D0EDE8] space-y-3 text-sm">
                             <p className="text-[#4A7A6D]">
@@ -867,7 +970,6 @@ function OnboardingContent() {
                           </div>
                         )}
 
-                        {/* Option C */}
                         {activeTab === "C" && (
                           <div className="mt-4 p-4 bg-[#F0F9F8] rounded-xl border border-[#D0EDE8] space-y-3 text-sm text-[#4A7A6D]">
                             <p>
@@ -898,107 +1000,36 @@ function OnboardingContent() {
                         <ArrowRight className="w-4 h-4" />
                       </button>
                     </>
-                  )}
-
-                  {/* ── Provisioning failed ── */}
-                  {provisioningStatus === "failed" && (
+                  ) : (
+                    /* Skipped — no phone number */
                     <>
                       <h2 className="font-display text-2xl font-bold text-navy mb-2 text-center tracking-tight">
-                        Setup needs attention
+                        Welcome to Barpel!
                       </h2>
-                      <div className="flex flex-col items-center gap-3 py-4">
-                        <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">
-                          <AlertCircle className="w-6 h-6 text-red-500" />
-                        </div>
-                        <p className="text-sm text-red-600 text-center">
-                          {provisioningError || "An error occurred during setup."}
+                      <p className="text-sm text-[#4A7A6D] mb-6 text-center">
+                        Your account is ready. Add a phone number anytime to start taking AI-powered calls.
+                      </p>
+
+                      <div className="p-4 bg-amber-50 border border-amber-100 rounded-xl mb-6">
+                        <p className="text-sm text-amber-700 text-center">
+                          Add a phone number to start taking calls
                         </p>
                       </div>
 
                       <button
-                        onClick={handleRetryProvisioning}
-                        disabled={retrying}
-                        className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-teal text-white font-semibold text-sm hover:bg-teal/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {retrying ? (
-                          <>
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                            Retrying...
-                          </>
-                        ) : (
-                          <>
-                            <RefreshCw className="w-4 h-4" />
-                            Retry Setup
-                          </>
-                        )}
-                      </button>
-
-                      <button
                         onClick={handleGoToDashboard}
-                        className="mt-3 text-sm text-[#8AADA6] hover:text-navy transition-colors mx-auto block"
+                        className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-teal text-white font-semibold text-sm hover:bg-teal/90 transition-colors mb-3"
                       >
-                        Go to Dashboard anyway
-                      </button>
-                    </>
-                  )}
-
-                  {/* ── Needs address (UK number manual setup) ── */}
-                  {provisioningStatus === "needs_address" && (
-                    <>
-                      <h2 className="font-display text-2xl font-bold text-navy mb-2 text-center tracking-tight">
-                        Almost there!
-                      </h2>
-                      <div className="py-4">
-                        <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl">
-                          <p className="text-sm text-blue-700 text-center">
-                            Your UK number is being set up manually. You&apos;ll receive it within 24 hours.
-                          </p>
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={handleGoToDashboard}
-                        className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-teal text-white font-semibold text-sm hover:bg-teal/90 transition-colors"
-                      >
-                        Go to My Dashboard
+                        Go to Dashboard
                         <ArrowRight className="w-4 h-4" />
                       </button>
-                    </>
-                  )}
-
-                  {/* ── Edge case: active but no phone number ── */}
-                  {provisioningStatus === "active" && !phoneNumber && (
-                    <>
-                      <h2 className="font-display text-2xl font-bold text-navy mb-2 text-center tracking-tight">
-                        Setup needs attention
-                      </h2>
-                      <p className="text-sm text-[#4A7A6D] mb-4 text-center">
-                        Something went wrong with your phone setup. Please retry.
-                      </p>
 
                       <button
-                        onClick={handleRetryProvisioning}
-                        disabled={retrying}
-                        className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-teal text-white font-semibold text-sm hover:bg-teal/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={() => router.push("/dashboard/integrations")}
+                        className="w-full flex items-center justify-center gap-2 py-3 rounded-full border border-[#D0EDE8] text-[#4A7A6D] font-medium text-sm hover:bg-[#F0F9F8] transition-colors"
                       >
-                        {retrying ? (
-                          <>
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                            Retrying...
-                          </>
-                        ) : (
-                          <>
-                            <RefreshCw className="w-4 h-4" />
-                            Retry Setup
-                          </>
-                        )}
-                      </button>
-
-                      <button
-                        onClick={handleGoToDashboard}
-                        className="mt-3 text-sm text-[#8AADA6] hover:text-navy transition-colors mx-auto block"
-                      >
-                        Go to Dashboard anyway
+                        Set up phone line
+                        <ArrowRight className="w-4 h-4" />
                       </button>
                     </>
                   )}
@@ -1008,6 +1039,9 @@ function OnboardingContent() {
           </AnimatePresence>
         </div>
       </div>
+
+      {/* BYOC Modal — available on Step 4 */}
+      <BYOCModal open={byocOpen} onClose={() => setBYOCOpen(false)} />
     </div>
   );
 }

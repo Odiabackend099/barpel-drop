@@ -1,23 +1,13 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Sparkles, Check, Mic, Trash2, AlertTriangle, Play, Pause as PauseIcon, ChevronDown, Volume2, PauseCircle, PlayCircle } from "lucide-react";
+import { Sparkles, Check, Mic, AlertTriangle, Play, Pause as PauseIcon, ChevronDown, Volume2, PauseCircle, PlayCircle } from "lucide-react";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import Vapi from "@vapi-ai/web";
 import { PERSONA_TEMPLATES, VAPI_VOICES } from "@/lib/constants";
 import { useMerchant } from "@/hooks/useMerchant";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+// AlertDialog removed — phone number management moved to Integrations page
 
 const VALID_VAPI_IDS = VAPI_VOICES.map((v) => v.id) as string[];
 
@@ -68,7 +58,7 @@ function SaveButton({
 }
 
 export default function VoicePage() {
-  const { merchant, loading, updateAiVoice, deleteAiVoice, togglePause } = useMerchant();
+  const { merchant, loading, updateAiVoice, togglePause } = useMerchant();
 
   // Section 1 — Greeting
   const [greeting, setGreeting] = useState("");
@@ -94,8 +84,6 @@ export default function VoicePage() {
   const vapiRef = useRef<Vapi | null>(null);
 
   // Section 4 — Pause / Delete
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isPausing, setIsPausing] = useState(false);
 
   const brandName = merchant?.business_name || "Your Store";
@@ -258,18 +246,6 @@ export default function VoicePage() {
       setTimeout(() => setVoiceSaved(false), 3000);
     } finally {
       setSavingVoice(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    setIsDeleting(true);
-    setDeleteError(null);
-    try {
-      await deleteAiVoice();
-    } catch (e) {
-      setDeleteError(e instanceof Error ? e.message : "Failed to remove AI phone line");
-    } finally {
-      setIsDeleting(false);
     }
   };
 
@@ -738,124 +714,14 @@ export default function VoicePage() {
         )}
       </div>
 
-      {/* ------------------------------------------------------------------ */}
-      {/* Section 4: Pause + Danger Zone                                     */}
-      {/* ------------------------------------------------------------------ */}
-
-      {/* Pause AI Line — soft option */}
-      {isActive && (
-        <div className="bg-white border border-amber-100 rounded-xl p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <PauseCircle className="w-4 h-4 text-amber-500" />
-                <h3 className="text-sm font-bold text-[#1B2A4A] font-sans">Pause AI Line</h3>
-              </div>
-              <p className="text-sm text-[#4A7A6D] font-sans">
-                Temporarily stop answering calls. Your number and AI configuration are preserved.
-              </p>
-            </div>
-            <button
-              onClick={handleTogglePause}
-              disabled={isPausing}
-              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl border border-amber-300 text-amber-600 hover:bg-amber-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <PauseCircle className="w-4 h-4" />
-              {isPausing ? "Pausing..." : "Pause"}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Resume option when suspended */}
-      {isSuspended && (
-        <div className="bg-white border border-[#D0EDE8] rounded-xl p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <PlayCircle className="w-4 h-4 text-[#00A99D]" />
-                <h3 className="text-sm font-bold text-[#1B2A4A] font-sans">Resume AI Line</h3>
-              </div>
-              <p className="text-sm text-[#4A7A6D] font-sans">
-                Your AI line is paused. Resume to start answering calls again.
-              </p>
-            </div>
-            <button
-              onClick={handleTogglePause}
-              disabled={isPausing}
-              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl bg-gradient-to-r from-[#00A99D] to-[#7DD9C0] text-white hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <PlayCircle className="w-4 h-4" />
-              {isPausing ? "Resuming..." : "Resume"}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Remove AI Phone Line — destructive */}
-      <div className="bg-white border border-red-100 rounded-xl p-5 shadow-sm">
-        <div className="flex items-center gap-2 mb-1">
-          <Trash2 className="w-4 h-4 text-red-400" />
-          <h3 className="text-sm font-bold text-red-600 font-sans">Remove AI Phone Line</h3>
-        </div>
-        <p className="text-sm text-[#4A7A6D] font-sans mb-4">
-          This permanently removes your AI assistant and releases your phone number. Your customers
-          will not be able to reach your AI after this. You can set up a new line at any time from
-          the Integrations page.
+      {/* Phone number management has moved to Integrations */}
+      <div className="bg-white border border-[#D0EDE8] rounded-xl p-5 shadow-sm">
+        <p className="text-sm text-[#4A7A6D] font-sans">
+          To pause or release your phone number, go to{" "}
+          <a href="/dashboard/integrations" className="text-[#00A99D] underline underline-offset-2 font-medium hover:text-[#008f85]">
+            Integrations
+          </a>
         </p>
-
-        {deleteError && (
-          <p className="text-xs text-red-500 font-sans mb-3">{deleteError}</p>
-        )}
-
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <button
-              disabled={isDeleting}
-              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl border border-red-300 text-red-600 hover:bg-red-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isDeleting ? (
-                <>
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  Removing...
-                </>
-              ) : (
-                <>
-                  <Trash2 className="w-4 h-4" />
-                  Remove AI Phone Line
-                </>
-              )}
-            </button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Remove your AI phone line?</AlertDialogTitle>
-              <AlertDialogDescription>
-                {merchant?.support_phone ? (
-                  <>
-                    Your number <strong>{merchant.support_phone}</strong> will be released. This cannot be undone.
-                  </>
-                ) : (
-                  "Your AI phone number will be released. This cannot be undone."
-                )}{" "}
-                Your customers will not be able to reach your AI assistant after this.
-                You can set up a new line at any time from the Integrations page.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDelete}
-                className="bg-red-600 hover:bg-red-700 text-white"
-              >
-                Yes, Remove Everything
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
       </div>
     </div>
   );

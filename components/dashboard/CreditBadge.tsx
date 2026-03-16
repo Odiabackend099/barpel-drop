@@ -18,12 +18,12 @@ export function CreditBadge({ balanceSeconds, loading }: CreditBadgeProps) {
     if (seconds < 60) return `${seconds} sec`;
     const minutes = Math.floor(seconds / 60);
     const remainingSecs = seconds % 60;
-    // Under 5 minutes: show "X min Y sec" (or "X min" if exactly on minute boundary)
+    // Under 5 minutes: show "X cr Y sec" (or "X credits" if exactly on minute boundary)
     if (seconds < 300) {
-      return remainingSecs === 0 ? `${minutes} min` : `${minutes} min ${remainingSecs} sec`;
+      return remainingSecs === 0 ? `${minutes} credits` : `${minutes} cr ${remainingSecs}s`;
     }
-    // 5 minutes and above: show "X min"
-    return `${minutes} min`;
+    // 5 minutes and above: show "X credits"
+    return `${minutes} credits`;
   };
 
   // Thresholds in seconds
@@ -42,26 +42,15 @@ export function CreditBadge({ balanceSeconds, loading }: CreditBadgeProps) {
 
   const display = formatBalance(balanceSeconds);
 
-  if (isZero) {
-    return (
-      <Link href="/dashboard/billing">
-        <span className={cn(
-          'inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border transition-colors duration-200',
-          colorClass
-        )}>
-          <AlertCircle className="h-3 w-3 animate-pulse" />
-          {display}
-        </span>
-      </Link>
-    );
-  }
-
   return (
-    <span className={cn(
-      'inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border transition-colors duration-200',
-      colorClass
-    )}>
-      {display}
-    </span>
+    <Link href="/dashboard/billing">
+      <span className={cn(
+        'inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border transition-colors duration-200 cursor-pointer hover:opacity-80',
+        colorClass
+      )}>
+        {isZero && <AlertCircle className="h-3 w-3 animate-pulse" />}
+        {display}
+      </span>
+    </Link>
   );
 }

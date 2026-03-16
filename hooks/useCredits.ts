@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import type { CreditTransaction } from "@/lib/mockApi";
 import { createClient } from "@/lib/supabase/client";
 
@@ -12,7 +12,22 @@ export function useCredits() {
   const [transactions, setTransactions] = useState<CreditTransaction[]>([]);
   const [usageData, setUsageData] = useState<{ date: string; credits: number }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [flwPlan, setFlwPlan] = useState<string | null>(null);
+  const [flwSubscriptionId, setFlwSubscriptionId] = useState<string | null>(null);
+  const [planStatus, setPlanStatus] = useState<string | null>(null);
   const userIdRef = useRef<string | null>(null);
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
+
+  const refreshBalance = useCallback(async () => {
+    const supabase = supabaseRef.current;
+    if (!supabase || !userIdRef.current) return;
+    const { data } = await supabase
+      .from("merchants")
+      .select("credit_balance")
+      .eq("user_id", userIdRef.current)
+      .single();
+    if (data) setBalance(data.credit_balance ?? 0);
+  }, []);
 
   useEffect(() => {
     if (useMock) {
@@ -27,6 +42,7 @@ export function useCredits() {
     }
 
     const supabase = createClient();
+    supabaseRef.current = supabase;
 
     async function fetchBalance() {
       const {
@@ -40,11 +56,16 @@ export function useCredits() {
 
       const { data } = await supabase
         .from("merchants")
-        .select("credit_balance")
+        .select("credit_balance, flw_plan, flw_subscription_id, plan_status")
         .eq("user_id", user.id)
         .single();
 
-      if (data) setBalance(data.credit_balance ?? 0);
+      if (data) {
+        setBalance(data.credit_balance ?? 0);
+        setFlwPlan(data.flw_plan ?? null);
+        setFlwSubscriptionId(data.flw_subscription_id ?? null);
+        setPlanStatus(data.plan_status ?? null);
+      }
       setLoading(false);
 
       // Fetch usage chart data
@@ -68,7 +89,11 @@ export function useCredits() {
         },
         (payload) => {
           if (payload.new && userIdRef.current && payload.new.user_id === userIdRef.current) {
-            setBalance((payload.new as { credit_balance: number }).credit_balance ?? 0);
+            const row = payload.new as Record<string, unknown>;
+            setBalance((row.credit_balance as number) ?? 0);
+            if ("flw_plan" in row) setFlwPlan((row.flw_plan as string) ?? null);
+            if ("flw_subscription_id" in row) setFlwSubscriptionId((row.flw_subscription_id as string) ?? null);
+            if ("plan_status" in row) setPlanStatus((row.plan_status as string) ?? null);
           }
         }
       )
@@ -84,5 +109,5 @@ export function useCredits() {
   const credits = Math.floor(balance / 60);
   const usagePercent = totalCapacity > 0 ? (balance / totalCapacity) * 100 : 0;
 
-  return { balance, balanceMinutes, balanceSeconds, credits, totalCapacity, usagePercent, transactions, usageData, loading };
+  return { balance, balanceMinutes, balanceSeconds, credits, totalCapacity, usagePercent, transactions, usageData, loading, refreshBalance, flwPlan, flwSubscriptionId, planStatus };
 }
