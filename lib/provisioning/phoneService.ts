@@ -128,7 +128,9 @@ async function purchaseTwilioNumber(
     if (parsed.code === 21631) {
       throw new Error(`TWILIO_21631: ${parsed.message ?? "Address SID required for UK number"}`);
     }
-    throw new Error(`Twilio number purchase failed (${purchaseResp.status}): ${text}`);
+    // Use Twilio's human-readable message, falling back to a generic string.
+    // Avoid leaking raw JSON blobs into provisioning_error (shown to users).
+    throw new Error(parsed.message ?? `Failed to purchase phone number (${purchaseResp.status})`);
   }
 
   const purchaseData = await purchaseResp.json();
@@ -298,6 +300,12 @@ export async function createVapiAssistant(
     // Safety cap — prevent runaway billing from open lines
     maxDurationSeconds: 480,
 
+    // End call gracefully after 30s of silence (customer hung up without Vapi detecting)
+    silenceTimeoutSeconds: 30,
+
+    // Graceful goodbye when call ends (timeout, max duration, or assistant-initiated)
+    endCallMessage: "Thank you for calling. Goodbye!",
+
     serverUrl: webhookUrl,
     serverUrlSecret: process.env.VAPI_WEBHOOK_SECRET,
     metadata: { merchant_id: merchantId },
@@ -404,11 +412,12 @@ export async function provisionMerchantLine(
   }
 
   // Mark as provisioning
+  // Note: provisioning_attempted_at is already set by checkProvisioningGates (Gate 5)
+  // before this function is called. Omitting it here avoids a redundant write.
   await supabase
     .from("merchants")
     .update({
       provisioning_status: "provisioning",
-      provisioning_attempted_at: new Date().toISOString(),
     })
     .eq("id", merchantId);
 
@@ -533,6 +542,7 @@ export async function provisionMerchantLine(
       .update({
         provisioning_status: "active",
         provisioning_error: null,
+        has_used_free_provision: true,
       })
       .eq("id", merchantId);
 

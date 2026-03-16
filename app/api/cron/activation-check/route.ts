@@ -11,10 +11,10 @@ import { sendActivationEmail } from "@/lib/email/client";
  */
 export async function GET(req: Request) {
   const cronSecret = process.env.CRON_SECRET;
-  if (
-    !cronSecret ||
-    req.headers.get("authorization") !== `Bearer ${cronSecret}`
-  ) {
+  if (!cronSecret || cronSecret.trim() === "") {
+    return NextResponse.json({ error: "Cron endpoint disabled" }, { status: 401 });
+  }
+  if (req.headers.get("authorization") !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

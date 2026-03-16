@@ -53,7 +53,7 @@ export async function POST(request: Request) {
   // suspended, return a graceful message for ALL tool calls
   const { data: creditCheck } = await supabase
     .from("merchants")
-    .select("credit_balance, provisioning_status")
+    .select("credit_balance, provisioning_status, plan_status")
     .eq("id", merchantId)
     .single();
 
@@ -76,6 +76,25 @@ export async function POST(request: Request) {
     }));
     return NextResponse.json({ results: zeroBalanceResults });
   }
+
+  // Billing guard: merchant's subscription payment is overdue beyond grace period
+  // past_due_final = Day 14+ overdue — calls fully blocked
+  if (creditCheck.plan_status === "past_due_final") {
+    const billingResults = toolCallList.map((tc: { id: string }) => ({
+      toolCallId: tc.id,
+      result:
+        "Thank you for calling. This support line is temporarily unavailable due to a billing issue. " +
+        "Please contact the store directly by email or visit their website.",
+    }));
+    return NextResponse.json({ results: billingResults });
+  }
+
+  // past_due_restricted = Day 9–13 overdue — AI still answers but appends a service notice
+  // Tools execute in full; the notice is appended to each result so the AI can weave it in naturally
+  const billingNotice =
+    creditCheck.plan_status === "past_due_restricted"
+      ? " Please note this support line may experience interruptions soon."
+      : null;
 
   // Suspended guard: merchant paused their AI line — decline all tool calls
   if (creditCheck.provisioning_status === "suspended") {
@@ -142,7 +161,13 @@ export async function POST(request: Request) {
     results.push({ toolCallId, result });
   }
 
-  return NextResponse.json({ results });
+  // Append billing notice for past_due_restricted merchants (Day 9–13).
+  // Tools ran in full — notice is a suffix the AI incorporates into its spoken response.
+  const finalResults = billingNotice
+    ? results.map((r) => ({ ...r, result: r.result + billingNotice }))
+    : results;
+
+  return NextResponse.json({ results: finalResults });
 }
 
 async function handleLookupOrder(
@@ -423,7 +448,7 @@ async function handleEndOfCallReport(
         credits_charged: 0,
         updated_at: new Date().toISOString(),
       },
-      { onConflict: "merchant_id,vapi_call_id" }
+      { onConflict: "vapi_call_id" }
     )
     .select("id")
     .single();
