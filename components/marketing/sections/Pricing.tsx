@@ -1,17 +1,15 @@
 "use client";
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { Check, ArrowRight, Sparkles, Lock } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 const plans = [
   {
     name: 'Starter',
     description: 'For small stores just getting started',
-    monthlyPrice: 29,
-    yearlyPrice: 23,
-    yearlyTotal: 276,
+    price: 29,
+    yearlyTotal: 348,
     features: [
       '30 credits/month',
       '1 phone number',
@@ -27,9 +25,8 @@ const plans = [
   {
     name: 'Growth',
     description: 'For growing businesses',
-    monthlyPrice: 79,
-    yearlyPrice: 63,
-    yearlyTotal: 756,
+    price: 79,
+    yearlyTotal: 948,
     features: [
       '100 credits/month',
       '3 phone numbers',
@@ -46,9 +43,8 @@ const plans = [
   {
     name: 'Scale',
     description: 'For high-volume stores',
-    monthlyPrice: 179,
-    yearlyPrice: 143,
-    yearlyTotal: 1716,
+    price: 179,
+    yearlyTotal: 2148,
     features: [
       '250 credits/month',
       '10 phone numbers',
@@ -63,26 +59,8 @@ const plans = [
   },
 ];
 
-function AnimatedPrice({ price }: { price: number }) {
-  return (
-    <AnimatePresence mode="wait">
-      <motion.span
-        key={price}
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 20 }}
-        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className="text-4xl font-bold text-brand-navy inline-block"
-      >
-        ${price}
-      </motion.span>
-    </AnimatePresence>
-  );
-}
 
 export default function Pricing() {
-  const [isYearly, setIsYearly] = useState(true);
-
   return (
     <section id="pricing" className="section-padding bg-white">
       <div className="container-default">
@@ -103,43 +81,6 @@ export default function Pricing() {
           </p>
         </motion.div>
 
-        {/* Billing Toggle */}
-        <motion.div
-          className="flex items-center justify-center gap-4 mb-12"
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
-          <span
-            className={`text-sm font-medium transition-colors duration-200 ${
-              !isYearly ? 'text-brand-navy' : 'text-text-secondary'
-            }`}
-          >
-            Monthly
-          </span>
-          <button
-            onClick={() => setIsYearly(!isYearly)}
-            className="relative w-14 h-7 bg-brand-teal rounded-full transition-colors duration-200"
-            aria-label="Toggle billing period"
-          >
-            <span
-              className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-200 ${
-                isYearly ? 'translate-x-8' : 'translate-x-1'
-              }`}
-            />
-          </button>
-          <span
-            className={`text-sm font-medium transition-colors duration-200 ${
-              isYearly ? 'text-brand-navy' : 'text-text-secondary'
-            }`}
-          >
-            Annual
-          </span>
-          <span className="px-2.5 py-1 text-xs font-semibold text-brand-teal bg-brand-teal/10 rounded-full">
-            Save 20%
-          </span>
-        </motion.div>
 
         {/* Pricing Cards — 3 columns */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
@@ -178,27 +119,15 @@ export default function Pricing() {
                 </p>
               </div>
 
-              {/* Price with animation */}
-              <div className="mb-1">
-                <div className="flex items-baseline gap-1">
-                  <AnimatedPrice price={isYearly ? plan.yearlyPrice : plan.monthlyPrice} />
+              {/* Price */}
+              <div className="mb-6">
+                <div className="flex items-baseline gap-1 mb-1">
+                  <span className="text-4xl font-bold text-brand-navy">${plan.price}</span>
                   <span className="text-text-secondary">/month</span>
                 </div>
-              </div>
-              <div className="mb-6 h-5">
-                <AnimatePresence mode="wait">
-                  {isYearly && (
-                    <motion.div
-                      key="yearly-note"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="text-sm text-brand-teal"
-                    >
-                      Billed ${plan.yearlyTotal}/year
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                <div className="text-sm text-brand-teal">
+                  Billed ${plan.yearlyTotal}/year
+                </div>
               </div>
 
               {/* Features */}

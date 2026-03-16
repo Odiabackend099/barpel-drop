@@ -1,104 +1,219 @@
 "use client";
 
 import Link from 'next/link';
-import { ArrowRight, Play, CheckCircle2, Phone, Clock, CreditCard } from 'lucide-react';
+import { ArrowRight, Play, CheckCircle2, Package, ShoppingCart, BarChart3, TrendingUp, Star } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 
-function HeroDashboardCard() {
+// Card data for the stack animation
+const cards = [
+  {
+    icon: Package,
+    title: 'Order #12345',
+    subtitle: 'Shipped via Express',
+    stat: '2.3s avg response',
+    bottomIcon: CheckCircle2,
+    bottomText: 'Arriving tomorrow',
+    visual: 'order-tracking',
+    accent: 'from-blue-500 to-cyan-400',
+  },
+  {
+    icon: ShoppingCart,
+    title: 'Cart Recovered',
+    subtitle: 'AI called customer',
+    stat: '4.2x recovery rate',
+    bottomIcon: TrendingUp,
+    bottomText: '$127.50 saved',
+    visual: 'cart-recovery',
+    accent: 'from-purple-500 to-pink-400',
+  },
+  {
+    icon: BarChart3,
+    title: 'Weekly Summary',
+    subtitle: 'Support dashboard',
+    stat: '89% satisfaction',
+    bottomIcon: Star,
+    bottomText: 'vs last week',
+    visual: 'support-analytics',
+    accent: 'from-teal-500 to-emerald-400',
+  },
+];
+
+// Mini progress bar for order tracking
+function OrderTrackingVisual() {
+  const stages = ['Confirmed', 'Shipped', 'Out for Delivery', 'Delivered'];
+  const activeIndex = 1;
   return (
-    <motion.div
-      animate={{ y: [0, -12, 0] }}
-      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-      className="relative min-w-[320px] sm:min-w-[400px] lg:min-w-[480px] rounded-2xl overflow-hidden border border-white/10 bg-white/[0.08] backdrop-blur-2xl"
-      style={{
-        boxShadow: '0 25px 60px -12px rgba(13,148,136,0.25), 0 0 40px rgba(13,148,136,0.1)',
-      }}
-    >
-      {/* Card Header */}
-      <div className="px-5 py-3 border-b border-white/10 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-red-400/80" />
-          <div className="w-3 h-3 rounded-full bg-yellow-400/80" />
-          <div className="w-3 h-3 rounded-full bg-green-400/80" />
+    <div className="flex items-center gap-1 my-3">
+      {stages.map((stage, i) => (
+        <div key={stage} className="flex-1 flex flex-col items-center gap-1">
+          <div
+            className={`h-1.5 w-full rounded-full ${
+              i <= activeIndex ? 'bg-teal-400' : 'bg-white/10'
+            }`}
+          />
+          <span
+            className={`text-[10px] leading-tight ${
+              i === activeIndex ? 'text-teal-300 font-semibold' : 'text-white/40'
+            }`}
+          >
+            {stage}
+          </span>
         </div>
-        <span className="text-[11px] text-white/40 font-medium">Barpel AI Dashboard</span>
-      </div>
+      ))}
+    </div>
+  );
+}
 
-      <div className="p-5 space-y-4">
-        {/* Phone Line Status */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="flex items-center justify-between p-3.5 rounded-xl bg-white/[0.06] border border-white/[0.08]"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-teal-500/20 flex items-center justify-center">
-              <Phone className="w-4.5 h-4.5 text-teal-300" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-white">+1 470 762 0377</p>
-              <p className="text-[11px] text-white/40">Primary line</p>
-            </div>
+// Mini conversion funnel for cart recovery
+function CartRecoveryVisual() {
+  const bars = [
+    { label: 'Abandoned', width: '100%', color: 'bg-red-400', pct: '100%' },
+    { label: 'Called', width: '65%', color: 'bg-amber-400', pct: '65%' },
+    { label: 'Recovered', width: '42%', color: 'bg-teal-400', pct: '42%' },
+  ];
+  return (
+    <div className="space-y-1.5 my-3">
+      {bars.map((bar) => (
+        <div key={bar.label} className="flex items-center gap-2">
+          <span className="text-[10px] text-white/40 w-16 text-right">{bar.label}</span>
+          <div className="flex-1 h-2.5 bg-white/5 rounded-full overflow-hidden">
+            <div className={`h-full ${bar.color} rounded-full`} style={{ width: bar.width }} />
           </div>
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-teal-500/20 border border-teal-500/30">
-            <motion.div
-              className="w-1.5 h-1.5 rounded-full bg-teal-400"
-              animate={{ scale: [1, 1.4, 1], opacity: [1, 0.6, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            />
-            <span className="text-[11px] font-medium text-teal-300">Active</span>
-          </div>
-        </motion.div>
+          <span className="text-[10px] text-white/50 w-8">{bar.pct}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
 
-        {/* Call Log Entry */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.45 }}
-          className="flex items-center justify-between p-3.5 rounded-xl bg-white/[0.06] border border-white/[0.08]"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-blue-500/20 flex items-center justify-center">
-              <Clock className="w-4.5 h-4.5 text-blue-300" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-white">Order #1042 inquiry</p>
-              <p className="text-[11px] text-white/40">Resolved in 23s</p>
-            </div>
-          </div>
-          <div className="w-7 h-7 rounded-full bg-green-500/20 flex items-center justify-center">
-            <CheckCircle2 className="w-4 h-4 text-green-400" />
-          </div>
-        </motion.div>
+// Mini bar chart for support analytics
+function SupportAnalyticsVisual() {
+  const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  const heights = [60, 80, 45, 90, 70, 30, 50];
+  return (
+    <div className="flex items-end gap-1.5 my-3 h-12">
+      {days.map((day, i) => (
+        <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
+          <div
+            className="w-full bg-teal-400/80 rounded-sm"
+            style={{ height: `${heights[i]}%` }}
+          />
+          <span className="text-[9px] text-white/40">{day}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
 
-        {/* Credits Bar */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-          className="p-3.5 rounded-xl bg-white/[0.06] border border-white/[0.08]"
-        >
-          <div className="flex items-center justify-between mb-2.5">
-            <div className="flex items-center gap-2">
-              <CreditCard className="w-4 h-4 text-white/50" />
-              <span className="text-sm font-medium text-white">Credits remaining</span>
+function CardStackDemo() {
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % 3);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const getVisual = (visual: string) => {
+    switch (visual) {
+      case 'order-tracking':
+        return <OrderTrackingVisual />;
+      case 'cart-recovery':
+        return <CartRecoveryVisual />;
+      case 'support-analytics':
+        return <SupportAnalyticsVisual />;
+      default:
+        return null;
+    }
+  };
+
+  const getCardStyles = (position: number) => {
+    switch (position) {
+      case 0: // Front card
+        return { x: 0, y: 0, scale: 1, opacity: 1, rotateZ: 0 };
+      case 1: // Middle card
+        return { x: 28, y: -14, scale: 0.94, opacity: 0.7, rotateZ: 1.5 };
+      case 2: // Back card
+        return { x: 56, y: -28, scale: 0.88, opacity: 0.4, rotateZ: 3 };
+      default:
+        return { x: 0, y: 0, scale: 1, opacity: 1, rotateZ: 0 };
+    }
+  };
+
+  const getShadow = (position: number) => {
+    switch (position) {
+      case 0:
+        return '0 25px 50px -12px rgba(0,0,0,0.4), 0 0 40px rgba(0,169,157,0.15)';
+      case 1:
+        return '0 15px 30px -8px rgba(0,0,0,0.3)';
+      case 2:
+        return '0 8px 16px -4px rgba(0,0,0,0.2)';
+      default:
+        return 'none';
+    }
+  };
+
+  return (
+    <div className="relative w-[340px] sm:w-[420px] lg:w-[480px] h-[460px] mx-auto">
+      {cards.map((card, cardIndex) => {
+        const position = (cardIndex - activeIndex + 3) % 3;
+        const styles = getCardStyles(position);
+        const zIndex = 3 - position;
+
+        return (
+          <motion.div
+            key={cardIndex}
+            className="absolute top-0 left-0 w-[340px] sm:w-[420px] lg:w-[480px] rounded-2xl overflow-hidden border border-white/10"
+            style={{ zIndex }}
+            animate={{
+              x: styles.x,
+              y: styles.y,
+              scale: styles.scale,
+              opacity: styles.opacity,
+              rotateZ: styles.rotateZ,
+              boxShadow: getShadow(position),
+            }}
+            transition={{
+              duration: 0.7,
+              ease: [0.16, 1, 0.3, 1],
+            }}
+          >
+            {/* Glass card background */}
+            <div className="bg-slate-800/85 backdrop-blur-2xl">
+              {/* Gradient top border */}
+              <div className={`h-1 bg-gradient-to-r ${card.accent}`} />
+
+              <div className="p-6">
+                {/* Header */}
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center">
+                    <card.icon className="w-5 h-5 text-teal-300" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-white">{card.title}</p>
+                    <p className="text-xs text-white/40">{card.subtitle}</p>
+                  </div>
+                </div>
+
+                {/* Visual */}
+                {getVisual(card.visual)}
+
+                {/* Stat */}
+                <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/10">
+                  <span className="text-xs font-medium text-teal-300">{card.stat}</span>
+                  <div className="flex items-center gap-1 text-xs text-white/50">
+                    <card.bottomIcon className="w-3.5 h-3.5 text-teal-400" />
+                    <span>{card.bottomText}</span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <span className="text-sm font-bold text-teal-300">850</span>
-          </div>
-          <div className="w-full h-2 rounded-full bg-white/[0.08] overflow-hidden">
-            <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-teal-400 to-emerald-400"
-              initial={{ width: 0 }}
-              animate={{ width: '85%' }}
-              transition={{ duration: 1.2, delay: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            />
-          </div>
-          <p className="text-[11px] text-white/30 mt-1.5">850 of 1,000 credits used this month</p>
-        </motion.div>
-      </div>
-    </motion.div>
+          </motion.div>
+        );
+      })}
+    </div>
   );
 }
 
@@ -206,7 +321,7 @@ export default function Hero() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-[48px] md:text-[64px] lg:text-[80px] xl:text-[96px] font-bold leading-[1.05] tracking-[-0.03em] text-white mb-5"
+              className="text-[36px] md:text-[48px] lg:text-[60px] xl:text-[72px] font-bold leading-[1.05] tracking-[-0.03em] text-white mb-5"
             >
               AI-Powered Voice Support for Your{' '}
               <motion.span
@@ -291,14 +406,14 @@ export default function Hero() {
             </motion.div>
           </div>
 
-          {/* Hero Dashboard Card */}
+          {/* Hero Card Stack Animation */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9, x: 50 }}
             animate={{ opacity: 1, scale: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
             className="relative lg:pl-8"
           >
-            <HeroDashboardCard />
+            <CardStackDemo />
           </motion.div>
         </div>
       </motion.div>
