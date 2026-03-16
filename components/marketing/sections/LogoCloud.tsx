@@ -5,9 +5,9 @@ import { motion } from 'framer-motion';
 
 const partners = [
   { name: 'Shopify', logo: '/logos/shopify.svg' },
-  { name: 'Twilio', logo: '/logos/twilio.svg' },
-  { name: 'Vapi AI', logo: '/logos/vapi.svg' },
-  { name: 'Supabase', logo: '/logos/supabase.svg' },
+  { name: 'TikTok Shop', logo: '/logos/tiktok-shop.svg' },
+  { name: 'WooCommerce', logo: '/logos/woocommerce.svg' },
+  { name: 'Amazon', logo: '/logos/amazon.svg' },
 ];
 
 // Duplicate 3x for seamless marquee loop (12 items total)
@@ -24,7 +24,7 @@ export default function LogoCloud() {
           transition={{ duration: 0.5 }}
           className="text-center text-sm text-slate-500 tracking-tight"
         >
-          Trusted by leading e-commerce brands
+          Our Trusted Integrations
         </motion.p>
       </div>
 

@@ -176,7 +176,7 @@ function CardStackDemo() {
   };
 
   return (
-    <div className="relative w-[350px] h-[320px] mx-auto">
+    <div className="relative w-[320px] sm:w-[380px] lg:w-[420px] h-[380px] mx-auto">
       {cards.map((card, cardIndex) => {
         const position = (cardIndex - activeIndex + 3) % 3;
         const styles = getCardStyles(position);
@@ -185,7 +185,7 @@ function CardStackDemo() {
         return (
           <motion.div
             key={cardIndex}
-            className="absolute top-0 left-0 w-[350px] rounded-2xl overflow-hidden border border-white/10"
+            className="absolute top-0 left-0 w-[320px] sm:w-[380px] lg:w-[420px] rounded-2xl overflow-hidden border border-white/10"
             style={{ zIndex }}
             animate={{
               x: styles.x,
@@ -205,7 +205,7 @@ function CardStackDemo() {
               {/* Gradient top border */}
               <div className={`h-1 bg-gradient-to-r ${card.accent}`} />
 
-              <div className="p-5">
+              <div className="p-6">
                 {/* Header */}
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center">
@@ -313,7 +313,7 @@ export default function Hero() {
       </div>
 
       <motion.div
-        className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10"
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10"
         style={{ y, opacity }}
       >
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center min-h-[calc(100vh-56px)] py-12 lg:py-0">
@@ -341,7 +341,7 @@ export default function Hero() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="heading-hero text-white mb-5"
+              className="text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-[-0.03em] text-white mb-5"
             >
               AI-Powered Voice Support for Your{' '}
               <motion.span
@@ -356,7 +356,7 @@ export default function Hero() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="body-large text-white/60 mb-6"
+              className="text-base md:text-lg lg:text-xl text-white/60 mb-8 leading-relaxed"
             >
               Give every customer a dedicated AI phone line. Handle order lookups,
               returns, and abandoned cart recovery — automatically. No humans
@@ -373,7 +373,7 @@ export default function Hero() {
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Link
                   href="/signup"
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-slate-900 text-sm font-semibold rounded-lg hover:bg-white/90 transition-all duration-200 shadow-lg shadow-white/10"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-slate-900 text-base font-semibold rounded-lg hover:bg-white/90 transition-all duration-200 shadow-lg shadow-white/10"
                 >
                   Get started free
                   <motion.div
@@ -387,7 +387,7 @@ export default function Hero() {
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Link
                   href="#how-it-works"
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-transparent border border-white/20 text-white text-sm font-medium rounded-lg hover:bg-white/5 hover:border-white/30 transition-all duration-200"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-transparent border border-white/20 text-white text-base font-medium rounded-lg hover:bg-white/5 hover:border-white/30 transition-all duration-200"
                 >
                   <motion.div
                     whileHover={{ scale: 1.1 }}
@@ -410,7 +410,7 @@ export default function Hero() {
               {[
                 { icon: CheckCircle2, text: 'No credit card' },
                 { icon: CheckCircle2, text: '14-day free trial' },
-                { icon: CheckCircle2, text: '500+ merchants' },
+                { icon: CheckCircle2, text: '100+ merchants' },
               ].map((item, i) => (
                 <motion.div
                   key={item.text}

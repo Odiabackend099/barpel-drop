@@ -55,7 +55,7 @@ const plans = [
     popular: false,
   },
   {
-    name: 'Enterprise',
+    name: 'Custom',
     description: 'For large organizations',
     monthlyPrice: null,
     yearlyPrice: null,

@@ -25,6 +25,24 @@ const featuredIntegrations = [
   },
 ];
 
+const gridVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1, delayChildren: 0.2 },
+  },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 30, scale: 0.9 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
+  },
+};
+
 export default function Integrations() {
   return (
     <section id="integrations" className="section-padding bg-gradient-to-b from-teal-50/20 to-white">
@@ -55,38 +73,49 @@ export default function Integrations() {
           </motion.div>
 
           {/* Integration Logos Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-            {integrations.map((integration, index) => (
+          <motion.div
+            className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12"
+            variants={gridVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            {integrations.map((integration) => (
               <motion.div
                 key={integration.name}
                 className="group flex flex-col items-center justify-center p-6 bg-off-white rounded-xl border border-light-mint transition-all duration-300 hover:bg-white hover:shadow-teal-md hover:-translate-y-1"
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1, duration: 0.5 }}
+                variants={cardVariants}
+                whileHover={{ y: -4 }}
                 title={integration.name}
               >
-                <div className="transition-transform duration-300 group-hover:scale-110 mb-2">
+                <motion.div
+                  className="mb-2"
+                  whileHover={{ rotate: 5, scale: 1.15 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+                >
                   <Image src={integration.logo} alt={integration.name} width={40} height={40} className="h-10 w-auto" />
-                </div>
+                </motion.div>
                 <span className="text-sm font-medium text-text-secondary group-hover:text-brand-navy transition-colors">
                   {integration.name}
                 </span>
               </motion.div>
             ))}
-          </div>
+          </motion.div>
 
           {/* Featured Integration Cards */}
-          <div className="grid md:grid-cols-2 gap-6">
-            {featuredIntegrations.map((integration, index) => (
+          <motion.div
+            className="grid md:grid-cols-2 gap-6"
+            variants={gridVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            {featuredIntegrations.map((integration) => (
               <motion.a
                 key={integration.name}
                 href="/integrations"
                 className="group flex items-start gap-4 p-6 bg-off-white rounded-xl border border-light-mint transition-all duration-300 hover:bg-white hover:shadow-teal-md hover:border-brand-teal/30"
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.4 + index * 0.15, duration: 0.5 }}
+                variants={cardVariants}
               >
                 <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center flex-shrink-0 shadow-teal-sm group-hover:shadow-teal-md transition-shadow duration-300">
                   <Image src={integration.logo} alt={integration.name} width={32} height={32} className="h-8 w-auto" />
@@ -104,7 +133,7 @@ export default function Integrations() {
                 </div>
               </motion.a>
             ))}
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

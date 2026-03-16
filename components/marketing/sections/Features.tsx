@@ -70,19 +70,21 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
       transition={{ duration: 0.5, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
       whileHover={{
         y: -8,
-        boxShadow: "0 20px 40px -8px rgba(0,0,0,0.1), 0 8px 16px -4px rgba(13,148,136,0.08)",
+        boxShadow: "0 20px 40px -8px rgba(0,0,0,0.1), 0 0 20px rgba(0,169,157,0.15)",
         transition: { duration: 0.3, ease: "easeOut" },
       }}
       onMouseMove={handleMouseMove}
-      className="group relative bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-slate-100 overflow-hidden"
+      className="group relative bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-slate-100 hover:border-teal-300/50 hover:bg-teal-50/40 overflow-hidden transition-colors duration-300"
     >
       {/* Mouse-following glow */}
       <div
         className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
         style={{
-          background: `radial-gradient(300px circle at ${mousePos.x}px ${mousePos.y}px, rgba(13,148,136,0.08), transparent 60%)`,
+          background: `radial-gradient(300px circle at ${mousePos.x}px ${mousePos.y}px, rgba(13,148,136,0.15), transparent 60%)`,
         }}
       />
+      {/* Bottom accent line */}
+      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-teal-400 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       {/* Icon */}
       <motion.div
         className={`relative w-12 h-12 rounded-xl ${feature.bgColor} flex items-center justify-center mb-5 transition-all duration-300 group-hover:scale-110`}

@@ -89,7 +89,7 @@ export default function Navigation() {
         <div className="flex items-center justify-between h-14">
           {/* Logo */}
           <Link href="/">
-            <Logo size="md" showText={true} />
+            <Logo size="md" showText={true} variant={isScrolled ? 'dark' : 'light'} />
           </Link>
 
           {/* Desktop Navigation */}

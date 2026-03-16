@@ -6,6 +6,7 @@ interface LogoProps {
   showText?: boolean;
   className?: string;
   animated?: boolean;
+  variant?: 'dark' | 'light';
 }
 
 const sizes = {
@@ -15,8 +16,9 @@ const sizes = {
   xl: { container: 'w-20 h-20', text: 'text-3xl' },
 };
 
-export default function Logo({ size = 'md', showText = true, className = '', animated = true }: LogoProps) {
+export default function Logo({ size = 'md', showText = true, className = '', animated = true, variant = 'dark' }: LogoProps) {
   const { container, text } = sizes[size];
+  const textColor = variant === 'light' ? 'text-white' : 'text-brand-teal';
 
   const LogoContent = (
     <div className={`flex items-center gap-2.5 ${className}`}>
@@ -39,12 +41,12 @@ export default function Logo({ size = 'md', showText = true, className = '', ani
       {/* Text */}
       {showText && (
         <motion.span
-          className={`${text} font-semibold text-slate-900 tracking-tight`}
+          className={`${text} font-semibold ${textColor} tracking-tight transition-colors duration-300`}
           initial={animated ? { opacity: 0, x: -10 } : {}}
           animate={animated ? { opacity: 1, x: 0 } : {}}
           transition={{ delay: 0.1, duration: 0.3 }}
         >
-          Barpel
+          Barpel<span className={`font-normal ml-1 ${variant === 'light' ? 'text-white/60' : 'text-slate-400'}`}>AI</span>
         </motion.span>
       )}
     </div>
