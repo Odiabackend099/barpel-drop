@@ -230,8 +230,16 @@ async function testEndOfCallReport(): Promise<boolean> {
       balanceAfter === expectedBalance
     );
   } finally {
-    // Cleanup — test rows must never pollute production call logs
+    // Cleanup — test rows must never pollute production call logs.
+    // credit_transactions has FK → call_logs.id, so delete child rows first.
     try {
+      const logs = await supabaseSelect<{ id: string }>(
+        "call_logs",
+        `vapi_call_id=eq.${callId}&merchant_id=eq.${MERCHANT_ID}`
+      );
+      for (const log of logs) {
+        await supabaseDelete("credit_transactions", `call_log_id=eq.${log.id}`);
+      }
       await supabaseDelete(
         "call_logs",
         `vapi_call_id=eq.${callId}&merchant_id=eq.${MERCHANT_ID}`
@@ -321,6 +329,13 @@ async function testIdempotency(): Promise<boolean> {
     return logs.length === 1 && totalDeducted <= 30;
   } finally {
     try {
+      const logs = await supabaseSelect<{ id: string }>(
+        "call_logs",
+        `vapi_call_id=eq.${callId}&merchant_id=eq.${MERCHANT_ID}`
+      );
+      for (const log of logs) {
+        await supabaseDelete("credit_transactions", `call_log_id=eq.${log.id}`);
+      }
       await supabaseDelete(
         "call_logs",
         `vapi_call_id=eq.${callId}&merchant_id=eq.${MERCHANT_ID}`

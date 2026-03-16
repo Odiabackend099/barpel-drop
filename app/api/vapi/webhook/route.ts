@@ -423,6 +423,15 @@ async function handleEndOfCallReport(
   const sentiment = detectSentiment(transcript);
 
   // 6. Upsert into call_logs — idempotent via onConflict: 'vapi_call_id'
+  //    Pre-check existence so we can skip credit deduction on duplicate deliveries.
+  //    Vapi may send the same end-of-call-report more than once on network retries.
+  const { data: existingLog } = await supabase
+    .from("call_logs")
+    .select("id")
+    .eq("vapi_call_id", vapiCallId ?? "")
+    .maybeSingle();
+  const isNewCall = !existingLog;
+
   const { data: callLog, error: insertError } = await supabase
     .from("call_logs")
     .upsert(
@@ -459,9 +468,9 @@ async function handleEndOfCallReport(
     return NextResponse.json({ received: true });
   }
 
-  // 7. Credit deduction — skip short calls (hang-ups, wrong numbers)
+  // 7. Credit deduction — skip short calls (hang-ups, wrong numbers) AND duplicate deliveries
   let creditsCharged = 0;
-  if (durationSeconds >= SHORT_CALL_THRESHOLD_SECS && callLog) {
+  if (durationSeconds >= SHORT_CALL_THRESHOLD_SECS && callLog && isNewCall) {
     try {
       const { data: deducted } = await supabase.rpc("deduct_call_credits", {
         p_merchant_id: merchant.id,
