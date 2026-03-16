@@ -1,0 +1,144 @@
+"use client";
+
+import { Plug, Sliders, Phone, CheckCircle2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+const steps = [
+  {
+    icon: Plug,
+    title: 'Connect Your Store',
+    description: 'One-click Shopify integration. We sync your products, orders, and policies automatically.',
+  },
+  {
+    icon: Sliders,
+    title: 'Configure Your AI',
+    description: 'Set your brand voice, return policies, and escalation rules. Your AI learns your business.',
+  },
+  {
+    icon: Phone,
+    title: 'Start Taking Calls',
+    description: 'Get a dedicated phone number. Customers call, AI answers. Watch your support tickets drop.',
+  },
+];
+
+export default function HowItWorks() {
+  return (
+    <section id="how-it-works" className="section-padding bg-gradient-to-br from-off-white to-teal-50/30">
+      <div className="container-default">
+        <div>
+          {/* Section Header */}
+          <motion.div
+            className="text-center max-w-3xl mx-auto mb-16"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <h2 className="heading-section text-brand-navy mb-4">
+              Get started in <span className="text-brand-teal">minutes</span>, not months
+            </h2>
+            <p className="body-large text-text-secondary">
+              Three simple steps to AI-powered customer support
+            </p>
+          </motion.div>
+
+          {/* Content Grid */}
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Steps */}
+            <div className="space-y-8">
+              {steps.map((step, index) => (
+                <motion.div
+                  key={step.title}
+                  className="flex gap-5"
+                  initial={{ opacity: 0, x: -30, scale: 0.95 }}
+                  whileInView={{ opacity: 1, x: 0, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+                >
+                  {/* Step Number & Line */}
+                  <div className="flex flex-col items-center">
+                    <div className="w-12 h-12 rounded-full bg-brand-teal flex items-center justify-center flex-shrink-0">
+                      <step.icon className="w-5 h-5 text-white" />
+                    </div>
+                    {index < steps.length - 1 && (
+                      <div className="w-0.5 flex-1 bg-brand-teal/20 my-2" />
+                    )}
+                  </div>
+
+                  {/* Step Content */}
+                  <div className="pb-8">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xs font-semibold text-brand-teal uppercase tracking-wider">
+                        Step {index + 1}
+                      </span>
+                    </div>
+                    <h3 className="heading-card text-brand-navy mb-2">
+                      {step.title}
+                    </h3>
+                    <p className="body-default text-text-secondary">
+                      {step.description}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+
+              {/* Trust Badge */}
+              <motion.div
+                className="flex items-center gap-4 pt-4"
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.45, duration: 0.6 }}
+              >
+                <div className="flex -space-x-2">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div
+                      key={i}
+                      className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-teal to-brand-mint border-2 border-white flex items-center justify-center"
+                    >
+                      <span className="text-xs font-bold text-white">{i}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2 text-sm text-text-secondary">
+                  <CheckCircle2 className="w-4 h-4 text-brand-teal" />
+                  <span>Join 500+ merchants using Barpel</span>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Dashboard Image */}
+            <motion.div
+              className="relative"
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3, duration: 0.6 }}
+            >
+              <div className="relative rounded-2xl overflow-hidden shadow-teal-lg">
+                <img
+                  src="/how-it-works-dashboard.jpg"
+                  alt="Barpel AI Configuration Dashboard"
+                  className="w-full h-auto"
+                />
+              </div>
+
+              {/* Floating Badge */}
+              <div className="absolute -bottom-4 -left-4 bg-white rounded-xl p-4 shadow-teal-md border border-light-mint">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-brand-teal/10 flex items-center justify-center">
+                    <CheckCircle2 className="w-5 h-5 text-brand-teal" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold text-brand-navy">Setup Complete</div>
+                    <div className="text-xs text-text-secondary">Ready to take calls</div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
