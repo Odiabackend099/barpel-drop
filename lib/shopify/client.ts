@@ -50,29 +50,45 @@ export async function lookupOrder(
     }
   }`;
 
-  const response = await withRetry(
-    () =>
-      fetch(`https://${shopDomain}/admin/api/2026-01/graphql.json`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Shopify-Access-Token": accessToken,
-        },
-        body: JSON.stringify({ query, variables: { search: `name:${cleanNumber}` } }),
-      }),
-    3,
-    "shopify_order_lookup"
-  );
+  // Try multiple search formats — the primary format `name:<number>` is correct per
+  // Shopify docs (https://shopify.dev/docs/api/admin-graphql/2025-01/queries/orders),
+  // but custom order name prefixes or API inconsistencies can cause misses.
+  const searchFormats = [
+    `name:${cleanNumber}`,   // standard: matches #1001 per Shopify docs
+    `name:#${cleanNumber}`,  // defensive: explicit hash prefix
+    cleanNumber,             // last resort: full-text search
+  ];
 
-  if (!response.ok) {
-    throw new Error(`Shopify API error: ${response.status}`);
-  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let orderNode: any;
 
-  const json = await response.json();
-  if (json.errors?.length) {
-    throw new Error(`Shopify GraphQL error: ${json.errors[0].message}`);
+  for (const searchString of searchFormats) {
+    const response = await withRetry(
+      () =>
+        fetch(`https://${shopDomain}/admin/api/2026-01/graphql.json`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Shopify-Access-Token": accessToken,
+          },
+          body: JSON.stringify({ query, variables: { search: searchString } }),
+        }),
+      3,
+      "shopify_order_lookup"
+    );
+
+    if (!response.ok) {
+      throw new Error(`Shopify API error: ${response.status}`);
+    }
+
+    const json = await response.json();
+    if (json.errors?.length) {
+      throw new Error(`Shopify GraphQL error: ${json.errors[0].message}`);
+    }
+
+    orderNode = json.data?.orders?.edges?.[0]?.node;
+    if (orderNode) break; // found it — stop trying other formats
   }
-  const orderNode = json.data?.orders?.edges?.[0]?.node;
 
   if (!orderNode) return null;
 

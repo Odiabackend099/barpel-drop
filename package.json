@@ -11,7 +11,11 @@
     "test:call": "tsx --env-file=.env.local scripts/test-layer2-full-call.ts",
     "test:regression": "tsx --env-file=.env.local scripts/test-regression.ts",
     "patch:search-tool": "tsx --env-file=.env.local scripts/patch-search-products-tool.ts",
-    "test:eoc": "tsx --env-file=.env.local scripts/test-layer1b-eoc.ts"
+    "test:eoc": "tsx --env-file=.env.local scripts/test-layer1b-eoc.ts",
+    "verify:ai": "tsx --env-file=.env.local scripts/verify-ai-live.ts",
+    "minimum:check": "tsx --env-file=.env.local scripts/minimum-requirements.ts",
+    "diagnose:orders": "tsx --env-file=.env.local scripts/diagnose-order-lookup.ts",
+    "test:contracts": "tsx --env-file=.env.local scripts/full-contract-test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
