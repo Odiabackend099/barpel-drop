@@ -20,6 +20,14 @@ import { BarpelLogo } from "@/components/brand/BarpelLogo";
 import { createClient } from "@/lib/supabase/client";
 import { CREDIT_PACKAGES } from "@/lib/constants";
 import { BYOCModal } from "@/components/integrations/BYOCModal";
+import { useFlutterwave, closePaymentModal } from "flutterwave-react-v3";
+
+const DUMMY_FLW_CONFIG = {
+  public_key: "", tx_ref: "", amount: 0, currency: "USD",
+  payment_options: "card",
+  customer: { email: "", name: "" },
+  customizations: { title: "", description: "", logo: "" },
+};
 
 const STEPS = [
   { icon: Store, label: "Business Name" },
@@ -101,6 +109,17 @@ function OnboardingContent() {
   // Step 4: BYOC modal
   const [byocOpen, setBYOCOpen] = useState(false);
 
+  // Bug 1: Flutterwave state for Step 3
+  const [flwConfig, setFlwConfig] = useState<object>(DUMMY_FLW_CONFIG);
+  const [readyToPay, setReadyToPay] = useState(false);
+  const [billingLoading, setBillingLoading] = useState(false);
+
+  // Bug 2: Shopify store name input for Step 2
+  const [shopifyStoreName, setShopifyStoreName] = useState("");
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleFlutterPayment = useFlutterwave(flwConfig as any);
+
   const supabase = createClient();
 
   // On mount: fetch onboarding_step from DB and jump to it; also handle shopify_denied param
@@ -123,6 +142,7 @@ function OnboardingContent() {
         merchant_not_found: "Account not found. Please sign out and back in.",
       };
       setError(messages[shopifyErrorCode] ?? "Shopify connection failed. Please try again.");
+      goToStep(2);
     }
 
     async function syncStep() {
@@ -178,6 +198,36 @@ function OnboardingContent() {
     syncStep();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Bug 1: Open Flutterwave modal after config is committed to state
+  useEffect(() => {
+    if (!readyToPay) return;
+    setReadyToPay(false);
+    handleFlutterPayment({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      callback: async (response: any) => {
+        closePaymentModal();
+        if (response.status === "successful") {
+          await fetch("/api/billing/flutterwave/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              transaction_id: response.transaction_id,
+              tx_ref: response.tx_ref,
+            }),
+          });
+          await saveToDb({ onboarding_step: 4 });
+          goToStep(4);
+        }
+        setBillingLoading(false);
+      },
+      onClose: () => {
+        setBillingLoading(false);
+        setReadyToPay(false);
+      },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [readyToPay]);
 
   // Ticket 4: Supabase Realtime subscription for provisioning updates
   useEffect(() => {
@@ -359,10 +409,14 @@ function OnboardingContent() {
   }
 
   function handleConnectShopify() {
+    if (!shopifyStoreName.trim()) {
+      setError("Please enter your store name.");
+      return;
+    }
     setConnectingShopify(true);
     setError("");
-    // Navigate to the GET route — it handles auth and redirects to Shopify
-    window.location.href = "/api/shopify/oauth/start?returnTo=onboarding";
+    const shop = `${shopifyStoreName.trim().toLowerCase()}.myshopify.com`;
+    window.location.href = `/api/shopify/oauth/start?returnTo=onboarding&shop=${encodeURIComponent(shop)}`;
   }
 
   async function handleSkipShopify() {
@@ -371,22 +425,25 @@ function OnboardingContent() {
   }
 
   async function handleBuyCredits(packageId: string) {
+    setBillingLoading(true);
+    setError("");
     try {
-      const res = await fetch("/api/billing/checkout", {
+      const res = await fetch("/api/billing/flutterwave/initiate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          package_id: packageId,
-          successUrl: `${window.location.origin}/onboarding?step=4`,
-          cancelUrl: `${window.location.origin}/onboarding?step=3`,
-        }),
+        body: JSON.stringify({ plan: packageId }),
       });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
+      const config = await res.json();
+      if (!res.ok) {
+        setError(config.error ?? "Something went wrong. Please try again.");
+        setBillingLoading(false);
+        return;
       }
+      setFlwConfig(config);
+      setReadyToPay(true);
     } catch {
-      setError("Failed to start checkout.");
+      setError("Network error — please check your connection and try again.");
+      setBillingLoading(false);
     }
   }
 
@@ -609,16 +666,29 @@ function OnboardingContent() {
                         </div>
                       )}
 
-                      <p className="text-sm text-[#4A7A6D] mb-6">
-                        Click below. Shopify will ask you to log in and approve access. That&apos;s it.
-                      </p>
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-navy mb-1">
+                          Enter your store name
+                        </label>
+                        <input
+                          type="text"
+                          value={shopifyStoreName}
+                          onChange={(e) => setShopifyStoreName(e.target.value)}
+                          placeholder="powerfit-gadgets"
+                          className="w-full px-4 py-3 rounded-xl border border-[#D0EDE8] text-sm text-navy placeholder-[#8AADA6] focus:outline-none focus:ring-2 focus:ring-teal/40"
+                          onKeyDown={(e) => e.key === "Enter" && handleConnectShopify()}
+                        />
+                        <p className="mt-1 text-xs text-[#8AADA6]">
+                          This is the part before .myshopify.com
+                        </p>
+                      </div>
 
                       <button
                         onClick={handleConnectShopify}
                         disabled={connectingShopify}
                         className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-teal text-white font-semibold text-sm hover:bg-teal/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {connectingShopify ? "Connecting..." : "Connect with Shopify"}
+                        {connectingShopify ? "Connecting..." : "Connect My Shopify Store"}
                         <ArrowRight className="w-4 h-4" />
                       </button>
 
@@ -662,7 +732,8 @@ function OnboardingContent() {
                       <button
                         key={pkg.id}
                         onClick={() => handleBuyCredits(pkg.id)}
-                        className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border text-left transition-colors hover:bg-[#F0F9F8] ${
+                        disabled={billingLoading}
+                        className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border text-left transition-colors hover:bg-[#F0F9F8] disabled:opacity-50 disabled:cursor-not-allowed ${
                           "popular" in pkg && pkg.popular ? "border-teal bg-[#F0F9F8]" : "border-[#D0EDE8]"
                         }`}
                       >
