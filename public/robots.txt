@@ -1,81 +1,39 @@
 # robots.txt for Barpel AI
-# https://www.robotstxt.org/robotstxt.html
+# https://barpel.ai/
 
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /dashboard
+Disallow: /monitoring
+Disallow: /internal/
+Disallow: /admin/
 
-# Allow all major search engines and AI crawlers
 User-agent: Googlebot
 Allow: /
-
-User-agent: Googlebot-Image
-Allow: /
-
-User-agent: Googlebot-Video
-Allow: /
-
-User-agent: Googlebot-News
-Allow: /
-
 User-agent: Bingbot
 Allow: /
-
-User-agent: Slurp
-Allow: /
-
 User-agent: DuckDuckBot
 Allow: /
 
-User-agent: Baiduspider
-Allow: /
-
-User-agent: YandexBot
-Allow: /
-
-# AI/LLM Crawlers - Allow for indexing
+# AI search crawlers — allow so we get cited in ChatGPT, Perplexity, Google AI Overviews
 User-agent: GPTBot
 Allow: /
-
 User-agent: ChatGPT-User
 Allow: /
-
-User-agent: Claude-Web
+User-agent: ClaudeBot
 Allow: /
-
 User-agent: anthropic-ai
 Allow: /
-
 User-agent: PerplexityBot
 Allow: /
+User-agent: Google-Extended
+Allow: /
 
+# Block training-only bots (they scrape but never cite)
 User-agent: CCBot
-Allow: /
+Disallow: /
+User-agent: Bytespider
+Disallow: /
 
-User-agent: omgili
-Allow: /
-
-User-agent: omgilibot
-Allow: /
-
-# Sitemap location
 Sitemap: https://barpel.ai/sitemap.xml
-
-# Crawl-delay for rate limiting
-Crawl-delay: 1
-
-# Disallow specific paths
-Disallow: /api/
-Disallow: /internal/
-Disallow: /admin/
-Disallow: /private/
-Disallow: /temp/
-Disallow: /*.json$
-Disallow: /*?*
-
-# Allow specific file types
-Allow: /*.js$
-Allow: /*.css$
-Allow: /*.png$
-Allow: /*.jpg$
-Allow: /*.svg$
-Allow: /*.ico$

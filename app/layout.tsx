@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { AnalyticsProvider } from "@/components/providers/AnalyticsProvider";
 import "./globals.css";
 
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Barpel AI',
     description: 'AI-Powered Voice Support for E-Commerce Stores',
-    url: 'https://barpel-ai.odia.dev',
+    url: 'https://barpel.ai',
     siteName: 'Barpel AI',
     images: [{ url: '/og-image.png', width: 1200, height: 630 }],
   },
@@ -33,6 +34,9 @@ export default function RootLayout({
       <body>
         <AnalyticsProvider>{children}</AnalyticsProvider>
       </body>
+      {process.env.NEXT_PUBLIC_GA_ID && (
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+      )}
     </html>
   );
 }

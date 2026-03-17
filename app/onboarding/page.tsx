@@ -21,6 +21,8 @@ import { createClient } from "@/lib/supabase/client";
 import { CREDIT_PACKAGES } from "@/lib/constants";
 import { BYOCModal } from "@/components/integrations/BYOCModal";
 import { useFlutterwave, closePaymentModal } from "flutterwave-react-v3";
+import confetti from "canvas-confetti";
+import { track } from "@/lib/analytics";
 
 const DUMMY_FLW_CONFIG = {
   public_key: "", tx_ref: "", amount: 0, currency: "USD",
@@ -158,11 +160,17 @@ function OnboardingContent() {
       // Ticket 2/3/4: extended select — includes id, credit_balance, provisioning fields
       const { data } = await supabase
         .from("merchants")
-        .select("id, onboarding_step, country, business_name, support_phone, credit_balance, provisioning_status, provisioning_error")
+        .select("id, onboarding_step, country, business_name, support_phone, credit_balance, provisioning_status, provisioning_error, onboarded_at")
         .eq("user_id", user.id)
         .single();
 
       if (data) {
+        // Redirect merchants who already completed onboarding back to dashboard
+        if (data.provisioning_status === "active" && data.onboarded_at) {
+          router.replace("/dashboard");
+          return;
+        }
+
         const step = Math.min(Math.max(Number(data.onboarding_step) || 1, 1), 5);
         // If shopify was denied, errored, or just connected, stay on step 2 to show the relevant UI
         const resolvedStep =
@@ -274,6 +282,19 @@ function OnboardingContent() {
       // Small delay so the "Phone line ready!" message is visible briefly
       const t = setTimeout(() => setCurrentStep(5), 1500);
       return () => clearTimeout(t);
+    }
+  }, [currentStep, provisioningStatus, phoneNumber]);
+
+  // Fire confetti and track completion when merchant reaches the live Step 5
+  useEffect(() => {
+    if (currentStep === 5 && provisioningStatus === "active" && phoneNumber) {
+      track("onboarding_step", { step: 5, action: "completed" });
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ["#0d9488", "#34d399", "#ffffff"],
+      });
     }
   }, [currentStep, provisioningStatus, phoneNumber]);
 
@@ -400,6 +421,7 @@ function OnboardingContent() {
         country,
         onboarding_step: 2,
       });
+      track("onboarding_step", { step: 1, action: "completed" });
       goToStep(2);
     } catch {
       setError("Failed to save. Please try again.");
@@ -415,11 +437,13 @@ function OnboardingContent() {
     }
     setConnectingShopify(true);
     setError("");
+    track("onboarding_step", { step: 2, action: "completed" });
     const shop = `${shopifyStoreName.trim().toLowerCase()}.myshopify.com`;
     window.location.href = `/api/shopify/oauth/start?returnTo=onboarding&shop=${encodeURIComponent(shop)}`;
   }
 
   async function handleSkipShopify() {
+    track("onboarding_step", { step: 2, action: "skipped" });
     await saveToDb({ onboarding_step: 3 });
     goToStep(3);
   }
@@ -440,6 +464,7 @@ function OnboardingContent() {
         return;
       }
       setFlwConfig(config);
+      track("onboarding_step", { step: 3, action: "completed" });
       setReadyToPay(true);
     } catch {
       setError("Network error — please check your connection and try again.");
@@ -448,6 +473,7 @@ function OnboardingContent() {
   }
 
   async function handleSkipBilling() {
+    track("onboarding_step", { step: 3, action: "skipped" });
     await saveToDb({ onboarding_step: 4 });
     goToStep(4);
   }
@@ -469,6 +495,7 @@ function OnboardingContent() {
         router.push("/dashboard");
         return;
       }
+      track("onboarding_step", { step: 4, action: "completed" });
       // Provisioning is now triggered server-side by /api/onboarding/complete.
       // Just update UI state — Realtime/polling picks up status changes.
       setProvisioningStatus("provisioning");
@@ -696,8 +723,11 @@ function OnboardingContent() {
                         onClick={handleSkipShopify}
                         className="mt-4 text-sm text-[#8AADA6] hover:text-navy transition-colors mx-auto block"
                       >
-                        Skip for now — connect later from your dashboard
+                        Skip for now — AI will answer calls but can&apos;t look up orders yet
                       </button>
+                      <p className="text-xs text-[#8AADA6] mt-1 text-center">
+                        You can connect Shopify anytime from your dashboard
+                      </p>
 
                       <button
                         onClick={() => goToStep(1)}
@@ -727,6 +757,26 @@ function OnboardingContent() {
                       : "Choose a plan to get started with AI support calls."}
                   </p>
 
+                  {/* PRIMARY: Use free minutes — shown when available */}
+                  {freeMinutes > 0 && (
+                    <button
+                      onClick={handleSkipBilling}
+                      className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full bg-teal text-white font-semibold text-sm hover:bg-teal/90 transition-colors mb-2"
+                    >
+                      Start with {freeMinutes} free minutes — no card required
+                    </button>
+                  )}
+
+                  {/* Divider — only shown when free minutes exist */}
+                  {freeMinutes > 0 && (
+                    <div className="flex items-center gap-3 my-4">
+                      <div className="flex-1 h-px bg-[#D0EDE8]" />
+                      <span className="text-xs text-[#8AADA6]">or upgrade now</span>
+                      <div className="flex-1 h-px bg-[#D0EDE8]" />
+                    </div>
+                  )}
+
+                  {/* SECONDARY: Paid plans */}
                   <div className="space-y-3">
                     {CREDIT_PACKAGES.map((pkg) => (
                       <button
@@ -751,16 +801,6 @@ function OnboardingContent() {
                   </div>
 
                   {error && <p className="mt-2 text-xs text-red-500">{error}</p>}
-
-                  {/* Ticket 3: Show skip button only if free credits exist, with dynamic text */}
-                  {freeMinutes > 0 && (
-                    <button
-                      onClick={handleSkipBilling}
-                      className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-full border border-[#D0EDE8] text-[#4A7A6D] font-medium text-sm hover:bg-[#F0F9F8] transition-colors"
-                    >
-                      Use your {freeMinutes} free minutes
-                    </button>
-                  )}
 
                   <button
                     onClick={() => goToStep(2)}
@@ -930,10 +970,13 @@ function OnboardingContent() {
                   {provisioningStatus === "active" && phoneNumber ? (
                     <>
                       <h2 className="font-display text-2xl font-bold text-navy mb-2 text-center tracking-tight">
-                        You&apos;re all set!
+                        Your AI is live! 🎉
                       </h2>
-                      <p className="text-sm text-[#4A7A6D] mb-6 text-center">
-                        Your AI support line is live. Share this number with your customers.
+                      <p className="text-sm text-[#4A7A6D] mb-2 text-center">
+                        Call your number right now to hear it in action.
+                      </p>
+                      <p className="text-xs text-[#8AADA6] mb-6 text-center">
+                        Share this number with your customers to start taking AI-powered calls.
                       </p>
 
                       {/* Phone number display */}

@@ -31,7 +31,7 @@ export default function Logo({ size = 'md', showText = true, className = '', ani
       >
         <img
           src="/logo.png"
-          alt="Barpel AI"
+          alt="Barpel AI logo"
           className="w-full h-full object-contain drop-shadow-lg"
         />
         {/* Glow effect */}
@@ -75,7 +75,7 @@ export function AnimatedLogo({ size = 'lg' }: { size?: 'sm' | 'md' | 'lg' | 'xl'
       >
         <img
           src="/logo.png"
-          alt="Barpel AI"
+          alt="Barpel AI logo"
           className="w-full h-full object-contain"
         />
         <motion.div

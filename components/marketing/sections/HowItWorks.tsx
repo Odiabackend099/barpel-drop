@@ -155,7 +155,7 @@ export default function HowItWorks() {
               <div className="relative rounded-2xl overflow-hidden shadow-teal-lg">
                 <img
                   src="/how-it-works-dashboard.jpg"
-                  alt="Barpel AI Configuration Dashboard"
+                  alt="Barpel AI dashboard showing order tracking and cart recovery stats"
                   className="w-full h-auto"
                 />
               </div>

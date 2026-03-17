@@ -93,7 +93,7 @@ export default function Integrations() {
                   whileHover={{ rotate: 5, scale: 1.15 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 15 }}
                 >
-                  <Image src={integration.logo} alt={integration.name} width={40} height={40} className="h-10 w-auto" />
+                  <Image src={integration.logo} alt={`Barpel AI integrates with ${integration.name}`} width={40} height={40} className="h-10 w-auto" />
                 </motion.div>
                 <span className="text-sm font-medium text-text-secondary group-hover:text-brand-navy transition-colors">
                   {integration.name}
@@ -118,7 +118,7 @@ export default function Integrations() {
                 variants={cardVariants}
               >
                 <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center flex-shrink-0 shadow-teal-sm group-hover:shadow-teal-md transition-shadow duration-300">
-                  <Image src={integration.logo} alt={integration.name} width={32} height={32} className="h-8 w-auto" />
+                  <Image src={integration.logo} alt={`Barpel AI integrates with ${integration.name}`} width={32} height={32} className="h-8 w-auto" />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">

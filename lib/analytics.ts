@@ -32,7 +32,7 @@ type EventMap = {
   shopify_connected: { merchant_id: string };
   credits_purchased: { package_id: string; amount_cents: number };
   call_completed: { duration_seconds: number; call_type: string; sentiment: string };
-  onboarding_step: { step: number };
+  onboarding_step: { step: number; action: "entered" | "completed" | "skipped" };
   persona_saved: Record<string, never>;
 };
 

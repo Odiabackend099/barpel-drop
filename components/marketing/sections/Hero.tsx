@@ -366,7 +366,7 @@ export default function Hero() {
               </motion.div>
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Link
-                  href="#how-it-works"
+                  href="/how-it-works"
                   className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-transparent border border-[#0d9488]/50 text-[#5eead4] text-base font-medium rounded-xl hover:bg-[#0d9488]/10 hover:border-[#0d9488] transition-all duration-200"
                 >
                   <motion.div
