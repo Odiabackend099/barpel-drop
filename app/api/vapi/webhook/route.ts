@@ -21,8 +21,10 @@ export async function POST(request: Request) {
   const vapiSecret = request.headers.get("x-vapi-secret") ?? "";
   const expectedSecret = process.env.VAPI_WEBHOOK_SECRET ?? "";
 
-  if (!verifyVapiSecret(vapiSecret, expectedSecret)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // Guard: reject if webhook secret is not configured (empty strings would pass timingSafeEqual)
+  if (!expectedSecret || !verifyVapiSecret(vapiSecret, expectedSecret)) {
+    console.error("[webhook] Auth failed — missing or invalid x-vapi-secret");
+    return NextResponse.json({ error: "Unauthorized" });
   }
 
   const body = await request.json();
@@ -44,9 +46,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true });
   }
 
-  const merchantId: string | undefined = call?.metadata?.merchant_id;
+  let merchantId: string | undefined = call?.metadata?.merchant_id;
+
+  // Fallback: look up merchant by assistantId (same strategy as end-of-call handler)
+  if (!merchantId && call?.assistantId) {
+    const { data: fallbackMerchant } = await supabase
+      .from("merchants")
+      .select("id")
+      .eq("vapi_agent_id", call.assistantId)
+      .single();
+    merchantId = fallbackMerchant?.id;
+  }
+
   if (!merchantId) {
-    return NextResponse.json({ error: "Missing merchant_id" }, { status: 400 });
+    const fallbackResults = toolCallList.map((tc: { id: string }) => ({
+      toolCallId: tc.id,
+      result:
+        "I apologize, but I'm unable to assist at the moment. Please try again later.",
+    }));
+    return NextResponse.json({ results: fallbackResults });
   }
 
   // Zero-balance and suspended guard: if merchant has no credits or line is
@@ -110,15 +128,16 @@ export async function POST(request: Request) {
   const results = [];
 
   for (const toolCall of toolCallList) {
-    // Vapi sends: { id, name, arguments: {...} } — arguments is an object.
-    // Source: https://docs.vapi.ai/tools/custom-tools
-    const name: string = toolCall.name ?? toolCall.function?.name;
-    const rawArgs = toolCall.arguments ?? toolCall.function?.arguments;
-    const args = typeof rawArgs === "string" ? JSON.parse(rawArgs) : (rawArgs ?? {});
     const toolCallId: string = toolCall.id;
     let result: string;
 
     try {
+      // Vapi sends arguments as an object; some integrations send JSON strings.
+      // Parse must be inside try/catch — malformed args must not crash the entire handler.
+      const name: string = toolCall.name ?? toolCall.function?.name;
+      const rawArgs = toolCall.arguments ?? toolCall.function?.arguments;
+      const args = typeof rawArgs === "string" ? JSON.parse(rawArgs) : (rawArgs ?? {});
+
       switch (name) {
         case "lookup_order": {
           result = await handleLookupOrder(supabase, merchantId, args.order_number);
@@ -157,8 +176,8 @@ export async function POST(request: Request) {
       }
     }
 
-    // B-5: Use results[].toolCallId and results[].result format per RESEARCH_NOTES.md R-1
-    results.push({ toolCallId, result });
+    // Sanitize newlines — Vapi TTS breaks on \n (user-entered custom_prompt, AfterShip events)
+    results.push({ toolCallId, result: result.replace(/\n/g, " ") });
   }
 
   // Append billing notice for past_due_restricted merchants (Day 9–13).
@@ -204,11 +223,9 @@ async function handleLookupOrder(
   // Step 1: Look up Shopify order first to get tracking number
   let order: Awaited<ReturnType<typeof lookupOrder>> | null = null;
   try {
-    order = await withRetry(
-      () => lookupOrder(integration.shop_domain, shopifyToken, orderNumber),
-      3,
-      "shopify_order_lookup"
-    );
+    // lookupOrder already uses withRetry internally for each search format —
+    // wrapping it again would cause up to 27 Shopify calls and blow the 5s timeout.
+    order = await lookupOrder(integration.shop_domain, shopifyToken, orderNumber);
   } catch {
     return `I wasn't able to find order ${orderNumber}. Could you double-check the order number?`;
   }
@@ -375,7 +392,7 @@ async function handleEndOfCallReport(
 
   const { data: merchant } = await supabase
     .from("merchants")
-    .select("id, credit_balance, low_balance_notified_at, support_phone")
+    .select("id, credit_balance, low_balance_notified_at, support_phone, notification_preferences")
     .eq("vapi_agent_id", assistantId)
     .single();
 
@@ -498,7 +515,11 @@ async function handleEndOfCallReport(
     .single();
   const updatedBalance = updatedMerchant?.credit_balance ?? merchant.credit_balance;
 
-  if (updatedBalance < LOW_BALANCE_THRESHOLD_SECS) {
+  // Check notification preference before sending low-balance SMS
+  const notifPrefs = (merchant.notification_preferences as Record<string, boolean> | null) ?? {};
+  const lowBalanceSmsEnabled = notifPrefs.low_balance_sms !== false; // default true
+
+  if (lowBalanceSmsEnabled && updatedBalance < LOW_BALANCE_THRESHOLD_SECS) {
     const lastNotified = merchant.low_balance_notified_at;
     const hoursSince = lastNotified
       ? (Date.now() - new Date(lastNotified).getTime()) / 3_600_000
