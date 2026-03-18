@@ -142,6 +142,7 @@ function OnboardingContent() {
         token_exchange_failed: "Could not get Shopify access token. Check your store domain and try again.",
         vault_store_failed: "Failed to save Shopify credentials. Please try again.",
         merchant_not_found: "Account not found. Please sign out and back in.",
+        store_already_connected: "This Shopify store is already connected to another Barpel account. Disconnect it from that account first, or use a different store.",
       };
       setError(messages[shopifyErrorCode] ?? "Shopify connection failed. Please try again.");
       goToStep(2);

@@ -13,14 +13,14 @@ export async function sendSms(
   body: string,
   from?: string
 ): Promise<void> {
-  // B-17: Use TWILIO_SUBACCOUNT_SID / TWILIO_SUBACCOUNT_AUTH_TOKEN (not master)
-  const accountSid = process.env.TWILIO_SUBACCOUNT_SID;
-  const authToken = process.env.TWILIO_SUBACCOUNT_AUTH_TOKEN;
+  // Barpel's platform Twilio credentials — server side only, never exposed to merchants
+  const accountSid = process.env.TWILIO_ACCOUNT_SID;
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
   const fromNumber = from ?? process.env.TWILIO_NUMBER;
 
   if (!accountSid || !authToken || !fromNumber) {
     throw new Error(
-      "Missing Twilio credentials (TWILIO_SUBACCOUNT_SID, TWILIO_SUBACCOUNT_AUTH_TOKEN, TWILIO_NUMBER)"
+      "SMS service is temporarily unavailable. Please try again."
     );
   }
 

@@ -16,9 +16,9 @@ const serverSchema = z.object({
   VAPI_PRIVATE_KEY: z.string().min(1),
   VAPI_WEBHOOK_SECRET: z.string().min(1),
 
-  // Twilio — SUBACCOUNT credentials only (renamed from TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN)
-  TWILIO_SUBACCOUNT_SID: z.string().min(1),
-  TWILIO_SUBACCOUNT_AUTH_TOKEN: z.string().min(1),
+  // Twilio — Barpel's platform account credentials (server side only, never exposed to merchants)
+  TWILIO_ACCOUNT_SID: z.string().min(1),
+  TWILIO_AUTH_TOKEN: z.string().min(1),
   // Optional — UK/US address SIDs for number provisioning (may be managed manually)
   TWILIO_UK_ADDRESS_SID: z.string().min(1).optional(),
   TWILIO_US_ADDRESS_SID: z.string().min(1).optional(),

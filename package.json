@@ -15,7 +15,8 @@
     "verify:ai": "tsx --env-file=.env.local scripts/verify-ai-live.ts",
     "minimum:check": "tsx --env-file=.env.local scripts/minimum-requirements.ts",
     "diagnose:orders": "tsx --env-file=.env.local scripts/diagnose-order-lookup.ts",
-    "test:contracts": "tsx --env-file=.env.local scripts/full-contract-test.ts"
+    "test:contracts": "tsx --env-file=.env.local scripts/full-contract-test.ts",
+    "test:launch": "tsx --env-file=.env.local scripts/launch-verification.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

@@ -27,8 +27,8 @@
  *
  * NOTE ON CURRENT STATUS (as of March 2026):
  *   Tests 1 and 2 are BLOCKED — no merchant is provisioned (vapi_agent_id IS NULL for all).
- *   Root cause: Twilio subaccount (see .env.local TWILIO_SUBACCOUNT_SID) is on trial plan.
- *   Fix: Upgrade Twilio subaccount, then run provisioning for any merchant.
+ *   Root cause: Twilio account (see .env.local TWILIO_ACCOUNT_SID) is on trial plan.
+ *   Fix: Upgrade Twilio account, then run provisioning for any merchant.
  *   Once provisioned, populate VAPI_ASSISTANT_ID and VAPI_MERCHANT_ID in .env.local.
  *   Tests 3 and 4 run NOW and require no provisioned merchant.
  *
@@ -570,8 +570,8 @@ async function runAllTests() {
     console.log("\n✅ ALL ACTIVE CONTRACT TESTS PASSED");
     if (!ASSISTANT_ID) {
       console.log("\n⚠️  BLOCKER: Tests 1 & 2 were skipped — no provisioned merchant.");
-      console.log("   Root cause: Twilio subaccount (TWILIO_SUBACCOUNT_SID) is on trial plan.");
-      console.log("   Action required: Upgrade Twilio subaccount → reprovision a merchant.");
+      console.log("   Root cause: Twilio account (TWILIO_ACCOUNT_SID) is on trial plan.");
+      console.log("   Action required: Upgrade Twilio account → reprovision a merchant.");
       console.log("   Then set VAPI_ASSISTANT_ID and VAPI_MERCHANT_ID in .env.local and rerun.");
     }
     process.exit(0);

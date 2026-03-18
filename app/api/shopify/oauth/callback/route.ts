@@ -215,7 +215,7 @@ export async function GET(request: Request) {
   }
 
   // Upsert integration — store Vault UUID references (not raw tokens)
-  await adminSupabase.from("integrations").upsert(
+  const { error: upsertError } = await adminSupabase.from("integrations").upsert(
     {
       merchant_id: merchantId,
       platform: "shopify",
@@ -228,6 +228,17 @@ export async function GET(request: Request) {
     },
     { onConflict: "merchant_id,platform" }
   );
+
+  // If upsert fails due to shop_domain uniqueness (store already connected to another account),
+  // surface a clear error rather than silently proceeding to the success redirect.
+  if (upsertError) {
+    console.error("[shopify callback] Integration upsert failed:", upsertError);
+    // Postgres unique violation code is 23505
+    if (upsertError.code === "23505") {
+      return redirectError("store_already_connected");
+    }
+    return redirectError("vault_store_failed");
+  }
 
   // B-14: Register Shopify abandoned cart webhook
   try {

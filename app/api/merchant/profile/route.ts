@@ -31,5 +31,5 @@ export async function GET() {
     return NextResponse.json({ error: "Merchant not found" }, { status: 404 });
   }
 
-  return NextResponse.json({ merchant });
+  return NextResponse.json({ merchant, email: user.email ?? null });
 }

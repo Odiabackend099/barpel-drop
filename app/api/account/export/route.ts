@@ -34,7 +34,7 @@ export async function GET() {
   const { data: merchant, error: merchantError } = await supabase
     .from("merchants")
     .select(
-      "id, business_name, email, support_phone, country, created_at, flw_plan, plan_status"
+      "id, business_name, support_phone, country, created_at, flw_plan, plan_status"
     )
     .eq("user_id", user.id)
     .is("deleted_at", null)
@@ -52,7 +52,7 @@ export async function GET() {
     JSON.stringify(
       {
         business_name: merchant.business_name,
-        email: merchant.email ?? user.email,
+        email: user.email ?? null,
         plan: merchant.flw_plan ?? "free",
         plan_status: merchant.plan_status ?? "none",
         phone_number: merchant.support_phone ?? null,

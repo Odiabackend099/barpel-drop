@@ -20,6 +20,19 @@ function ShopifyConnectedToast() {
       toast.success("Shopify store connected!");
       router.replace("/dashboard/integrations", { scroll: false });
     }
+    const shopifyError = searchParams.get("shopify_error");
+    if (shopifyError) {
+      const messages: Record<string, string> = {
+        store_already_connected: "This Shopify store is already connected to another Barpel account. Disconnect it from that account first, or use a different store.",
+        vault_store_failed: "Failed to save Shopify credentials. Please try again.",
+        token_exchange_failed: "Could not get Shopify access token. Check your store domain and try again.",
+        invalid_hmac: "Shopify signature verification failed. Please try again.",
+        csrf_mismatch: "Session expired during Shopify authorization. Please try again.",
+        merchant_not_found: "Account not found. Please sign out and back in.",
+      };
+      toast.error(messages[shopifyError] ?? "Shopify connection failed. Please try again.");
+      router.replace("/dashboard/integrations", { scroll: false });
+    }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   return null;
 }

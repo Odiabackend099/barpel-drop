@@ -1,0 +1,75 @@
+{
+  "timestamp": "2026-03-18T16:59:34.982Z",
+  "baseUrl": "https://barpel-ai.odia.dev",
+  "passed": 5,
+  "total": 13,
+  "passRate": "38%",
+  "tests": [
+    {
+      "name": "Login succeeds",
+      "passed": true,
+      "error": null
+    },
+    {
+      "name": "Dashboard loads",
+      "passed": true,
+      "error": null
+    },
+    {
+      "name": "Call Logs page loads",
+      "passed": true,
+      "error": null
+    },
+    {
+      "name": "Voice page loads",
+      "passed": false,
+      "error": null
+    },
+    {
+      "name": "Integrations page loads",
+      "passed": false,
+      "error": null
+    },
+    {
+      "name": "Billing page loads",
+      "passed": true,
+      "error": null
+    },
+    {
+      "name": "Credit packages visible",
+      "passed": true,
+      "error": null
+    },
+    {
+      "name": "Can update business name",
+      "passed": false,
+      "error": "Input not found"
+    },
+    {
+      "name": "3 notification toggles visible",
+      "passed": false,
+      "error": null
+    },
+    {
+      "name": "Download data button visible",
+      "passed": false,
+      "error": null
+    },
+    {
+      "name": "Delete modal opens",
+      "passed": false,
+      "error": "Delete button not found"
+    },
+    {
+      "name": "Password reset sends email",
+      "passed": false,
+      "error": "Button not found"
+    },
+    {
+      "name": "Dashboard loads in <3 seconds",
+      "passed": false,
+      "error": null
+    }
+  ],
+  "screenshotsDir": "./tests/screenshots"
+}

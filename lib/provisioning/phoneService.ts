@@ -60,15 +60,15 @@ async function purchaseTwilioNumber(
   countryCode: string,
   addressSid: string | null
 ): Promise<{ sid: string; phoneNumber: string }> {
-  const subAccountSid = process.env.TWILIO_SUBACCOUNT_SID;
-  const subAccountAuthToken = process.env.TWILIO_SUBACCOUNT_AUTH_TOKEN;
+  const accountSid = process.env.TWILIO_ACCOUNT_SID;
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
 
-  if (!subAccountSid || !subAccountAuthToken) {
-    throw new Error("Missing TWILIO_SUBACCOUNT_SID or TWILIO_SUBACCOUNT_AUTH_TOKEN");
+  if (!accountSid || !authToken) {
+    throw new Error("Phone provisioning is temporarily unavailable. Please try again or use the Bring Your Own Number option.");
   }
 
-  const credentials = Buffer.from(`${subAccountSid}:${subAccountAuthToken}`).toString("base64");
-  const baseUrl = `https://api.twilio.com/2010-04-01/Accounts/${subAccountSid}`;
+  const credentials = Buffer.from(`${accountSid}:${authToken}`).toString("base64");
+  const baseUrl = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}`;
 
   // Step 1: Search for an available number
   const searchUrl = new URL(
@@ -344,12 +344,12 @@ async function importNumberIntoVapi(
   agentId: string
 ): Promise<string> {
   const vapiKey = process.env.VAPI_PRIVATE_KEY;
-  const subAccountSid = process.env.TWILIO_SUBACCOUNT_SID;
-  const subAccountAuthToken = process.env.TWILIO_SUBACCOUNT_AUTH_TOKEN;
+  const accountSid = process.env.TWILIO_ACCOUNT_SID;
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
 
   if (!vapiKey) throw new Error("Missing VAPI_PRIVATE_KEY");
-  if (!subAccountSid || !subAccountAuthToken) {
-    throw new Error("Missing TWILIO_SUBACCOUNT_SID or TWILIO_SUBACCOUNT_AUTH_TOKEN");
+  if (!accountSid || !authToken) {
+    throw new Error("Phone provisioning is temporarily unavailable. Please try again or use the Bring Your Own Number option.");
   }
 
   const resp = await withRetry(
@@ -362,8 +362,8 @@ async function importNumberIntoVapi(
         },
         body: JSON.stringify({
           twilioPhoneNumber: phoneNumber,
-          twilioAccountSid: subAccountSid,
-          twilioAuthToken: subAccountAuthToken,
+          twilioAccountSid: accountSid,
+          twilioAuthToken: authToken,
           assistantId: agentId,
         }),
       }),
@@ -501,16 +501,16 @@ export async function provisionMerchantLine(
       // Need the actual E.164 phone number for Vapi import.
       // If this is a retry, look up the number from Twilio.
       if (!purchasedPhoneNumber) {
-        const subAccountSid = process.env.TWILIO_SUBACCOUNT_SID;
-        const subAccountAuthToken = process.env.TWILIO_SUBACCOUNT_AUTH_TOKEN;
+        const accountSid = process.env.TWILIO_ACCOUNT_SID;
+        const authToken = process.env.TWILIO_AUTH_TOKEN;
         const credentials = Buffer.from(
-          `${subAccountSid}:${subAccountAuthToken}`
+          `${accountSid}:${authToken}`
         ).toString("base64");
 
         const numResp = await withRetry(
           () =>
             fetch(
-              `https://api.twilio.com/2010-04-01/Accounts/${subAccountSid}/IncomingPhoneNumbers/${twilioNumberSid}.json`,
+              `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/IncomingPhoneNumbers/${twilioNumberSid}.json`,
               { headers: { Authorization: `Basic ${credentials}` } }
             ),
           3,

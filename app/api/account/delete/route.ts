@@ -53,7 +53,7 @@ export async function DELETE(request: Request) {
   const { data: merchant, error: merchantError } = await supabase
     .from("merchants")
     .select(
-      "id, user_id, email, business_name, flw_subscription_id, vapi_agent_id, vapi_phone_id, provisioning_mode"
+      "id, user_id, business_name, flw_subscription_id, vapi_agent_id, vapi_phone_id, provisioning_mode"
     )
     .eq("user_id", user.id)
     .is("deleted_at", null)
@@ -65,7 +65,7 @@ export async function DELETE(request: Request) {
 
   const adminSupabase = createAdminClient();
   const errors: string[] = [];
-  const merchantEmail = merchant.email ?? user.email;
+  const merchantEmail = user.email;
 
   // Step 1: Cancel Flutterwave subscription
   if (merchant.flw_subscription_id) {

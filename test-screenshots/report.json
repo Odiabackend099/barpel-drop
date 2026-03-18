@@ -1,0 +1,128 @@
+[
+  {
+    "id": 1,
+    "name": "Hero loads, no duplicate 73%",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "id": 2,
+    "name": "Hero card stack animation screenshots",
+    "status": "PASS",
+    "detail": "Screenshots captured for visual review"
+  },
+  {
+    "id": 3,
+    "name": "Feature card hover smooth",
+    "status": "PASS",
+    "detail": "No visible glitch in screenshot"
+  },
+  {
+    "id": 4,
+    "name": "Get Started → /signup",
+    "status": "PASS",
+    "detail": "href=/signup"
+  },
+  {
+    "id": 5,
+    "name": "Log In → /login",
+    "status": "PASS",
+    "detail": "href=/login"
+  },
+  {
+    "id": 6,
+    "name": "Nav Pricing → /pricing",
+    "status": "PASS",
+    "detail": "url=http://localhost:5050/pricing"
+  },
+  {
+    "id": 7,
+    "name": "Solutions → Dropshippers",
+    "status": "PASS",
+    "detail": "url=http://localhost:5050/solutions/dropshippers"
+  },
+  {
+    "id": 8,
+    "name": "Resources → Blog",
+    "status": "PASS",
+    "detail": "url=http://localhost:5050/blog"
+  },
+  {
+    "id": 9,
+    "name": "Footer 25+ links, no # anchors",
+    "status": "PASS",
+    "detail": "27 links, 0 hash anchors"
+  },
+  {
+    "id": 10,
+    "name": "DropshipDirect case study",
+    "status": "PASS",
+    "detail": "url=http://localhost:5050/case-studies/dropship-direct"
+  },
+  {
+    "id": 11,
+    "name": "Pricing content",
+    "status": "WARN",
+    "detail": "$29:false $79:false $179:false Custom:true credits:true minutes:false"
+  },
+  {
+    "id": 12,
+    "name": "Integrations: 4 logos",
+    "status": "PASS",
+    "detail": "Shopify:true Twilio:true Vapi:true Supabase:true"
+  },
+  {
+    "id": 13,
+    "name": "Security: no PCI DSS or ISO 27001",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "id": 14,
+    "name": "/about page loads",
+    "status": "PASS",
+    "detail": "status=200 len=10358"
+  },
+  {
+    "id": 15,
+    "name": "/contact page with form",
+    "status": "PASS",
+    "detail": "status=200 formElements=6"
+  },
+  {
+    "id": 16,
+    "name": "Features: no pure white backgrounds",
+    "status": "PASS",
+    "detail": "0/3 sections have pure white bg"
+  },
+  {
+    "id": 17,
+    "name": "Consistent color palette across pages",
+    "status": "PASS",
+    "detail": "Visual consistency verified via screenshots"
+  },
+  {
+    "id": 18,
+    "name": "Framer Motion animations on scroll",
+    "status": "PASS",
+    "detail": "81 motion elements before scroll, 81 after"
+  },
+  {
+    "id": 19,
+    "name": "Mobile responsiveness",
+    "status": "WARN",
+    "detail": "hamburger:true overflow:true"
+  },
+  {
+    "id": 20,
+    "name": "Buttons have aria-labels or text",
+    "status": "PASS",
+    "detail": "11/11 have aria-label or text content, 0 missing"
+  },
+  {
+    "id": 21,
+    "name": "Color contrast WCAG AA",
+    "status": "PASS",
+    "detail": "All checked elements pass 4.5:1"
+  }
+]

@@ -7,7 +7,7 @@
  * Prerequisites:
  *   - SUPABASE_SERVICE_KEY in .env.local
  *   - VAPI_PRIVATE_KEY in .env.local
- *   - TWILIO_SUBACCOUNT_SID + TWILIO_SUBACCOUNT_AUTH_TOKEN in .env.local
+ *   - TWILIO_ACCOUNT_SID + TWILIO_AUTH_TOKEN in .env.local
  */
 
 import { createAdminClient } from "@/lib/supabase/admin";

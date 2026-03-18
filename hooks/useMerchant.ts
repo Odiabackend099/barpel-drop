@@ -10,6 +10,7 @@ export function useMerchant() {
   const [merchant, setMerchant] = useState<MerchantData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const userIdRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -30,6 +31,7 @@ export function useMerchant() {
         } = await supabase.auth.getUser();
         if (!user) throw new Error("Not authenticated");
         userIdRef.current = user.id;
+        setUserEmail(user.email ?? null);
 
         const { data, error: dbError } = await supabase
           .from("merchants")
@@ -187,5 +189,5 @@ export function useMerchant() {
     );
   };
 
-  return { merchant, loading, error, updateCustomPrompt, updateAiVoice, deleteAiVoice, togglePause };
+  return { merchant, loading, error, userEmail, updateCustomPrompt, updateAiVoice, deleteAiVoice, togglePause };
 }

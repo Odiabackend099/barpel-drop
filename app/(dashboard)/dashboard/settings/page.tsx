@@ -36,7 +36,7 @@ const DEFAULT_PREFS: NotificationPreferences = {
 };
 
 export default function SettingsPage() {
-  const { merchant, loading } = useMerchant();
+  const { merchant, loading, userEmail } = useMerchant();
 
   // Profile state
   const [businessName, setBusinessName] = useState("");
@@ -96,7 +96,7 @@ export default function SettingsPage() {
   };
 
   const handleResetPassword = async () => {
-    const email = merchant?.email;
+    const email = userEmail;
     if (!email || typeof email !== "string") {
       toast.error("No email address found");
       return;
@@ -239,7 +239,7 @@ export default function SettingsPage() {
               Email address
             </label>
             <p className="text-sm text-[#4A7A6D] mt-1">
-              {merchant?.email ?? "—"}
+              {userEmail ?? "—"}
             </p>
           </div>
 

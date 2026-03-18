@@ -48,20 +48,20 @@ export async function POST(request: Request) {
   }
 
   // Call Twilio OutgoingCallerIds API to request verification call
-  const subAccountSid = process.env.TWILIO_SUBACCOUNT_SID;
-  const subAccountAuthToken = process.env.TWILIO_SUBACCOUNT_AUTH_TOKEN;
+  const accountSid = process.env.TWILIO_ACCOUNT_SID;
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
 
-  if (!subAccountSid || !subAccountAuthToken) {
+  if (!accountSid || !authToken) {
     return NextResponse.json(
-      { error: "Twilio credentials not configured" },
+      { error: "Caller ID verification is temporarily unavailable. Please try again later." },
       { status: 500 }
     );
   }
 
-  const credentials = Buffer.from(`${subAccountSid}:${subAccountAuthToken}`).toString("base64");
+  const credentials = Buffer.from(`${accountSid}:${authToken}`).toString("base64");
 
   const twilioResp = await fetch(
-    `https://api.twilio.com/2010-04-01/Accounts/${subAccountSid}/OutgoingCallerIds.json`,
+    `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/OutgoingCallerIds.json`,
     {
       method: "POST",
       headers: {
