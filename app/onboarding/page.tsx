@@ -34,7 +34,7 @@ const DUMMY_FLW_CONFIG = {
 const STEPS = [
   { icon: Store, label: "Business Name" },
   { icon: Sparkles, label: "Connect Store" },
-  { icon: CreditCard, label: "Get Minutes" },
+  { icon: CreditCard, label: "Get Credits" },
   { icon: Phone, label: "AI Phone Line" },
   { icon: Rocket, label: "Ready!" },
 ];
@@ -853,11 +853,11 @@ function OnboardingContent() {
                           <CreditCard className="w-6 h-6 text-teal" />
                         </div>
                         <h2 className="font-display text-2xl font-bold text-navy mb-2 tracking-tight">
-                          Get call minutes
+                          Get call credits
                         </h2>
                         <p className="text-sm text-[#4A7A6D] mb-6">
                           {freeMinutes > 0
-                            ? `Choose a plan or start with your ${freeMinutes} free minutes to try it out.`
+                            ? `Choose a plan or start with your ${freeMinutes} free credits to try it out.`
                             : "Choose a plan to get started with AI support calls."}
                         </p>
 
@@ -866,7 +866,7 @@ function OnboardingContent() {
                             onClick={handleSkipBilling}
                             className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full bg-[#0d9488] text-white font-semibold text-sm hover:bg-[#0b8276] shadow-[0_4px_14px_0_rgba(13,148,136,0.25)] transition-colors mb-2"
                           >
-                            Start with {freeMinutes} free minutes — no card required
+                            Start with {freeMinutes} free credits — no card required
                           </button>
                         )}
 
@@ -891,7 +891,7 @@ function OnboardingContent() {
                               <div>
                                 <span className="font-semibold text-navy text-sm">{pkg.name}</span>
                                 <span className="text-xs text-[#8AADA6] ml-2">
-                                  {pkg.minutes} min &middot; ${pkg.perMin}/min
+                                  {pkg.minutes} credits &middot; ${pkg.perMin}/credit
                                 </span>
                               </div>
                               <span className="font-bold text-navy">
