@@ -1,11 +1,16 @@
 /**
- * One-time script to create Flutterwave payment plans for Barpel AI.
- * Run ONCE: npx ts-node -r dotenv/config scripts/create-flw-plans.ts
+ * Create Flutterwave payment plans for Barpel AI (monthly + annual).
  *
- * After running, save the printed plan IDs to Vercel env vars:
- *   FLW_PLAN_ID_STARTER=xxxxx
- *   FLW_PLAN_ID_GROWTH=xxxxx
- *   FLW_PLAN_ID_SCALE=xxxxx
+ * Usage:
+ *   npx tsx -r dotenv/config scripts/create-flw-plans.ts
+ *
+ * Prerequisites:
+ *   - FLW_SECRET_KEY must be set (live or test key depending on environment)
+ *   - Run once per environment (test + live)
+ *
+ * After running, store the returned plan IDs in Vercel env vars:
+ *   FLW_PLAN_ID_STARTER, FLW_PLAN_ID_GROWTH, FLW_PLAN_ID_SCALE
+ *   FLW_PLAN_ID_STARTER_ANNUAL, FLW_PLAN_ID_GROWTH_ANNUAL, FLW_PLAN_ID_SCALE_ANNUAL
  */
 
 const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY;
@@ -16,12 +21,23 @@ if (!FLW_SECRET_KEY) {
 }
 
 const plans = [
-  { name: "Barpel AI Starter", amount: 29,  currency: "USD", interval: "monthly" },
-  { name: "Barpel AI Growth",  amount: 79,  currency: "USD", interval: "monthly" },
-  { name: "Barpel AI Scale",   amount: 179, currency: "USD", interval: "monthly" },
+  // Monthly plans
+  { name: "Barpel AI Starter (Monthly)", amount: 29,   currency: "USD", interval: "monthly", envVar: "FLW_PLAN_ID_STARTER" },
+  { name: "Barpel AI Growth (Monthly)",  amount: 79,   currency: "USD", interval: "monthly", envVar: "FLW_PLAN_ID_GROWTH" },
+  { name: "Barpel AI Scale (Monthly)",   amount: 179,  currency: "USD", interval: "monthly", envVar: "FLW_PLAN_ID_SCALE" },
+  // Annual plans (10% discount)
+  { name: "Barpel AI Starter (Annual)",  amount: 313,  currency: "USD", interval: "yearly",  envVar: "FLW_PLAN_ID_STARTER_ANNUAL" },
+  { name: "Barpel AI Growth (Annual)",   amount: 853,  currency: "USD", interval: "yearly",  envVar: "FLW_PLAN_ID_GROWTH_ANNUAL" },
+  { name: "Barpel AI Scale (Annual)",    amount: 1933, currency: "USD", interval: "yearly",  envVar: "FLW_PLAN_ID_SCALE_ANNUAL" },
 ];
 
 async function createPlans() {
+  console.log("Creating Flutterwave payment plans...");
+  console.log(`Key: ${FLW_SECRET_KEY?.substring(0, 20)}...`);
+  console.log(`Mode: ${FLW_SECRET_KEY?.includes("TEST") ? "TEST" : "LIVE"}\n`);
+
+  const results: { envVar: string; planId: number }[] = [];
+
   for (const plan of plans) {
     const res = await fetch("https://api.flutterwave.com/v3/payment-plans", {
       method: "POST",
@@ -34,20 +50,28 @@ async function createPlans() {
         name:     plan.name,
         interval: plan.interval,
         currency: plan.currency,
+        duration: 0, // Infinite — runs until cancelled
       }),
     });
 
     const data = await res.json() as { status: string; data?: { id: number; plan_token: string } };
 
     if (data.status === "success" && data.data) {
-      console.log(`✅ ${plan.name}`);
-      console.log(`   plan_id:    ${data.data.id}`);
-      console.log(`   plan_token: ${data.data.plan_token}`);
-      console.log();
+      console.log(`✅ ${plan.envVar}="${data.data.id}"  — ${plan.name} ($${plan.amount} ${plan.interval})`);
+      results.push({ envVar: plan.envVar, planId: data.data.id });
     } else {
       console.error(`❌ Failed to create ${plan.name}:`, JSON.stringify(data));
     }
+
+    // Small delay to avoid rate limiting
+    await new Promise((r) => setTimeout(r, 500));
   }
+
+  console.log("\n─── Add to Vercel env vars ───\n");
+  for (const r of results) {
+    console.log(`${r.envVar}="${r.planId}"`);
+  }
+  console.log(`\n${results.length}/${plans.length} plans created.`);
 }
 
 createPlans().catch(console.error);

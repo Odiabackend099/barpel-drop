@@ -9,7 +9,7 @@ const plans = [
     name: 'Starter',
     description: 'For small stores just getting started',
     price: 29,
-    yearlyTotal: 348,
+    yearlyTotal: 313,
     features: [
       '30 credits/month',
       '1 phone number',
@@ -17,7 +17,7 @@ const plans = [
       'Order tracking',
       'Email support',
     ],
-    cta: 'Get started',
+    cta: 'Try for free',
     href: '/signup',
     popular: false,
     ctaStyle: 'outlined' as const,
@@ -26,7 +26,7 @@ const plans = [
     name: 'Growth',
     description: 'For growing businesses',
     price: 79,
-    yearlyTotal: 948,
+    yearlyTotal: 853,
     features: [
       '100 credits/month',
       '3 phone numbers',
@@ -44,7 +44,7 @@ const plans = [
     name: 'Scale',
     description: 'For high-volume stores',
     price: 179,
-    yearlyTotal: 2148,
+    yearlyTotal: 1933,
     features: [
       '250 credits/month',
       '10 phone numbers',
@@ -52,7 +52,7 @@ const plans = [
       'Advanced analytics',
       'Dedicated account manager',
     ],
-    cta: 'Talk to sales',
+    cta: 'Try for free',
     href: '/signup',
     popular: false,
     ctaStyle: 'outlined' as const,
@@ -126,7 +126,7 @@ export default function Pricing() {
                   <span className="text-text-secondary">/month</span>
                 </div>
                 <div className="text-sm text-brand-teal">
-                  Billed ${plan.yearlyTotal}/year
+                  Billed ${plan.yearlyTotal}/year · Save 10%
                 </div>
               </div>
 
@@ -165,24 +165,32 @@ export default function Pricing() {
           ))}
         </div>
 
-        {/* Enterprise link */}
+        {/* Enterprise Card */}
         <motion.div
-          className="text-center mt-10"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
+          className="mt-8 max-w-5xl mx-auto"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.4 }}
         >
-          <p className="text-text-secondary text-sm mb-2">
-            Need more? We can build a custom plan.
-          </p>
-          <Link
-            href="/contact"
-            className="inline-flex items-center gap-2 text-brand-teal font-semibold hover:gap-3 transition-all duration-200"
-          >
-            Enterprise — Contact us
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+          <div className="rounded-2xl border-2 border-brand-navy bg-off-white p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Sparkles className="w-5 h-5 text-brand-teal" />
+                <p className="text-xl font-bold text-brand-navy">Enterprise</p>
+              </div>
+              <p className="text-text-secondary text-sm leading-relaxed max-w-md">
+                Custom volume pricing, dedicated SLAs, white-glove onboarding, and a dedicated account manager for high-volume stores.
+              </p>
+            </div>
+            <Link
+              href="/contact"
+              className="flex-shrink-0 inline-flex items-center gap-2 px-8 py-4 bg-brand-navy text-white font-bold rounded-xl hover:bg-slate-800 transition-all duration-200 shadow-lg"
+            >
+              Contact us
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         </motion.div>
       </div>
     </section>

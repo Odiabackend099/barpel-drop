@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import type { CreditTransaction } from "@/lib/mockApi";
 import { createClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
 
 const useMock = process.env.NEXT_PUBLIC_USE_MOCK_API === "true";
 
@@ -45,34 +46,45 @@ export function useCredits() {
     supabaseRef.current = supabase;
 
     async function fetchBalance() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) {
+          setLoading(false);
+          return;
+        }
+        userIdRef.current = user.id;
+
+        const { data, error: dbError } = await supabase
+          .from("merchants")
+          .select("credit_balance, flw_plan, flw_subscription_id, plan_status")
+          .eq("user_id", user.id)
+          .single();
+
+        if (dbError) throw dbError;
+
+        if (data) {
+          setBalance(data.credit_balance ?? 0);
+          setFlwPlan(data.flw_plan ?? null);
+          setFlwSubscriptionId(data.flw_subscription_id ?? null);
+          setPlanStatus(data.plan_status ?? null);
+        }
+      } catch (err) {
+        console.error("[useCredits] Failed to fetch balance:", err);
+        toast.error("Failed to load credit balance. Please try refreshing.");
+      } finally {
         setLoading(false);
-        return;
       }
-      userIdRef.current = user.id;
-
-      const { data } = await supabase
-        .from("merchants")
-        .select("credit_balance, flw_plan, flw_subscription_id, plan_status")
-        .eq("user_id", user.id)
-        .single();
-
-      if (data) {
-        setBalance(data.credit_balance ?? 0);
-        setFlwPlan(data.flw_plan ?? null);
-        setFlwSubscriptionId(data.flw_subscription_id ?? null);
-        setPlanStatus(data.plan_status ?? null);
-      }
-      setLoading(false);
 
       // Fetch usage chart data
       fetch("/api/credits/usage-chart")
         .then((r) => r.ok ? r.json() : null)
         .then((d) => { if (d?.usage) setUsageData(d.usage); })
-        .catch(() => {});
+        .catch((err) => {
+          console.error("[useCredits] Failed to fetch usage chart:", err);
+          toast.error("Failed to load usage data.");
+        });
     }
 
     fetchBalance();

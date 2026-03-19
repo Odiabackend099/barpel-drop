@@ -248,7 +248,7 @@ async function run() {
   await page.setViewportSize({ width: 1280, height: 800 });
 
   // Open the Barpel landing page so the user can see the browser is live
-  await page.goto("https://barpel-ai.odia.dev", { waitUntil: "domcontentloaded" });
+  await page.goto("https://dropship.barpel.ai", { waitUntil: "domcontentloaded" });
   await page.waitForTimeout(1000);
 
   // ── PART 2: TEST EACH VOICE ───────────────────────────────────────────────
@@ -412,7 +412,7 @@ async function run() {
 
     // STEP F: Playwright screenshot — show active test in browser
     try {
-      await page.goto(`https://barpel-ai.odia.dev`, { waitUntil: "domcontentloaded" });
+      await page.goto(`https://dropship.barpel.ai`, { waitUntil: "domcontentloaded" });
       await page.waitForTimeout(800);
       const screenshotPath = path.join(
         process.cwd(),

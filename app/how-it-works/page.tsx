@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description:
     'Connect your Shopify store, configure your AI persona, and go live in under 10 minutes. See the full setup process.',
   alternates: {
-    canonical: 'https://barpel.ai/how-it-works',
+    canonical: 'https://dropship.barpel.ai/how-it-works',
   },
 };
 

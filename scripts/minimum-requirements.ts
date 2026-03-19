@@ -95,7 +95,7 @@ async function run() {
     if (assistantRes.ok) {
       const assistant = await assistantRes.json();
       checks.assistant_webhook_correct =
-        assistant.serverUrl?.includes("barpel-ai.odia.dev") ?? false;
+        assistant.serverUrl?.includes("dropship.barpel.ai") ?? false;
       checks.assistant_first_message = assistant.firstMessage ?? "(none)";
       checks.assistant_tools = (
         assistant.model?.tools?.map(

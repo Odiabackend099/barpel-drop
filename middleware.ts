@@ -33,9 +33,13 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch {
+    // Auth check failed — treat as unauthenticated
+  }
 
   const { pathname } = request.nextUrl;
 
@@ -44,7 +48,9 @@ export async function middleware(request: NextRequest) {
     (pathname.startsWith("/dashboard") || pathname.startsWith("/onboarding")) &&
     !user
   ) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("next", pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
   // Gate ALL /dashboard/* access behind onboarding completion.

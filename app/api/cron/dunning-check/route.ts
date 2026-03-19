@@ -40,7 +40,7 @@ export async function GET(req: Request) {
   // Skip merchants without plan_renewal_due_at (legacy merchants before migration)
   const { data: overdue } = await supabase
     .from("merchants")
-    .select("id, user_id, business_name, flw_subscription_id, flw_plan, plan_status, plan_renewal_due_at, dunning_email_count, support_phone, cancellation_attempted_at")
+    .select("id, user_id, business_name, flw_subscription_id, flw_plan, plan_status, plan_renewal_due_at, dunning_email_count, support_phone, cancellation_attempted_at, billing_cycle")
     .not("flw_subscription_id", "is", null)
     .not("plan_renewal_due_at", "is", null)
     .lt("plan_renewal_due_at", now.toISOString())
@@ -133,10 +133,11 @@ export async function GET(req: Request) {
       updates.plan_status = "past_due_final";
     }
 
-    // Day 30: Cancel subscription with Flutterwave
+    // Cancel subscription with Flutterwave — Day 30 for monthly, Day 45 for annual (higher-value)
     // Skip if we already attempted cancellation within the last 23 hours to prevent
     // repeated daily API calls when FLW returns an error
-    else if (daysOverdue >= 30 && merchant.flw_subscription_id) {
+    const cancelThreshold = merchant.billing_cycle === "annual" ? 45 : 30;
+    if (daysOverdue >= cancelThreshold && merchant.flw_subscription_id) {
       const lastAttempt = merchant.cancellation_attempted_at
         ? new Date(merchant.cancellation_attempted_at).getTime()
         : 0;
@@ -173,7 +174,7 @@ export async function GET(req: Request) {
       }
     }
 
-    // Apply updates if any
+    // Apply updates if any — use WHERE guard to prevent race with subscription.renewed webhook
     if (Object.keys(updates).length > 0) {
       // Re-read merchant to avoid race condition with subscription.renewed webhook
       const { data: fresh } = await supabase
@@ -188,7 +189,8 @@ export async function GET(req: Request) {
       await supabase
         .from("merchants")
         .update(updates)
-        .eq("id", merchant.id);
+        .eq("id", merchant.id)
+        .neq("plan_status", "active");
 
       processed++;
     }

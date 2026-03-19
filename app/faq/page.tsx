@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description:
     'Answers to common questions about Barpel AI voice support, Shopify integration, pricing, and getting started.',
   alternates: {
-    canonical: 'https://barpel.ai/faq',
+    canonical: 'https://dropship.barpel.ai/faq',
   },
 };
 

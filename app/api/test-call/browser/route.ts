@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getAuthUser, unauthorizedResponse } from "@/lib/supabase/auth-guard";
 
 /**
  * POST /api/test-call/browser
@@ -7,17 +8,11 @@ import { createClient } from "@/lib/supabase/server";
  * The frontend uses these with the @vapi-ai/web SDK to start a WebRTC call.
  * No phone call is made. No Twilio involved.
  */
-export async function POST() {
+export async function POST(request: Request) {
   const supabase = createClient();
 
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+    const { user } = await getAuthUser(supabase, request);
+  if (!user) return unauthorizedResponse();
 
   const { data: merchant } = await supabase
     .from("merchants")

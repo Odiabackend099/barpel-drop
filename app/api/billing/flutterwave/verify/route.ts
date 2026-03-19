@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { addCredits } from "@/lib/credits";
+import { getAuthUser, unauthorizedResponse } from "@/lib/supabase/auth-guard";
 
 /**
  * Server-side verification of a Flutterwave transaction after the modal callback.
@@ -9,14 +10,16 @@ import { addCredits } from "@/lib/credits";
  * CRITICAL: Per Flutterwave best practices, ALWAYS re-query their API to verify
  * a transaction before giving value to a customer. Never trust the frontend callback alone.
  * Source: developer.flutterwave.com/docs/webhooks
+ *
+ * Race condition protection: Uses atomic UPDATE ... WHERE status = 'pending' to claim
+ * the transaction. If the webhook handler already processed it, this returns 0 rows
+ * and we skip — preventing double-crediting.
  */
 export async function POST(request: Request) {
   const supabase = createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const { user } = await getAuthUser(supabase, request);
+  if (!user) return unauthorizedResponse();
 
   let body: { transaction_id?: string | number; tx_ref?: string };
   try {
@@ -43,34 +46,63 @@ export async function POST(request: Request) {
 
   const adminSupabase = createAdminClient();
 
-  // Load the pending transaction — confirms tx_ref belongs to this merchant
-  const { data: pendingTx } = await adminSupabase
+  // Atomic claim: set status to "processing" only if currently "pending".
+  // If webhook already processed it, this returns 0 rows → skip.
+  const { data: claimedRows, error: claimError } = await adminSupabase
     .from("billing_transactions")
-    .select("id, plan, amount, currency, status")
+    .update({ status: "processing", updated_at: new Date().toISOString() })
     .eq("tx_ref", tx_ref)
     .eq("merchant_id", merchant.id)
-    .single();
+    .eq("status", "pending")
+    .select("id, plan, amount, currency, billing_cycle");
 
-  if (!pendingTx) {
+  if (claimError) {
+    return NextResponse.json({ error: "Failed to process transaction" }, { status: 500 });
+  }
+
+  // If no rows claimed, either already processed or not found
+  if (!claimedRows || claimedRows.length === 0) {
+    // Check if it was already completed (idempotent success)
+    const { data: existingTx } = await adminSupabase
+      .from("billing_transactions")
+      .select("plan, status")
+      .eq("tx_ref", tx_ref)
+      .eq("merchant_id", merchant.id)
+      .single();
+
+    if (existingTx?.status === "completed" || existingTx?.status === "processing") {
+      return NextResponse.json({ success: true, plan: existingTx.plan, already_processed: true });
+    }
     return NextResponse.json({ error: "Transaction not found" }, { status: 404 });
   }
 
-  // Idempotency: already processed via webhook or prior verify call
-  if (pendingTx.status === "completed") {
-    return NextResponse.json({ success: true, plan: pendingTx.plan, already_processed: true });
-  }
+  const pendingTx = claimedRows[0];
 
   // Re-verify with Flutterwave API before giving value
   const verifyRes = await fetch(
     `https://api.flutterwave.com/v3/transactions/${transaction_id}/verify`,
     { headers: { Authorization: `Bearer ${process.env.FLW_SECRET_KEY}` } }
   );
+
+  if (!verifyRes.ok) {
+    // Revert to pending so webhook can retry
+    await adminSupabase
+      .from("billing_transactions")
+      .update({ status: "pending", updated_at: new Date().toISOString() })
+      .eq("tx_ref", tx_ref);
+    return NextResponse.json({ error: "Failed to verify with Flutterwave" }, { status: 502 });
+  }
+
   const verifyData = await verifyRes.json() as {
     status: string;
     data?: { status: string; amount: number; currency: string; id: number };
   };
 
   if (verifyData.status !== "success" || verifyData.data?.status !== "successful") {
+    await adminSupabase
+      .from("billing_transactions")
+      .update({ status: "pending", updated_at: new Date().toISOString() })
+      .eq("tx_ref", tx_ref);
     return NextResponse.json({ error: "Transaction not verified by Flutterwave" }, { status: 400 });
   }
 
@@ -79,6 +111,10 @@ export async function POST(request: Request) {
     verifyData.data.amount < pendingTx.amount ||
     verifyData.data.currency !== pendingTx.currency
   ) {
+    await adminSupabase
+      .from("billing_transactions")
+      .update({ status: "failed", updated_at: new Date().toISOString() })
+      .eq("tx_ref", tx_ref);
     return NextResponse.json({ error: "Amount or currency mismatch" }, { status: 400 });
   }
 
@@ -96,7 +132,7 @@ export async function POST(request: Request) {
 
   const flwTransactionId = verifyData.data.id.toString();
 
-  // Add credits to merchant balance
+  // Add credits to merchant balance (monthly allocation regardless of billing cycle)
   await addCredits(adminSupabase, merchant.id, pkg.credits_seconds, flwTransactionId);
 
   // Mark transaction completed + store FLW transaction ID
@@ -105,12 +141,13 @@ export async function POST(request: Request) {
     .update({ status: "completed", flw_transaction_id: flwTransactionId, updated_at: new Date().toISOString() })
     .eq("tx_ref", tx_ref);
 
-  // Record which FLW plan this merchant is on.
+  // Record which FLW plan and billing cycle this merchant is on.
   // flw_subscription_id is NOT set here — the subscription.activated webhook event
   // fires separately and carries the real FLW subscription ID for renewal tracking.
+  const billingCycle = pendingTx.billing_cycle ?? "monthly";
   await adminSupabase
     .from("merchants")
-    .update({ flw_plan: pendingTx.plan })
+    .update({ flw_plan: pendingTx.plan, billing_cycle: billingCycle })
     .eq("id", merchant.id);
 
   return NextResponse.json({ success: true, plan: pendingTx.plan });

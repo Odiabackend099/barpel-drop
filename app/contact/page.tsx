@@ -5,7 +5,6 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import {
   Mail,
-  Phone,
   MapPin,
   Clock,
   Send,
@@ -32,16 +31,16 @@ const contactInfo = [
   {
     icon: Mail,
     label: 'Email',
-    value: 'hello@barpel.ai',
-    href: 'mailto:hello@barpel.ai',
+    value: 'support@barpel.ai',
+    href: 'mailto:support@barpel.ai',
     description: 'For general inquiries and support',
   },
   {
-    icon: Phone,
-    label: 'Phone',
-    value: '+1 (415) 555-0192',
-    href: 'tel:+14155550192',
-    description: 'Monday to Friday, 9am to 6pm PT',
+    icon: Clock,
+    label: 'Response Time',
+    value: 'Within a few hours',
+    href: '#',
+    description: 'On business days (Mon–Fri)',
   },
   {
     icon: MapPin,
@@ -75,8 +74,10 @@ export default function ContactPage() {
     interest: '',
     message: '',
   });
+  const [honeypot, setHoneypot] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -86,12 +87,31 @@ export default function ContactPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitError('');
 
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          honeypot,
+          source_url: window.location.href,
+        }),
+      });
 
-    setIsSubmitting(false);
-    setIsSubmitted(true);
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error((data as { error?: string }).error ?? 'Submission failed. Please try again.');
+      }
+
+      setIsSubmitted(true);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -131,6 +151,8 @@ export default function ContactPage() {
                 <button
                   onClick={() => {
                     setIsSubmitted(false);
+                    setSubmitError('');
+                    setHoneypot('');
                     setFormData({ name: '', email: '', company: '', phone: '', interest: '', message: '' });
                   }}
                   className="btn-secondary"
@@ -141,6 +163,17 @@ export default function ContactPage() {
             </motion.div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Honeypot — visually hidden, only bots fill it */}
+              <div style={{ position: 'absolute', left: '-9999px', top: 'auto', width: '1px', height: '1px', overflow: 'hidden' }} aria-hidden="true">
+                <input
+                  type="text"
+                  name="website"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={honeypot}
+                  onChange={(e) => setHoneypot(e.target.value)}
+                />
+              </div>
               <div className="grid md:grid-cols-2 gap-6">
                 {/* Name */}
                 <div>
@@ -247,6 +280,13 @@ export default function ContactPage() {
                   className="w-full px-4 py-3 rounded-lg border border-slate-200 text-sm text-brand-navy placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-teal/30 focus:border-brand-teal transition-all duration-200 resize-none"
                 />
               </div>
+
+              {/* Error message */}
+              {submitError && (
+                <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-3">
+                  {submitError}
+                </p>
+              )}
 
               {/* Submit Button */}
               <motion.button

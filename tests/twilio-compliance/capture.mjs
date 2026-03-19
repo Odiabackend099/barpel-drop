@@ -16,7 +16,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const BASE = 'https://barpel-ai.odia.dev';
+const BASE = 'https://dropship.barpel.ai';
 const OUT_DIR = path.resolve(__dirname);
 
 // Ensure output directory exists

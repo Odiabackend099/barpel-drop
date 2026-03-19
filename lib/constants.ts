@@ -64,9 +64,9 @@ export const COLORS = {
 
 /** Credit packages — subscription model (1 credit = 1 minute) */
 export const CREDIT_PACKAGES = [
-  { id: "starter", name: "Starter", minutes: 30, priceUsdCents: 2900, perMin: 0.97, overage: 0.99 },
-  { id: "growth", name: "Growth", minutes: 100, priceUsdCents: 7900, perMin: 0.79, overage: 0.79, popular: true },
-  { id: "scale", name: "Scale", minutes: 250, priceUsdCents: 17900, perMin: 0.72, overage: 0.69 },
+  { id: "starter", name: "Starter", minutes: 30, priceUsdCents: 2900, annualPriceUsdCents: 31300, perMin: 0.97, overage: 0.99 },
+  { id: "growth", name: "Growth", minutes: 100, priceUsdCents: 7900, annualPriceUsdCents: 85300, perMin: 0.79, overage: 0.79, popular: true },
+  { id: "scale", name: "Scale", minutes: 250, priceUsdCents: 17900, annualPriceUsdCents: 193300, perMin: 0.72, overage: 0.69 },
 ] as const;
 
 /**

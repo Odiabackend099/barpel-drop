@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description:
     'Barpel AI connects to Shopify, TikTok Shop, WooCommerce, and Amazon. Get your AI phone agent live in under 5 minutes.',
   alternates: {
-    canonical: 'https://barpel.ai/integrations',
+    canonical: 'https://dropship.barpel.ai/integrations',
   },
 };
 

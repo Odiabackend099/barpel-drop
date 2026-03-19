@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { provisionMerchantLine } from "@/lib/provisioning/phoneService";
 import { checkProvisioningGates } from "@/lib/provisioning/gates";
+import { getAuthUser, unauthorizedResponse } from "@/lib/supabase/auth-guard";
 
 /**
  * POST /api/onboarding/complete
@@ -12,19 +13,13 @@ import { checkProvisioningGates } from "@/lib/provisioning/gates";
  * Uses the shared checkProvisioningGates() for consistent abuse prevention
  * (email verification, free-trial one-shot limit, 24h rate limit).
  */
-export async function POST() {
+export async function POST(request: Request) {
   const supabase = createClient();
   const adminSupabase = createAdminClient();
 
   // ── Auth ──────────────────────────────────────────────────────────────
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+    const { user } = await getAuthUser(supabase, request);
+  if (!user) return unauthorizedResponse();
 
   // ── Fetch merchant ────────────────────────────────────────────────────
   const { data: merchant } = await adminSupabase

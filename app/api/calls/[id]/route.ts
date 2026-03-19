@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getAuthUser, unauthorizedResponse } from "@/lib/supabase/auth-guard";
 
 /**
  * GET /api/calls/[id]
@@ -7,19 +8,13 @@ import { createClient } from "@/lib/supabase/server";
  * Verifies the call belongs to the authenticated merchant.
  */
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
   const supabase = createClient();
 
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+    const { user } = await getAuthUser(supabase, request);
+  if (!user) return unauthorizedResponse();
 
   const { data: merchant } = await supabase
     .from("merchants")

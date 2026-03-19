@@ -2,8 +2,16 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Linkedin, Instagram } from 'lucide-react';
+import { Linkedin, Facebook, Youtube } from 'lucide-react';
 import Logo from '@/components/marketing/Logo';
+
+function XIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.6l-5.165-6.75-5.91 6.75H2.556l7.73-8.835L1.966 2.25h6.5l4.659 6.16L17.356 2.25h.888zm-1.017 17.528h1.83L5.982 4.1H4.064l12.163 15.678z" />
+    </svg>
+  );
+}
 
 function TikTokIcon({ className }: { className?: string }) {
   return (
@@ -56,9 +64,11 @@ const footerLinks = {
 };
 
 const socialLinks = [
-  { icon: Linkedin, href: 'https://linkedin.com/company/barpel', label: 'LinkedIn' },
-  { icon: Instagram, href: 'https://instagram.com/barpelai', label: 'Instagram' },
-  { icon: TikTokIcon, href: 'https://tiktok.com/@barpelai', label: 'TikTok' },
+  { icon: Facebook, href: 'https://www.facebook.com/share/1AtFaTkMEN/?mibextid=wwXIfr', label: 'Facebook' },
+  { icon: XIcon, href: 'https://x.com/barpel_ai?s=21', label: 'X' },
+  { icon: Linkedin, href: 'https://www.linkedin.com/in/barbara-aernyi-6b206b3b2', label: 'LinkedIn' },
+  { icon: Youtube, href: 'https://youtube.com/@barpel-ai?si=oTi9ZbnJrVvjXcJ7', label: 'YouTube' },
+  { icon: TikTokIcon, href: 'https://www.tiktok.com/@barpelai', label: 'TikTok' },
 ];
 
 const containerVariants = {

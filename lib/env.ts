@@ -31,8 +31,25 @@ const serverSchema = z.object({
   STRIPE_SECRET_KEY: z.string().startsWith("sk_"),
   STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_"),
 
+  // Flutterwave — payment processor
+  FLW_PUBLIC_KEY: z.string().min(1).optional(),
+  FLW_SECRET_KEY: z.string().min(1).optional(),
+  FLW_SECRET_HASH: z.string().min(1).optional(),
+  FLW_ENCRYPTION_KEY: z.string().min(1).optional(),
+  FLW_PLAN_ID_STARTER: z.string().min(1).optional(),
+  FLW_PLAN_ID_GROWTH: z.string().min(1).optional(),
+  FLW_PLAN_ID_SCALE: z.string().min(1).optional(),
+  // Annual plan IDs (created separately for yearly billing interval)
+  FLW_PLAN_ID_STARTER_ANNUAL: z.string().min(1).optional(),
+  FLW_PLAN_ID_GROWTH_ANNUAL: z.string().min(1).optional(),
+  FLW_PLAN_ID_SCALE_ANNUAL: z.string().min(1).optional(),
+
   // AfterShip (optional for now per spec)
   AFTERSHIP_API_KEY: z.string().min(1).optional(),
+
+  // Notifications — contact form lead capture
+  SLACK_WEBHOOK_URL: z.string().url().optional(),
+  RESEND_FROM_EMAIL: z.string().email().optional(),
 
   // App
   NEXT_PUBLIC_BASE_URL: z.string().url(),

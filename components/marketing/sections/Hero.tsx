@@ -156,7 +156,7 @@ function CardStackDemo() {
   };
 
   return (
-    <div className="relative w-[340px] sm:w-[420px] lg:w-[480px] h-[460px] mx-auto">
+    <div className="relative w-full h-[460px]">
       {cards.map((card, cardIndex) => {
         const position = (cardIndex - activeIndex + 3) % 3;
         const styles = getCardStyles(position);
@@ -165,7 +165,7 @@ function CardStackDemo() {
         return (
           <motion.div
             key={cardIndex}
-            className="absolute top-0 left-0 w-[340px] sm:w-[420px] lg:w-[480px] rounded-2xl overflow-hidden border border-white/10"
+            className="absolute top-0 left-0 w-full rounded-2xl overflow-hidden border border-white/10"
             style={{ zIndex }}
             animate={{
               x: styles.x,

@@ -172,6 +172,88 @@ export async function sendAccountDeletedEmail(to: string) {
   });
 }
 
+// ─── Lead / contact form emails ─────────────────────────────────────────────
+
+interface LeadPayload {
+  name: string;
+  email: string;
+  company?: string;
+  phone?: string;
+  interest?: string;
+  message?: string;
+  source_url?: string;
+}
+
+/** Internal alert: sent to support@barpel.ai when a contact form is submitted. */
+export async function sendLeadNotificationEmail(lead: LeadPayload) {
+  const supportEmail = "support@barpel.ai";
+
+  await getResend().emails.send({
+    from: EMAIL_FROM(),
+    to: supportEmail,
+    replyTo: lead.email,
+    subject: `🔥 New enquiry from ${lead.name}${lead.company ? ` at ${lead.company}` : ""}`,
+    html: `
+      <div style="${EMAIL_STYLES}">
+        <h2 style="margin-top: 0; color: #00A99D;">New Contact Form Submission</h2>
+
+        <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+          <tr><td style="padding: 8px 0; color: #8AADA6; width: 120px;">Name</td>
+              <td style="padding: 8px 0; font-weight: 600;">${lead.name}</td></tr>
+          <tr><td style="padding: 8px 0; color: #8AADA6;">Email</td>
+              <td style="padding: 8px 0;"><a href="mailto:${lead.email}" style="color: #00A99D;">${lead.email}</a></td></tr>
+          <tr><td style="padding: 8px 0; color: #8AADA6;">Company</td>
+              <td style="padding: 8px 0;">${lead.company || "—"}</td></tr>
+          <tr><td style="padding: 8px 0; color: #8AADA6;">Phone</td>
+              <td style="padding: 8px 0;">${lead.phone || "—"}</td></tr>
+          <tr><td style="padding: 8px 0; color: #8AADA6;">Interest</td>
+              <td style="padding: 8px 0;">${lead.interest || "—"}</td></tr>
+          <tr><td style="padding: 8px 0; color: #8AADA6;">Source</td>
+              <td style="padding: 8px 0; font-size: 12px;">${lead.source_url || "Direct"}</td></tr>
+        </table>
+
+        <div style="background: #F0FAF9; border-left: 3px solid #00A99D; padding: 16px; border-radius: 4px; margin-top: 16px;">
+          <p style="margin: 0; font-size: 14px; color: #1B2A4A;">${(lead.message || "").replace(/\n/g, "<br/>")}</p>
+        </div>
+
+        <p style="margin-top: 24px;">
+          ${ctaButton(`mailto:${lead.email}`, "Reply to lead →")}
+        </p>
+
+        <p style="margin-top: 16px; font-size: 12px; color: #8AADA6;">
+          Submitted at ${new Date().toLocaleString("en-US", { timeZone: "UTC", dateStyle: "full", timeStyle: "short" })} UTC
+        </p>
+      </div>
+    `,
+  });
+}
+
+/** Confirmation: sent to the lead immediately after they submit the contact form. */
+export async function sendLeadAutoReplyEmail(lead: LeadPayload) {
+  await getResend().emails.send({
+    from: `Barpel AI <support@barpel.ai>`,
+    to: lead.email,
+    subject: "We got your message — Barpel AI",
+    html: `
+      <div style="${EMAIL_STYLES}">
+        <p>Hi ${lead.name.split(" ")[0]},</p>
+
+        <p>Thanks for reaching out — we've received your message and someone from our team will get back to you within a few hours on business days.</p>
+
+        <p>In the meantime, you can explore what Barpel AI can do for your store:</p>
+
+        <p style="margin-top: 24px;">${ctaButton(`${process.env.NEXT_PUBLIC_BASE_URL ?? "https://dropship.barpel.ai"}/pricing`, "View pricing & plans →")}</p>
+
+        <p style="margin-top: 24px; font-size: 13px; color: #8AADA6;">
+          You're receiving this because you contacted us at <a href="https://dropship.barpel.ai/contact" style="color: #00A99D;">barpel.ai/contact</a>.
+        </p>
+
+        ${SIGNATURE}
+      </div>
+    `,
+  });
+}
+
 // ─── Activation email ───────────────────────────────────────────────────────
 
 export async function sendActivationEmail(opts: {

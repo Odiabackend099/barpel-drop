@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { sanitiseMerchantPrompt } from "@/lib/sanitise";
 import { getAssistant, updateAssistant } from "@/lib/vapi/client";
 import { BASE_PROMPT } from "@/lib/constants";
+import { getAuthUser, unauthorizedResponse } from "@/lib/supabase/auth-guard";
 
 /**
  * PATCH /api/merchant/update
@@ -13,14 +14,8 @@ import { BASE_PROMPT } from "@/lib/constants";
 export async function PATCH(request: Request) {
   const supabase = createClient();
 
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+    const { user } = await getAuthUser(supabase, request);
+  if (!user) return unauthorizedResponse();
 
   let body: {
     business_name?: string;

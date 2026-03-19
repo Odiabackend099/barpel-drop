@@ -43,6 +43,15 @@ export default function SettingsPage() {
   const [savingProfile, setSavingProfile] = useState(false);
   const [resettingPassword, setResettingPassword] = useState(false);
 
+  // Email state
+  const [email, setEmail] = useState("");
+  const [savingEmail, setSavingEmail] = useState(false);
+
+  // Password change state
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
+
   // Notification state
   const [prefs, setPrefs] = useState<NotificationPreferences>(DEFAULT_PREFS);
   const [savingNotification, setSavingNotification] = useState<string | null>(null);
@@ -64,8 +73,18 @@ export default function SettingsPage() {
     }
   }, [merchant]);
 
+  // Sync email from userEmail
+  useEffect(() => {
+    if (userEmail) {
+      setEmail(userEmail);
+    }
+  }, [userEmail]);
+
   const hasNameChanged =
     merchant && businessName.trim() !== (merchant.business_name ?? "");
+
+  const hasEmailChanged =
+    userEmail && email.trim() !== "" && email.trim() !== userEmail;
 
   // --- Profile ---
 
@@ -96,8 +115,8 @@ export default function SettingsPage() {
   };
 
   const handleResetPassword = async () => {
-    const email = userEmail;
-    if (!email || typeof email !== "string") {
+    const currentEmail = userEmail;
+    if (!currentEmail || typeof currentEmail !== "string") {
       toast.error("No email address found");
       return;
     }
@@ -105,7 +124,7 @@ export default function SettingsPage() {
     setResettingPassword(true);
     try {
       const supabase = createClient();
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error } = await supabase.auth.resetPasswordForEmail(currentEmail, {
         redirectTo: `${window.location.origin}/dashboard/settings`,
       });
       if (error) throw error;
@@ -114,6 +133,51 @@ export default function SettingsPage() {
       toast.error(err instanceof Error ? err.message : "Failed to send reset email");
     } finally {
       setResettingPassword(false);
+    }
+  };
+
+  const handleUpdateEmail = async () => {
+    const newEmail = email.trim();
+    if (!newEmail) {
+      toast.error("Email address cannot be empty");
+      return;
+    }
+
+    setSavingEmail(true);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.updateUser({ email: newEmail });
+      if (error) throw error;
+      toast.success("Confirmation email sent to your new address. Please check your inbox.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update email");
+    } finally {
+      setSavingEmail(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (newPassword.length < 8) {
+      toast.error("Password must be at least 8 characters");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
+    setChangingPassword(true);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      toast.success("Password changed successfully");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to change password");
+    } finally {
+      setChangingPassword(false);
     }
   };
 
@@ -235,38 +299,91 @@ export default function SettingsPage() {
           <Separator />
 
           <div>
-            <label className="text-sm font-medium text-[#1B2A4A]">
+            <label
+              htmlFor="email-address"
+              className="text-sm font-medium text-[#1B2A4A]"
+            >
               Email address
             </label>
-            <p className="text-sm text-[#4A7A6D] mt-1">
-              {userEmail ?? "—"}
+            <div className="flex gap-2 mt-1.5">
+              <Input
+                id="email-address"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com"
+              />
+              <Button
+                onClick={handleUpdateEmail}
+                disabled={!hasEmailChanged || savingEmail}
+                className="bg-[#00A99D] hover:bg-[#008F85] text-white shrink-0"
+              >
+                {savingEmail ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Save className="w-4 h-4" />
+                )}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              A confirmation link will be sent to your new email address
             </p>
           </div>
 
           <Separator />
 
-          <div className="flex items-center justify-between">
-            <div>
-              <label className="text-sm font-medium text-[#1B2A4A]">
-                Password
-              </label>
-              <p className="text-xs text-[#8AADA6]">
-                Send a password reset link to your email
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleResetPassword}
-              disabled={resettingPassword}
-            >
-              {resettingPassword ? (
-                <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
-              ) : (
-                <KeyRound className="w-4 h-4 mr-1.5" />
-              )}
+          <div>
+            <label className="text-sm font-medium text-[#1B2A4A]">
               Change password
-            </Button>
+            </label>
+            <div className="space-y-2 mt-1.5">
+              <Input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="New password (min 8 characters)"
+              />
+              <Input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm new password"
+              />
+              <Button
+                onClick={handleChangePassword}
+                disabled={
+                  changingPassword ||
+                  newPassword.length < 8 ||
+                  confirmPassword.length === 0
+                }
+                className="bg-[#00A99D] hover:bg-[#008F85] text-white"
+              >
+                {changingPassword ? (
+                  <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                ) : (
+                  <KeyRound className="w-4 h-4 mr-1.5" />
+                )}
+                Change Password
+              </Button>
+            </div>
+            <div className="flex items-center justify-between mt-3 pt-3 border-t border-dashed">
+              <p className="text-xs text-[#8AADA6]">
+                Or send a password reset link to your email
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleResetPassword}
+                disabled={resettingPassword}
+              >
+                {resettingPassword ? (
+                  <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                ) : (
+                  <KeyRound className="w-4 h-4 mr-1.5" />
+                )}
+                Send reset email
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createVapiAssistant } from "@/lib/provisioning/phoneService";
 import { withRetry } from "@/lib/retry";
 import { checkProvisioningGates } from "@/lib/provisioning/gates";
+import { getAuthUser, unauthorizedResponse } from "@/lib/supabase/auth-guard";
 
 /**
  * POST /api/provisioning/byoc
@@ -18,14 +19,8 @@ import { checkProvisioningGates } from "@/lib/provisioning/gates";
 export async function POST(request: Request) {
   const supabase = createClient();
 
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+    const { user } = await getAuthUser(supabase, request);
+  if (!user) return unauthorizedResponse();
 
   let body: { accountSid?: string; authToken?: string; phoneNumber?: string };
   try {

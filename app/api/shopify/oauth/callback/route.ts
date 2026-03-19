@@ -143,7 +143,7 @@ export async function GET(request: Request) {
 
   // Trust oauth_states as the sole authority for merchant identity.
   // The session cookie on this domain may belong to a different user
-  // (e.g. barpel-ai.odia.dev vs barpel-drop-ai.vercel.app) or be
+  // (e.g. dropship.barpel.ai vs barpel-drop-ai.vercel.app) or be
   // expired after the Shopify redirect hop. The oauth_state was created
   // server-side during an authenticated request — that's sufficient.
 

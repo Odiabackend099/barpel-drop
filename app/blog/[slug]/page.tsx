@@ -18,12 +18,12 @@ export function generateMetadata({ params }: { params: { slug: string } }) {
     title: post.title,
     description: post.excerpt.slice(0, 160),
     alternates: {
-      canonical: `https://barpel-ai.odia.dev/blog/${post.slug}`,
+      canonical: `https://dropship.barpel.ai/blog/${post.slug}`,
     },
     openGraph: {
       title: post.title,
       description: post.excerpt.slice(0, 160),
-      url: `https://barpel-ai.odia.dev/blog/${post.slug}`,
+      url: `https://dropship.barpel.ai/blog/${post.slug}`,
     },
   };
 }
@@ -56,7 +56,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
     dateModified: '2026-03-16',
     author: { '@type': 'Organization', name: 'Barpel AI' },
     publisher: { '@type': 'Organization', name: 'Barpel AI' },
-    url: `https://barpel-ai.odia.dev/blog/${post.slug}`,
+    url: `https://dropship.barpel.ai/blog/${post.slug}`,
   };
 
   return (

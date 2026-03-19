@@ -48,7 +48,7 @@ export default function LogoCloud() {
                   alt={`Barpel AI integrates with ${partner.name}`}
                   width={32}
                   height={32}
-                  className="h-8 w-auto grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-200"
+                  className="h-8 w-auto opacity-90 group-hover:opacity-100 transition-all duration-200"
                 />
               </div>
               <span className="text-xs font-medium text-slate-400 group-hover:text-slate-600 transition-colors">

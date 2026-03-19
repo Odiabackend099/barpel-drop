@@ -7,7 +7,7 @@
  * REQUIRES (in .env.local):
  *   VAPI_PRIVATE_KEY
  *   VAPI_WEBHOOK_SECRET
- *   NEXT_PUBLIC_BASE_URL       — https://barpel-ai.odia.dev
+ *   NEXT_PUBLIC_BASE_URL       — https://dropship.barpel.ai
  *   NEXT_PUBLIC_SUPABASE_URL
  *   SUPABASE_SERVICE_KEY
  *
@@ -119,7 +119,7 @@ async function run() {
       };
 
       results["1_webhook_url_correct"] = {
-        pass: serverUrl?.includes("barpel-ai.odia.dev") ?? false,
+        pass: serverUrl?.includes("dropship.barpel.ai") ?? false,
         detail: `serverUrl: ${serverUrl}`,
       };
     }

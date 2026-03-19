@@ -10,7 +10,7 @@ They are non-technical. They expect everything to just work.
 ## Full User Journey (in order)
 
 ### 1. Discovery & Signup
-- Lands on `https://barpel-ai.odia.dev` (marketing page)
+- Lands on `https://dropship.barpel.ai` (marketing page)
 - Reads features, clicks "Get Started" or "Start Free Trial"
 - Signs up with email + password
 - Is redirected to onboarding

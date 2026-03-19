@@ -28,6 +28,8 @@ const DUMMY_FLW_CONFIG = {
   customizations: { title: "", description: "", logo: "" },
 };
 
+type BillingCycle = "monthly" | "annual";
+
 function Badge({ color, children }: { color: string; children: React.ReactNode }) {
   return (
     <span
@@ -46,7 +48,7 @@ function Badge({ color, children }: { color: string; children: React.ReactNode }
  * setFlwConfig triggers a re-render, after which handleFlutterPayment has the new
  * config and the effect fires to open the modal.
  */
-function FlutterwavePlanCard({ pkg }: { pkg: typeof CREDIT_PACKAGES[number] }) {
+function FlutterwavePlanCard({ pkg, billingCycle }: { pkg: typeof CREDIT_PACKAGES[number]; billingCycle: BillingCycle }) {
   const [loading, setLoading] = useState(false);
   const [flwConfig, setFlwConfig] = useState<object>(DUMMY_FLW_CONFIG);
   const [readyToPay, setReadyToPay] = useState(false);
@@ -93,7 +95,7 @@ function FlutterwavePlanCard({ pkg }: { pkg: typeof CREDIT_PACKAGES[number] }) {
       const res = await fetch("/api/billing/flutterwave/initiate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: pkg.id }),
+        body: JSON.stringify({ plan: pkg.id, billing_cycle: billingCycle }),
       });
       const config = await res.json();
       if (!res.ok) {
@@ -109,6 +111,18 @@ function FlutterwavePlanCard({ pkg }: { pkg: typeof CREDIT_PACKAGES[number] }) {
     }
   };
 
+  const displayPrice = billingCycle === "annual"
+    ? (pkg.annualPriceUsdCents / 100).toFixed(0)
+    : (pkg.priceUsdCents / 100).toFixed(2);
+
+  const priceLabel = billingCycle === "annual"
+    ? `$${displayPrice}/year`
+    : `$${displayPrice}/month`;
+
+  const monthlyEquiv = billingCycle === "annual"
+    ? `$${Math.round(pkg.annualPriceUsdCents / 12 / 100)}/mo`
+    : null;
+
   return (
     <div
       className={`bg-white border rounded-xl p-5 shadow-sm relative ${"popular" in pkg && pkg.popular ? "border-[#00A99D]" : "border-[#D0EDE8]"}`}
@@ -123,7 +137,10 @@ function FlutterwavePlanCard({ pkg }: { pkg: typeof CREDIT_PACKAGES[number] }) {
       )}
       <div className="text-center pt-2">
         <h3 className="text-lg font-bold text-[#1B2A4A] font-sans">{pkg.name}</h3>
-        <p className="text-3xl font-bold text-[#1B2A4A] mt-2">${(pkg.priceUsdCents / 100).toFixed(2)}</p>
+        <p className="text-3xl font-bold text-[#1B2A4A] mt-2">{priceLabel}</p>
+        {monthlyEquiv && (
+          <p className="text-sm text-[#00A99D] font-semibold">{monthlyEquiv} · Save 10%</p>
+        )}
         <p className="text-sm text-muted-foreground font-sans">{pkg.minutes} credits/month</p>
         <p className="text-xs text-muted-foreground mt-1 font-sans">
           ${pkg.perMin.toFixed(2)}/credit · Overage: +${"overage" in pkg ? (pkg as { overage: number }).overage.toFixed(2) : "0.99"}/credit
@@ -178,6 +195,7 @@ export default function BillingPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const [cancelLoading, setCancelLoading] = useState(false);
   const [showResubBanner, setShowResubBanner] = useState(false);
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
   const { balance, credits, transactions, usageData, loading, refreshBalance, flwPlan, flwSubscriptionId, planStatus } = useCredits();
 
   // Format usage data for chart — convert ISO dates to "MMM dd"
@@ -186,8 +204,12 @@ export default function BillingPage() {
     credits: d.credits,
   }));
 
-  // Color-coded progress bar — scales against 250 minutes (largest package)
-  const barPercent = Math.min((balance / 15000) * 100, 100);
+  // Determine plan capacity for progress bar scaling
+  const currentPkg = CREDIT_PACKAGES.find((p) => p.id === flwPlan);
+  const planCapacitySeconds = currentPkg ? currentPkg.minutes * 60 : 15000;
+
+  // Color-coded progress bar — scales against current plan's allocation
+  const barPercent = Math.min((balance / planCapacitySeconds) * 100, 100);
   const barColor = balance >= 600
     ? "from-[#00A99D] to-[#7DD9C0]"     // green: 10+ minutes
     : balance >= 60
@@ -247,7 +269,7 @@ export default function BillingPage() {
 
       <div>
         <h1 className="text-2xl font-bold text-[#1B2A4A] font-display tracking-tight mb-1">Billing</h1>
-        <p className="text-sm text-muted-foreground font-sans">Your monthly plan and usage.</p>
+        <p className="text-sm text-muted-foreground font-sans">Your plan and usage.</p>
       </div>
 
       {/* Low balance warning */}
@@ -286,7 +308,7 @@ export default function BillingPage() {
                   {credits}
                   <span className="text-xl text-muted-foreground ml-2">credits remaining</span>
                 </p>
-                <p className="text-sm text-muted-foreground mt-1">&asymp; {credits} credits of AI support</p>
+                <p className="text-sm text-muted-foreground mt-1">&asymp; {credits} minutes of AI support</p>
               </div>
               <div className="w-16 h-16 bg-[#C8F0E8] rounded-full flex items-center justify-center">
                 <CardIcon className="w-8 h-8 text-[#00A99D]" />
@@ -315,9 +337,11 @@ export default function BillingPage() {
                 <p className="text-lg font-bold text-[#1B2A4A] capitalize">{flwPlan}</p>
               </div>
             </div>
-            {planStatus?.startsWith("past_due") && (
-              <Badge color="#E74C3C">PAYMENT OVERDUE</Badge>
-            )}
+            <div className="flex items-center gap-2">
+              {planStatus?.startsWith("past_due") && (
+                <Badge color="#E74C3C">PAYMENT OVERDUE</Badge>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -332,10 +356,44 @@ export default function BillingPage() {
         </div>
       )}
 
+      {/* Billing Cycle Toggle */}
+      <div className="flex items-center justify-center gap-3 py-2">
+        <span
+          className={`text-sm font-medium transition-colors ${
+            billingCycle === "monthly" ? "text-[#1B2A4A]" : "text-[#8AADA6]"
+          }`}
+        >
+          Monthly
+        </span>
+        <button
+          onClick={() => setBillingCycle(billingCycle === "monthly" ? "annual" : "monthly")}
+          className="relative w-12 h-6 bg-[#00A99D] rounded-full transition-colors"
+          aria-label="Toggle billing period"
+        >
+          <span
+            className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
+              billingCycle === "annual" ? "translate-x-6" : "translate-x-0.5"
+            }`}
+          />
+        </button>
+        <span
+          className={`text-sm font-medium transition-colors ${
+            billingCycle === "annual" ? "text-[#1B2A4A]" : "text-[#8AADA6]"
+          }`}
+        >
+          Annual
+        </span>
+        {billingCycle === "annual" && (
+          <span className="px-2 py-0.5 text-xs font-bold text-[#00A99D] bg-[#C8F0E8] rounded-full">
+            Save 10%
+          </span>
+        )}
+      </div>
+
       {/* Credit Packages — each card manages its own Flutterwave modal */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {CREDIT_PACKAGES.map((pkg) => (
-          <FlutterwavePlanCard key={pkg.id} pkg={pkg} />
+          <FlutterwavePlanCard key={`${pkg.id}-${billingCycle}`} pkg={pkg} billingCycle={billingCycle} />
         ))}
       </div>
 
@@ -383,7 +441,8 @@ export default function BillingPage() {
               onClick={async () => {
                 const ok = window.confirm(
                   "Cancel your subscription?\n\n" +
-                  "You'll keep your remaining credits but won't be charged again."
+                  "You'll keep your remaining credits but won't be charged again.\n" +
+                  "Note: Annual plans are non-refundable."
                 );
                 if (!ok) return;
                 setCancelLoading(true);
@@ -474,10 +533,10 @@ export default function BillingPage() {
                       <td className="py-2.5 px-2 text-sm text-[#1B2A4A] font-sans">{txn.description}</td>
                       <td
                         className={`py-2.5 px-2 text-sm text-right font-mono ${
-                          txn.type === "credit" ? "text-[#00A99D]" : "text-[#E74C3C]"
+                          (txn.type === "purchase" || txn.type === "credit") ? "text-[#00A99D]" : "text-[#E74C3C]"
                         }`}
                       >
-                        {txn.type === "credit" ? "+" : ""}
+                        {(txn.type === "purchase" || txn.type === "credit") ? "+" : ""}
                         {Math.floor(Math.abs(txn.amount) / 60)}m {Math.abs(txn.amount) % 60}s
                       </td>
                     </tr>

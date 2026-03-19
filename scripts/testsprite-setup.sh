@@ -6,7 +6,7 @@
 set -e
 
 # Configuration
-BASE_URL="https://barpel-ai.odia.dev"
+BASE_URL="https://dropship.barpel.ai"
 TEST_EMAIL="testsprite@barpel-test.com"
 TEST_PASSWORD="TestSprite2026!"
 BUSINESS_NAME="TestSprite Co"
@@ -29,7 +29,7 @@ echo "Opening dashboard in browser. Please manually call:"
 echo "  DELETE /api/merchant/ai-voice"
 echo ""
 echo "Or use curl (if you have session cookies):"
-echo "  curl -X DELETE https://barpel-ai.odia.dev/api/merchant/ai-voice \\"
+echo "  curl -X DELETE https://dropship.barpel.ai/api/merchant/ai-voice \\"
 echo "    -H 'Cookie: <your-session-cookie>' \\"
 echo "    -H 'Content-Type: application/json'"
 echo ""

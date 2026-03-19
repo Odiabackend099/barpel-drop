@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
 
 const useMock = process.env.NEXT_PUBLIC_USE_MOCK_API === "true";
 
@@ -35,7 +36,9 @@ export function useIntegrations(merchantId?: string) {
       const data = await res.json();
       setIntegrations(data.integrations ?? []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load integrations");
+      const msg = err instanceof Error ? err.message : "Failed to load integrations";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

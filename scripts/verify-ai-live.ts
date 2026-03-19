@@ -12,7 +12,7 @@
  * REQUIRES (in .env.local):
  *   VAPI_PRIVATE_KEY        — Vapi secret key
  *   VAPI_WEBHOOK_SECRET     — Sent as x-vapi-secret header
- *   NEXT_PUBLIC_BASE_URL    — https://barpel-ai.odia.dev
+ *   NEXT_PUBLIC_BASE_URL    — https://dropship.barpel.ai
  *   TEST_PHONE_NUMBER       — (optional) E.164 number to call for Check 4
  *
  * Run: npm run verify:ai
@@ -222,7 +222,7 @@ async function check2AssistantConfig(): Promise<boolean> {
   );
 
   const expectedUrl = `${BASE_URL}/api/vapi/webhook`;
-  const serverUrlOk = assistant.serverUrl?.includes("barpel-ai.odia.dev");
+  const serverUrlOk = assistant.serverUrl?.includes("dropship.barpel.ai");
 
   if (serverUrlOk) {
     console.log("✅ serverUrl is correct");

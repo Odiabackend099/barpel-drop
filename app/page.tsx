@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   description:
     "AI phone agent for e-commerce stores. Answers calls 24/7, tracks orders, handles returns, recovers carts. 2.3s response. Free 14-day trial.",
   alternates: {
-    canonical: 'https://barpel.ai',
+    canonical: 'https://dropship.barpel.ai',
   },
 };
 
@@ -27,10 +27,10 @@ const jsonLd = {
   "@graph": [
     {
       "@type": "Organization",
-      "@id": "https://barpel.ai/#organization",
+      "@id": "https://dropship.barpel.ai/#organization",
       "name": "Barpel AI",
-      "url": "https://barpel.ai",
-      "logo": "https://barpel.ai/logo.png",
+      "url": "https://dropship.barpel.ai",
+      "logo": "https://dropship.barpel.ai/logo.png",
       "description": "AI-powered voice support for e-commerce. Automated phone calls for order tracking, returns, and abandoned cart recovery.",
       "sameAs": [
         "https://www.linkedin.com/company/barpelai",

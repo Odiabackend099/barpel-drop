@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description:
     'Barpel AI plans from $29/mo. Shopify integration, 24/7 AI phone support, cart recovery. 14-day free trial — no credit card needed.',
   alternates: {
-    canonical: 'https://barpel.ai/pricing',
+    canonical: 'https://dropship.barpel.ai/pricing',
   },
 };
 

@@ -13,7 +13,6 @@ export default function CallsPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const {
     calls,
-    filteredCalls,
     filterType,
     setFilterType,
     filterSentiment,
@@ -28,37 +27,24 @@ export default function CallsPage() {
     hasFilters,
   } = useCallLogs();
 
-  const handleExportCsv = () => {
-    // RFC 4180 CSV escaping: wrap in quotes if value contains comma, quote, or newline
-    const esc = (v: string) => {
-      if (v.includes(",") || v.includes('"') || v.includes("\n")) {
-        return `"${v.replace(/"/g, '""')}"`;
-      }
-      return v;
-    };
+  const [exporting, setExporting] = useState(false);
 
-    const rows = [
-      ["Date", "Time", "Caller", "Direction", "Duration (s)", "Type", "Sentiment", "Credits", "End Reason", "Summary"],
-      ...filteredCalls.map((c) => [
-        format(new Date(c.started_at), "yyyy-MM-dd"),
-        format(new Date(c.started_at), "HH:mm"),
-        c.caller_number ?? "",
-        c.direction,
-        String(c.duration_seconds ?? 0),
-        c.call_type ?? "general",
-        c.sentiment ?? "neutral",
-        String(c.credits_charged ?? 0),
-        c.ended_reason ?? "",
-        c.ai_summary ?? "",
-      ]),
-    ];
-    const csv = rows.map((r) => r.map(esc).join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `barpel-calls-${format(new Date(), "yyyy-MM-dd")}.csv`;
-    a.click();
-    URL.revokeObjectURL(a.href);
+  const handleExportCsv = async () => {
+    setExporting(true);
+    try {
+      const res = await fetch("/api/calls/export");
+      if (!res.ok) throw new Error("Export failed");
+      const blob = await res.blob();
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `barpel-calls-${format(new Date(), "yyyy-MM-dd")}.csv`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } catch (err) {
+      console.error("CSV export error:", err);
+    } finally {
+      setExporting(false);
+    }
   };
 
   return (
@@ -70,11 +56,11 @@ export default function CallsPage() {
         </div>
         <button
           onClick={handleExportCsv}
-          disabled={filteredCalls.length === 0}
+          disabled={exporting || loading}
           className="inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all px-4 py-2.5 text-sm bg-white border border-[#D0EDE8] text-[#1B2A4A] hover:border-[#00A99D] hover:bg-[#F0F9F8] disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <Download className="w-4 h-4" />
-          Export CSV
+          {exporting ? "Exporting..." : "Export CSV"}
         </button>
       </div>
 

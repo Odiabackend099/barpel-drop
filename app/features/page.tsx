@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description:
     'Order tracking, automated returns, smart cart recovery, 30+ languages. Barpel AI handles customer calls so you never have to.',
   alternates: {
-    canonical: 'https://barpel.ai/features',
+    canonical: 'https://dropship.barpel.ai/features',
   },
 };
 

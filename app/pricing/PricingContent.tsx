@@ -20,7 +20,7 @@ const plans = [
     name: 'Starter',
     description: 'For small stores just getting started with AI support',
     monthlyPrice: 29,
-    yearlyPrice: 23,
+    yearlyPrice: 26,
     features: [
       '500 credits/month',
       '1 phone number',
@@ -29,7 +29,7 @@ const plans = [
       'Basic analytics',
       'Email support',
     ],
-    cta: 'Get started',
+    cta: 'Try for free',
     href: '/signup',
     popular: false,
   },
@@ -37,7 +37,7 @@ const plans = [
     name: 'Growth',
     description: 'For growing businesses ready to scale support',
     monthlyPrice: 79,
-    yearlyPrice: 63,
+    yearlyPrice: 71,
     features: [
       '2,000 credits/month',
       '3 phone numbers',
@@ -55,7 +55,7 @@ const plans = [
     name: 'Scale',
     description: 'For high-volume stores needing maximum power',
     monthlyPrice: 179,
-    yearlyPrice: 143,
+    yearlyPrice: 161,
     features: [
       '6,000 credits/month',
       '10 phone numbers',
@@ -65,7 +65,7 @@ const plans = [
       'Phone support',
       'Custom workflows',
     ],
-    cta: 'Talk to sales',
+    cta: 'Try for free',
     href: '/signup',
     popular: false,
   },
@@ -169,12 +169,12 @@ const faqs = [
   {
     question: 'Do you offer discounts for annual billing?',
     answer:
-      'Yes. Annual billing saves you 20% compared to monthly pricing. All annual plans are billed upfront for the full year. You can switch from monthly to annual billing at any time from your dashboard.',
+      'Yes. Annual billing saves you 10% compared to monthly pricing. All annual plans are billed upfront for the full year. You can switch from monthly to annual billing at any time from your dashboard.',
   },
   {
     question: 'What payment methods do you accept?',
     answer:
-      'We accept all major credit and debit cards (Visa, Mastercard, American Express), as well as ACH bank transfers for annual Enterprise plans. All payments are processed securely through Stripe.',
+      'We accept all major credit and debit cards (Visa, Mastercard, American Express). All payments are processed securely through Flutterwave.',
   },
 ];
 
@@ -232,7 +232,7 @@ export default function PricingPage() {
           Billed yearly
         </span>
         <span className="px-2 py-1 text-xs font-semibold text-brand-teal bg-brand-teal/10 rounded-full">
-          Save 20%
+          Save 10%
         </span>
       </motion.div>
 
@@ -390,8 +390,8 @@ export default function PricingPage() {
           <Users className="w-8 h-8 text-brand-mint" />
           <Phone className="w-8 h-8 text-teal-300" />
         </div>
-        <h2 className="heading-subsection text-white mb-4">
-          Need a custom solution for your enterprise?
+        <h2 className="heading-section font-bold text-white mb-4">
+          Need a <span className="text-brand-teal">Custom Solution</span> for your enterprise?
         </h2>
         <p className="body-large text-white/70 mb-8 max-w-xl mx-auto">
           Get unlimited credits, dedicated support, custom integrations, and an SLA tailored to your business.

@@ -9,7 +9,7 @@
  * - toolCallList items use { id, name, arguments: {...} } — NOT function.arguments
  *
  * REQUIRES (in .env.local):
- *   NEXT_PUBLIC_BASE_URL    — e.g. https://barpel-ai.odia.dev (must be publicly accessible)
+ *   NEXT_PUBLIC_BASE_URL    — e.g. https://dropship.barpel.ai (must be publicly accessible)
  *   VAPI_WEBHOOK_SECRET     — from VAPI_WEBHOOK_SECRET in .env (sent as x-vapi-secret header)
  *   VAPI_ASSISTANT_ID       — from: SELECT vapi_agent_id FROM merchants WHERE provisioning_status='active' LIMIT 1
  *   VAPI_MERCHANT_ID        — from: SELECT id FROM merchants WHERE vapi_agent_id='<VAPI_ASSISTANT_ID>'

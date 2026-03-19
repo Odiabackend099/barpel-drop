@@ -1,5 +1,5 @@
 # robots.txt for Barpel AI
-# https://barpel.ai/
+# https://dropship.barpel.ai/
 
 User-agent: *
 Allow: /
@@ -36,4 +36,4 @@ Disallow: /
 User-agent: Bytespider
 Disallow: /
 
-Sitemap: https://barpel.ai/sitemap.xml
+Sitemap: https://dropship.barpel.ai/sitemap.xml

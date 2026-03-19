@@ -8,7 +8,7 @@
 import { chromium } from 'playwright';
 import fs from 'fs';
 
-const BASE_URL = 'https://barpel-ai.odia.dev';
+const BASE_URL = 'https://dropship.barpel.ai';
 const TEST_EMAIL = 'testsprite@barpel-test.com';
 const TEST_PASSWORD = 'TestSprite2026!';
 const SCREENSHOTS_DIR = './tests/screenshots';

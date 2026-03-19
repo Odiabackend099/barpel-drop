@@ -37,7 +37,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Missing email" }, { status: 400 });
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://barpel-ai.odia.dev";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://dropship.barpel.ai";
   // Escape name to prevent HTML injection; truncate to 100 chars as a safeguard.
   const safeName = name ? escapeHtml(name.slice(0, 100)) : null;
   const greeting = safeName ? `Hey ${safeName}` : "Hey there";

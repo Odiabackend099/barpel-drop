@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { initiateOutboundCall } from "@/lib/vapi/client";
+import { getAuthUser, unauthorizedResponse } from "@/lib/supabase/auth-guard";
 
 // Minimum credits required to place a test call (2 minutes per spec 1.10)
 const MIN_CREDITS_FOR_TEST_CALL = 120;
@@ -14,14 +15,8 @@ const MIN_CREDITS_FOR_TEST_CALL = 120;
 export async function POST(request: Request) {
   const supabase = createClient();
 
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+    const { user } = await getAuthUser(supabase, request);
+  if (!user) return unauthorizedResponse();
 
   const { data: merchant } = await supabase
     .from("merchants")

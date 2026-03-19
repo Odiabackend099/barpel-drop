@@ -2,13 +2,21 @@ import crypto from "crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { addCredits } from "@/lib/credits";
 import { sendReceiptEmail } from "@/lib/email/client";
+import { CREDIT_PACKAGES } from "@/lib/constants";
 
-/** Plan amounts for receipt emails — matches PLAN_MAP in initiate route. */
-const PLAN_AMOUNTS: Record<string, { amount: number; minutes: number }> = {
-  starter: { amount: 29, minutes: 30 },
-  growth:  { amount: 79, minutes: 100 },
-  scale:   { amount: 179, minutes: 250 },
-};
+/** Renewal buffer days — accounts for FLW's internal retry window + timezone edge cases */
+const MONTHLY_RENEWAL_BUFFER_DAYS = 32;
+const ANNUAL_RENEWAL_BUFFER_DAYS = 367; // 365 + 2-day buffer
+
+/** Plan amounts for receipt emails — derived from CREDIT_PACKAGES (single source of truth). */
+const PLAN_AMOUNTS: Record<string, { monthlyAmount: number; annualAmount: number; minutes: number }> = {};
+for (const pkg of CREDIT_PACKAGES) {
+  PLAN_AMOUNTS[pkg.id] = {
+    monthlyAmount: pkg.priceUsdCents / 100,
+    annualAmount: pkg.annualPriceUsdCents / 100,
+    minutes: pkg.minutes,
+  };
+}
 
 /**
  * Flutterwave webhook handler.
@@ -25,7 +33,7 @@ const PLAN_AMOUNTS: Record<string, { amount: number; minutes: number }> = {
  *   1. charge.completed  → verify transaction, add credits, set flw_plan
  *   2. subscription.activated → store the real FLW subscription ID (needed for renewals)
  *
- * Subsequent months:
+ * Subsequent renewals:
  *   subscription.renewed → reset credit_balance to plan allocation (not additive)
  *   subscription.cancelled → clear subscription columns (balance untouched)
  */
@@ -68,7 +76,13 @@ export async function POST(request: Request) {
 async function handleFlutterwaveEvent(event: Record<string, unknown>) {
   const eventType = event.event as string;
   const data = event.data as Record<string, unknown> | undefined;
-  if (!data) return;
+
+  console.log("[flw/webhook] Processing event:", eventType);
+
+  if (!data) {
+    console.warn("[flw/webhook] Event missing data payload:", eventType);
+    return;
+  }
 
   // Single admin client for the lifetime of this event handler
   const adminSupabase = createAdminClient();
@@ -82,15 +96,22 @@ async function handleFlutterwaveEvent(event: Record<string, unknown>) {
     const txRef = data.tx_ref as string | undefined;
     if (!txRef) return;
 
-    // Idempotency: skip if already processed
-    const { data: existingTx } = await adminSupabase
+    // Atomic idempotency: claim this transaction by setting status to "completed" in a single
+    // UPDATE ... WHERE status = 'pending'. If 0 rows updated, another handler already processed it.
+    // This prevents the race condition between webhook and verify endpoint.
+    const { data: claimedRows, error: claimError } = await adminSupabase
       .from("billing_transactions")
-      .select("id, status, merchant_id, plan, amount, currency")
+      .update({ status: "processing", updated_at: new Date().toISOString() })
       .eq("tx_ref", txRef)
-      .single();
+      .eq("status", "pending")
+      .select("id, merchant_id, plan, amount, currency, billing_cycle");
 
-    if (!existingTx) return;                       // Not initiated by us — ignore
-    if (existingTx.status === "completed") return;  // Already processed
+    if (claimError || !claimedRows || claimedRows.length === 0) {
+      // Either not initiated by us, already processed, or claimed by verify endpoint
+      return;
+    }
+
+    const existingTx = claimedRows[0];
 
     // Re-verify with Flutterwave API before giving value
     const transactionId = data.id as number;
@@ -98,19 +119,43 @@ async function handleFlutterwaveEvent(event: Record<string, unknown>) {
       `https://api.flutterwave.com/v3/transactions/${transactionId}/verify`,
       { headers: { Authorization: `Bearer ${process.env.FLW_SECRET_KEY}` } }
     );
+
+    if (!verifyRes.ok) {
+      console.error("[flw/webhook] Flutterwave verify API returned:", verifyRes.status);
+      // Revert to pending so it can be retried
+      await adminSupabase
+        .from("billing_transactions")
+        .update({ status: "pending", updated_at: new Date().toISOString() })
+        .eq("tx_ref", txRef);
+      return;
+    }
+
     const verified = await verifyRes.json() as {
       status: string;
       data?: { status: string; amount: number; currency: string; id: number };
     };
 
-    if (verified.data?.status !== "successful") return;
+    if (verified.data?.status !== "successful") {
+      await adminSupabase
+        .from("billing_transactions")
+        .update({ status: "pending", updated_at: new Date().toISOString() })
+        .eq("tx_ref", txRef);
+      return;
+    }
 
     // Guard against underpayment attacks
     if (
       verified.data.amount < existingTx.amount ||
       verified.data.currency !== existingTx.currency
     ) {
-      console.error("[flw/webhook] Amount mismatch on tx_ref:", txRef);
+      console.error("[flw/webhook] Amount mismatch on tx_ref:", txRef, {
+        expected: existingTx.amount,
+        received: verified.data.amount,
+      });
+      await adminSupabase
+        .from("billing_transactions")
+        .update({ status: "failed", updated_at: new Date().toISOString() })
+        .eq("tx_ref", txRef);
       return;
     }
 
@@ -128,17 +173,21 @@ async function handleFlutterwaveEvent(event: Record<string, unknown>) {
 
     const flwTransactionId = verified.data.id.toString();
 
+    // Credits: monthly allocation regardless of billing cycle.
+    // Annual billing is just about payment — credits still allocate monthly via subscription.renewed.
     await addCredits(adminSupabase, existingTx.merchant_id, pkg.credits_seconds, flwTransactionId);
 
+    // Mark transaction completed
     await adminSupabase
       .from("billing_transactions")
       .update({ status: "completed", flw_transaction_id: flwTransactionId, updated_at: new Date().toISOString() })
       .eq("tx_ref", txRef);
 
-    // Set the plan name — subscription ID is set separately by subscription.activated
+    // Set the plan name and billing cycle — subscription ID is set separately by subscription.activated
+    const billingCycle = existingTx.billing_cycle ?? "monthly";
     await adminSupabase
       .from("merchants")
-      .update({ flw_plan: existingTx.plan })
+      .update({ flw_plan: existingTx.plan, billing_cycle: billingCycle })
       .eq("id", existingTx.merchant_id);
 
     // Send receipt email (best-effort — failure must not block webhook response)
@@ -151,15 +200,19 @@ async function handleFlutterwaveEvent(event: Record<string, unknown>) {
 
       if (merchantRow) {
         const { data: authData } = await adminSupabase.auth.admin.getUserById(merchantRow.user_id);
-        const planInfo = PLAN_AMOUNTS[existingTx.plan] ?? { amount: existingTx.amount, minutes: Math.round(pkg.credits_seconds / 60) };
-        const nextRenewal = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+        const planInfo = PLAN_AMOUNTS[existingTx.plan];
+        const amount = billingCycle === "annual"
+          ? planInfo?.annualAmount ?? existingTx.amount
+          : planInfo?.monthlyAmount ?? existingTx.amount;
+        const renewalDays = billingCycle === "annual" ? 365 : MONTHLY_RENEWAL_BUFFER_DAYS;
+        const nextRenewal = new Date(Date.now() + renewalDays * 24 * 60 * 60 * 1000);
 
         if (authData?.user?.email) {
           await sendReceiptEmail({
             to: authData.user.email,
-            planName: existingTx.plan.charAt(0).toUpperCase() + existingTx.plan.slice(1),
-            amount: `$${planInfo.amount}.00`,
-            minutesAdded: planInfo.minutes,
+            planName: `${existingTx.plan.charAt(0).toUpperCase() + existingTx.plan.slice(1)} (${billingCycle})`,
+            amount: `$${amount.toFixed(0)}.00`,
+            minutesAdded: planInfo?.minutes ?? Math.round(pkg.credits_seconds / 60),
             nextRenewalDate: nextRenewal.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
           });
         }
@@ -177,19 +230,49 @@ async function handleFlutterwaveEvent(event: Record<string, unknown>) {
     const subscriptionId = String(data.id ?? "");
     if (!subscriptionId) return;
 
-    // Find the merchant via flw_plan (they should have just had charge.completed)
-    // Use the customer email to locate the right merchant
+    // Find the merchant via the most recent completed billing_transaction
+    // (avoids the O(n) listUsers() antipattern)
     const customerData = data.customer as Record<string, unknown> | undefined;
     const email = customerData?.email as string | undefined;
     if (!email) return;
 
-    // Look up merchant by email via auth
-    const { data: { users } } = await adminSupabase.auth.admin.listUsers();
-    const user = users.find((u) => u.email === email);
-    if (!user) return;
+    // Look up via billing_transactions → merchant_id (most recent completed transaction for this email)
+    const { data: recentTx } = await adminSupabase
+      .from("billing_transactions")
+      .select("merchant_id, billing_cycle")
+      .eq("status", "completed")
+      .order("created_at", { ascending: false })
+      .limit(10);
 
-    // 32-day buffer (not 30) accounts for FLW's internal retry window + timezone edge cases
-    const renewalDue = new Date(Date.now() + 32 * 24 * 60 * 60 * 1000).toISOString();
+    if (!recentTx || recentTx.length === 0) return;
+
+    // Find the merchant whose email matches — check each recent transaction's merchant
+    let matchedMerchantId: string | null = null;
+    let matchedBillingCycle: string = "monthly";
+    for (const tx of recentTx) {
+      const { data: merchant } = await adminSupabase
+        .from("merchants")
+        .select("id, user_id")
+        .eq("id", tx.merchant_id)
+        .is("deleted_at", null)
+        .single();
+
+      if (!merchant) continue;
+
+      const { data: authData } = await adminSupabase.auth.admin.getUserById(merchant.user_id);
+      if (authData?.user?.email === email) {
+        matchedMerchantId = merchant.id;
+        matchedBillingCycle = tx.billing_cycle ?? "monthly";
+        break;
+      }
+    }
+
+    if (!matchedMerchantId) return;
+
+    const renewalBufferDays = matchedBillingCycle === "annual"
+      ? ANNUAL_RENEWAL_BUFFER_DAYS
+      : MONTHLY_RENEWAL_BUFFER_DAYS;
+    const renewalDue = new Date(Date.now() + renewalBufferDays * 24 * 60 * 60 * 1000).toISOString();
 
     await adminSupabase
       .from("merchants")
@@ -197,15 +280,15 @@ async function handleFlutterwaveEvent(event: Record<string, unknown>) {
         flw_subscription_id: subscriptionId,
         plan_status: "active",
         plan_renewal_due_at: renewalDue,
+        billing_cycle: matchedBillingCycle,
         dunning_started_at: null,
         dunning_email_count: 0,
       })
-      .eq("user_id", user.id)
-      .is("deleted_at", null);
+      .eq("id", matchedMerchantId);
   }
 
   // ─── subscription.renewed ───────────────────────────────────────────────────
-  // Fired on each monthly renewal. data.id = FLW subscription ID.
+  // Fired on each renewal. data.id = FLW subscription ID.
   // Reset credit_balance to the plan's full allocation (unused minutes do not roll over).
   if (eventType === "subscription.renewed") {
     const subscriptionId = String(data.id ?? "");
@@ -213,7 +296,7 @@ async function handleFlutterwaveEvent(event: Record<string, unknown>) {
 
     const { data: merchant } = await adminSupabase
       .from("merchants")
-      .select("id, flw_plan")
+      .select("id, flw_plan, billing_cycle")
       .eq("flw_subscription_id", subscriptionId)
       .single();
 
@@ -228,10 +311,15 @@ async function handleFlutterwaveEvent(event: Record<string, unknown>) {
 
     if (!pkg) return;
 
-    // Reset balance — subscription semantics: each month starts fresh
-    // Also reset dunning state and push renewal due date forward
-    const nextRenewalDue = new Date(Date.now() + 32 * 24 * 60 * 60 * 1000).toISOString();
+    // Renewal buffer: annual plans renew yearly, monthly plans renew monthly
+    const billingCycle = merchant.billing_cycle ?? "monthly";
+    const renewalBufferDays = billingCycle === "annual"
+      ? ANNUAL_RENEWAL_BUFFER_DAYS
+      : MONTHLY_RENEWAL_BUFFER_DAYS;
+    const nextRenewalDue = new Date(Date.now() + renewalBufferDays * 24 * 60 * 60 * 1000).toISOString();
 
+    // Reset balance — subscription semantics: each period starts fresh
+    // Also reset dunning state and push renewal due date forward
     await adminSupabase
       .from("merchants")
       .update({
@@ -244,12 +332,13 @@ async function handleFlutterwaveEvent(event: Record<string, unknown>) {
       .eq("id", merchant.id);
 
     // Insert renewal record into credit_transactions for audit trail
+    const renewalLabel = billingCycle === "annual" ? "Annual" : "Monthly";
     await adminSupabase.from("credit_transactions").insert({
       merchant_id:       merchant.id,
       type:              "purchase",
       amount:            pkg.credits_seconds,
       balance_after:     pkg.credits_seconds,
-      description:       `Monthly renewal — ${merchant.flw_plan} plan`,
+      description:       `${renewalLabel} renewal — ${merchant.flw_plan} plan`,
       stripe_payment_id: `flw_renewal_${subscriptionId}_${Date.now()}`,
     });
 
@@ -263,15 +352,19 @@ async function handleFlutterwaveEvent(event: Record<string, unknown>) {
 
       if (merchantFull) {
         const { data: authData } = await adminSupabase.auth.admin.getUserById(merchantFull.user_id);
-        const planInfo = PLAN_AMOUNTS[merchant.flw_plan] ?? { amount: 0, minutes: Math.round(pkg.credits_seconds / 60) };
-        const nextRenewal = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+        const planInfo = PLAN_AMOUNTS[merchant.flw_plan];
+        const amount = billingCycle === "annual"
+          ? planInfo?.annualAmount ?? 0
+          : planInfo?.monthlyAmount ?? 0;
+        const renewalDays = billingCycle === "annual" ? 365 : MONTHLY_RENEWAL_BUFFER_DAYS;
+        const nextRenewal = new Date(Date.now() + renewalDays * 24 * 60 * 60 * 1000);
 
         if (authData?.user?.email) {
           await sendReceiptEmail({
             to: authData.user.email,
-            planName: merchant.flw_plan.charAt(0).toUpperCase() + merchant.flw_plan.slice(1),
-            amount: `$${planInfo.amount}.00`,
-            minutesAdded: planInfo.minutes,
+            planName: `${merchant.flw_plan.charAt(0).toUpperCase() + merchant.flw_plan.slice(1)} (${billingCycle})`,
+            amount: `$${amount.toFixed(0)}.00`,
+            minutesAdded: planInfo?.minutes ?? Math.round(pkg.credits_seconds / 60),
             nextRenewalDate: nextRenewal.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
           });
         }
@@ -290,7 +383,7 @@ async function handleFlutterwaveEvent(event: Record<string, unknown>) {
 
     await adminSupabase
       .from("merchants")
-      .update({ flw_subscription_id: null, flw_plan: null, plan_status: "cancelled" })
+      .update({ flw_subscription_id: null, flw_plan: null, plan_status: "cancelled", billing_cycle: "monthly" })
       .eq("flw_subscription_id", subscriptionId);
   }
 }

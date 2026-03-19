@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Barpel AI',
     description: 'AI-Powered Voice Support for E-Commerce Stores',
-    url: 'https://barpel.ai',
+    url: 'https://dropship.barpel.ai',
     siteName: 'Barpel AI',
     images: [{ url: '/og-image.png', width: 1200, height: 630 }],
   },

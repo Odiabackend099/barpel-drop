@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { initiateOutboundCall } from "@/lib/vapi/client";
+import { getAuthUser, unauthorizedResponse } from "@/lib/supabase/auth-guard";
 
 /**
  * POST /api/vapi/outbound
@@ -19,13 +20,8 @@ export async function POST(request: Request) {
   const supabase = createClient();
 
   // Authenticate: require logged-in user
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const { user } = await getAuthUser(supabase, request);
+  if (!user) return unauthorizedResponse();
 
   const body = await request.json();
   const customerPhone: string | undefined = body.customerPhone;

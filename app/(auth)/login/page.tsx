@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Eye, EyeOff, Mail } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Logo from '@/components/marketing/Logo';
 import { createClient } from '@/lib/supabase/client';
 
-export default function Login() {
+function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -18,6 +18,8 @@ export default function Login() {
   const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = searchParams.get("next");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,9 +30,10 @@ export default function Login() {
       const supabase = createClient();
 
       if (showMagicLink) {
+        const callbackUrl = `${window.location.origin}/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ''}`;
         const { error: otpError } = await supabase.auth.signInWithOtp({
           email,
-          options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+          options: { emailRedirectTo: callbackUrl },
         });
         if (otpError) throw otpError;
         setMagicLinkSent(true);
@@ -49,7 +52,7 @@ export default function Login() {
           }
           return;
         }
-        router.push('/dashboard');
+        router.push(next ?? '/dashboard');
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'An error occurred';
@@ -64,10 +67,11 @@ export default function Login() {
     setError('');
     try {
       const supabase = createClient();
+      const oauthCallback = `${window.location.origin}/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ''}`;
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: oauthCallback,
         },
       });
       if (oauthError) throw oauthError;
@@ -344,5 +348,13 @@ export default function Login() {
         </motion.div>
       </main>
     </div>
+  );
+}
+
+export default function Login() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }

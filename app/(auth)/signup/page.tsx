@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description:
     'Create your free Barpel AI account. 14-day trial of the Growth plan — no credit card required. AI voice support for your e-commerce store.',
   alternates: {
-    canonical: 'https://barpel.ai/signup',
+    canonical: 'https://dropship.barpel.ai/signup',
   },
 };
 

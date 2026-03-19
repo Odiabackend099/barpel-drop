@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe/client";
+import { getAuthUser, unauthorizedResponse } from "@/lib/supabase/auth-guard";
 
 /**
  * Creates a Stripe Checkout Session for credit package purchase.
@@ -22,13 +23,8 @@ export async function POST(request: Request) {
   const supabase = createClient();
 
   // Verify authenticated user
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const { user } = await getAuthUser(supabase, request);
+  if (!user) return unauthorizedResponse();
 
   let body: { package_id?: string; packageId?: string };
   try {

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import type { MerchantData } from "@/lib/mockApi";
 import { createClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
 
 const useMock = process.env.NEXT_PUBLIC_USE_MOCK_API === "true";
 
@@ -42,7 +43,9 @@ export function useMerchant() {
         if (dbError) throw dbError;
         setMerchant(data as MerchantData);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load merchant data");
+        const msg = err instanceof Error ? err.message : "Failed to load merchant data";
+        setError(msg);
+        toast.error(msg);
       } finally {
         setLoading(false);
       }

@@ -1,7 +1,7 @@
 # Barpel Dashboard — 3-Step Coding Principle Test Checklist
 
 **Test Account:** testsprite@barpel-test.com / TestSprite2026!
-**Production URL:** https://barpel-ai.odia.dev
+**Production URL:** https://dropship.barpel.ai
 **Test Date:** 2026-03-18
 
 ---

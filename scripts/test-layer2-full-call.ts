@@ -9,7 +9,7 @@
  * and returned real order data (not a fallback).
  *
  * REQUIRES (in .env.local):
- *   NEXT_PUBLIC_BASE_URL  — MUST be https://barpel-ai.odia.dev (Vapi can't reach localhost)
+ *   NEXT_PUBLIC_BASE_URL  — MUST be https://dropship.barpel.ai (Vapi can't reach localhost)
  *   VAPI_PRIVATE_KEY      — already in .env
  *   VAPI_ASSISTANT_ID     — from: SELECT vapi_agent_id FROM merchants LIMIT 1
  *   VAPI_PHONE_NUMBER_ID  — from Vapi dashboard → Phone Numbers → copy ID (not the number)
@@ -53,7 +53,7 @@ if (BASE_URL!.includes("localhost") || BASE_URL!.includes("127.0.0.1")) {
     "   Vapi cannot reach http://localhost from their servers."
   );
   console.warn(
-    "   Set NEXT_PUBLIC_BASE_URL=https://barpel-ai.odia.dev in .env.local"
+    "   Set NEXT_PUBLIC_BASE_URL=https://dropship.barpel.ai in .env.local"
   );
   console.warn("   Continuing anyway — this test will likely fail.\n");
 }

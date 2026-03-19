@@ -14,6 +14,7 @@ import {
   VALID_AI_MODELS,
   VALID_VOICE_PROVIDERS,
 } from "@/lib/constants";
+import { getAuthUser, unauthorizedResponse } from "@/lib/supabase/auth-guard";
 
 /**
  * PATCH /api/merchant/ai-voice
@@ -32,14 +33,8 @@ import {
 export async function PATCH(request: Request) {
   const supabase = createClient();
 
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+    const { user } = await getAuthUser(supabase, request);
+  if (!user) return unauthorizedResponse();
 
   let body: {
     custom_prompt?: string;
@@ -255,17 +250,11 @@ async function syncToVapi(
  * Partial Vapi failures are logged but do not block the DB cleanup.
  * Returns 409 if provisioning is currently in progress.
  */
-export async function DELETE() {
+export async function DELETE(request: Request) {
   const supabase = createClient();
 
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const { user } = await getAuthUser(supabase, request);
+  if (!user) return unauthorizedResponse();
 
   // Use admin client for the full merchant read (vapi fields not exposed via regular select)
   const adminSupabase = createAdminClient();

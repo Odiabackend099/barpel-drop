@@ -38,7 +38,7 @@ export interface CreditTransaction {
   date: string;
   description: string;
   amount: number;
-  type: "credit" | "debit";
+  type: "credit" | "debit" | "purchase" | "deduction";
 }
 
 export interface MerchantData {
