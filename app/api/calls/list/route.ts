@@ -44,11 +44,11 @@ export async function GET(request: NextRequest) {
   let query = supabase
     .from("call_logs")
     .select(
-      "id, direction, caller_number, call_type, duration_seconds, ai_summary, sentiment, credits_charged, started_at, ended_at, ended_reason, tool_results",
+      "id, direction, caller_number, call_type, duration_seconds, ai_summary, sentiment, credits_charged, started_at, ended_at, ended_reason, tool_results, recording_url, transcript",
       { count: "exact" }
     )
     .eq("merchant_id", merchant.id)
-    .order("started_at", { ascending: false })
+    .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1);
 
   if (callType && VALID_TYPES.includes(callType)) {
@@ -78,33 +78,20 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // Mask caller numbers — show only last 4 digits
-  const maskedCalls = (calls ?? []).map((call) => ({
+  // Format calls — show full caller numbers for merchant visibility
+  const formattedCalls = (calls ?? []).map((call) => ({
     ...call,
-    caller_number: maskCallerNumber(call.caller_number),
-    ai_summary: call.ai_summary
-      ? call.ai_summary.slice(0, 60)
-      : null,
+    caller_number: call.caller_number || "Browser Call",
   }));
 
   const total = count ?? 0;
   const totalPages = Math.ceil(total / limit);
 
   return NextResponse.json({
-    calls: maskedCalls,
+    calls: formattedCalls,
     total,
     page,
     totalPages,
   });
 }
 
-/**
- * Masks a phone number to show only the last 4 digits.
- * E.g. "+447911123456" → "+44 XXXX XX 3456"
- */
-function maskCallerNumber(number: string | null): string {
-  if (!number) return "[Unknown]";
-  if (number === "[RETAINED]") return "[RETAINED]";
-  const last4 = number.slice(-4);
-  return `+XX XXXX XX ${last4}`;
-}

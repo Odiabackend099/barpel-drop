@@ -10,6 +10,46 @@ import { withRetry } from "@/lib/retry";
 const LOW_BALANCE_THRESHOLD_SECS = 600; // 10 minutes — warn earlier so merchant can act
 const LOW_BALANCE_THROTTLE_HOURS = 24;
 const SHORT_CALL_THRESHOLD_SECS = 15;
+const FAILED_LOOKUP_THROTTLE_HOURS = 1;
+
+/**
+ * Sends SMS to merchant when an order lookup fails.
+ * Fire-and-forget with 1-hour throttle per merchant.
+ */
+async function notifyMerchantFailedLookup(
+  supabase: ReturnType<typeof createAdminClient>,
+  merchantId: string,
+  orderNumber: string
+): Promise<void> {
+  const { data: merchant } = await supabase
+    .from("merchants")
+    .select("support_phone, failed_lookup_notified_at, notification_preferences")
+    .eq("id", merchantId)
+    .single();
+
+  if (!merchant?.support_phone) return;
+
+  // Respect merchant notification preference (default: enabled)
+  const prefs = (merchant.notification_preferences as Record<string, boolean> | null) ?? {};
+  if (prefs.failed_lookup_sms === false) return;
+
+  // Throttle: max 1 SMS per merchant per hour
+  if (merchant.failed_lookup_notified_at) {
+    const hoursSince = (Date.now() - new Date(merchant.failed_lookup_notified_at).getTime()) / 3_600_000;
+    if (hoursSince < FAILED_LOOKUP_THROTTLE_HOURS) return;
+  }
+
+  const safeOrder = orderNumber.slice(0, 30);
+  await sendSms(
+    merchant.support_phone,
+    `Barpel Alert: A customer called about order '${safeOrder}' but it couldn't be found. Check your store or review calls: ${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/calls`
+  );
+
+  await supabase
+    .from("merchants")
+    .update({ failed_lookup_notified_at: new Date().toISOString() })
+    .eq("id", merchantId);
+}
 
 /**
  * Vapi serverUrl webhook — handles ALL Vapi server events:
@@ -227,10 +267,12 @@ async function handleLookupOrder(
     // wrapping it again would cause up to 27 Shopify calls and blow the 5s timeout.
     order = await lookupOrder(integration.shop_domain, shopifyToken, orderNumber);
   } catch {
+    notifyMerchantFailedLookup(supabase, merchantId, orderNumber).catch(() => {});
     return `I wasn't able to find order ${orderNumber}. Could you double-check the order number?`;
   }
 
   if (!order) {
+    notifyMerchantFailedLookup(supabase, merchantId, orderNumber).catch(() => {});
     return `I wasn't able to find order ${orderNumber}. Could you double-check the order number?`;
   }
 
@@ -284,45 +326,63 @@ async function handleInitiateReturn(
   customerPhone: string,
   callId: string
 ): Promise<string> {
-  // Create return request in DB
-  await supabase.from("return_requests").insert({
-    merchant_id: merchantId,
-    call_log_id: callId || null,
-    order_number: orderNumber,
-    customer_phone: customerPhone,
-    reason,
-    status: "pending",
-  });
+  // 4-second timeout — safe fallback even if the insert succeeded but we raced
+  const timeoutPromise = new Promise<string>((resolve) =>
+    setTimeout(() => resolve("I've started your return request. You'll receive an SMS confirmation shortly."), 4000)
+  );
 
-  // Send SMS with return instructions
-  if (customerPhone) {
-    const returnLink = `${process.env.NEXT_PUBLIC_BASE_URL}/return/${orderNumber}`;
-    await sendSms(
-      customerPhone,
-      `Your return request for order ${orderNumber} has been initiated. Please upload photos of the item here: ${returnLink}`
-    ).catch(() => {
-      // SMS failure should not block the tool response
+  const workPromise = (async () => {
+    // Create return request in DB
+    await supabase.from("return_requests").insert({
+      merchant_id: merchantId,
+      call_log_id: callId || null,
+      order_number: orderNumber,
+      customer_phone: customerPhone,
+      reason,
+      status: "pending",
     });
-  }
 
-  return `I've started your return process for order ${orderNumber}. You'll receive an SMS shortly with a link to upload photos of the item. Our team will review your request within 24 hours.`;
+    // Send SMS with return instructions
+    if (customerPhone) {
+      const returnLink = `${process.env.NEXT_PUBLIC_BASE_URL}/return/${orderNumber}`;
+      await sendSms(
+        customerPhone,
+        `Your return request for order ${orderNumber} has been initiated. Please upload photos of the item here: ${returnLink}`
+      ).catch(() => {
+        // SMS failure should not block the tool response
+      });
+    }
+
+    return `I've started your return process for order ${orderNumber}. You'll receive an SMS shortly with a link to upload photos of the item. Our team will review your request within 24 hours.`;
+  })();
+
+  return Promise.race([workPromise, timeoutPromise]);
 }
 
 async function handleGetStorePolicy(
   supabase: ReturnType<typeof createAdminClient>,
   merchantId: string
 ): Promise<string> {
-  const { data: merchant } = await supabase
-    .from("merchants")
-    .select("custom_prompt")
-    .eq("id", merchantId)
-    .single();
+  // 4-second timeout — return safe default if Supabase stalls
+  const timeoutPromise = new Promise<string>((resolve) =>
+    setTimeout(() => resolve("Our standard policy allows returns within 30 days. For full details, please check our website."), 4000)
+  );
 
-  if (merchant?.custom_prompt) {
-    return merchant.custom_prompt;
-  }
+  const workPromise = (async () => {
+    const { data: merchant } = await supabase
+      .from("merchants")
+      .select("custom_prompt")
+      .eq("id", merchantId)
+      .single();
 
-  return "Our standard return policy allows returns within 30 days of delivery for items in original condition. Refunds are processed within 5-7 business days after we receive the returned item.";
+    if (merchant?.custom_prompt) {
+      return merchant.custom_prompt;
+    }
+
+    return "Our standard return policy allows returns within 30 days of delivery for items in original condition. Refunds are processed within 5-7 business days after we receive the returned item.";
+  })();
+
+  return Promise.race([workPromise, timeoutPromise]);
 }
 
 async function handleSearchProducts(
@@ -401,15 +461,35 @@ async function handleEndOfCallReport(
     return NextResponse.json({ received: true });
   }
 
-  // 2. Calculate duration
+  // 2. Calculate duration — with fallbacks for missing Vapi timestamps
+  const allMessages: any[] = artifact.messages ?? [];
+
   const startedAt = call.startedAt ? new Date(call.startedAt) : null;
-  const endedAt = call.endedAt ? new Date(call.endedAt) : new Date();
-  const durationSeconds = startedAt
+  const endedAt = call.endedAt ? new Date(call.endedAt) : null;
+  let durationSeconds = (startedAt && endedAt)
     ? Math.max(0, Math.round((endedAt.getTime() - startedAt.getTime()) / 1000))
     : 0;
 
+  // Fallback A: last message's secondsFromStart (most reliable — always present in Vapi messages)
+  if (durationSeconds === 0 && allMessages.length > 0) {
+    const lastSecs = allMessages[allMessages.length - 1]?.secondsFromStart;
+    if (typeof lastSecs === "number" && lastSecs > 0) {
+      durationSeconds = Math.ceil(lastSecs);
+    }
+  }
+
+  // Fallback B: first/last message time delta (absolute Unix ms timestamps)
+  if (durationSeconds === 0 && allMessages.length >= 2) {
+    const t0 = allMessages[0]?.time;
+    const tN = allMessages[allMessages.length - 1]?.time;
+    if (typeof t0 === "number" && typeof tN === "number" && tN > t0) {
+      durationSeconds = Math.max(0, Math.round((tN - t0) / 1000));
+    }
+  }
+
+  console.log("[webhook] duration:", { callStartedAt: call.startedAt ?? null, callEndedAt: call.endedAt ?? null, computed: durationSeconds, msgCount: allMessages.length });
+
   // 3. Extract tool results from messages array
-  const allMessages: any[] = artifact.messages ?? [];
   const toolResults = allMessages
     .filter((m: any) => m.role === "tool_call_result")
     .map((m: any) => ({ tool: m.name, result: m.result }));
@@ -435,49 +515,80 @@ async function handleEndOfCallReport(
     if (pendingCall) callType = "abandoned_cart_recovery";
   }
 
-  // 5. Simple sentiment detection from transcript
+  // 5. Sentiment detection — prefer Vapi's AI analysis, fall back to pattern matcher
   const transcript: string = artifact.transcript ?? "";
-  const sentiment = detectSentiment(transcript);
+  const vapiSentiment = analysis.sentiment as string | undefined;
+  const sentiment: "positive" | "neutral" | "negative" =
+    (vapiSentiment === "positive" || vapiSentiment === "neutral" || vapiSentiment === "negative")
+      ? vapiSentiment
+      : detectSentiment(transcript);
 
-  // 6. Upsert into call_logs — idempotent via onConflict: 'vapi_call_id'
+  // 6. Insert or update call_logs — idempotent via vapi_call_id
   //    Pre-check existence so we can skip credit deduction on duplicate deliveries.
   //    Vapi may send the same end-of-call-report more than once on network retries.
   const { data: existingLog } = await supabase
     .from("call_logs")
-    .select("id")
+    .select("id, credits_charged")
     .eq("vapi_call_id", vapiCallId ?? "")
     .maybeSingle();
   const isNewCall = !existingLog;
 
-  const { data: callLog, error: insertError } = await supabase
-    .from("call_logs")
-    .upsert(
-      {
-        merchant_id: merchant.id,
-        vapi_call_id: vapiCallId,
-        vapi_assistant_id: assistantId,
-        caller_number: call.customer?.number ?? null,
-        called_number: call.phoneNumber?.number ?? null,
-        direction: call.type === "outboundPhoneCall" ? "outbound" : "inbound",
-        started_at: call.startedAt ?? null,
-        ended_at: call.endedAt ?? null,
-        duration_seconds: durationSeconds,
-        ended_reason: endedReason ?? null,
-        transcript,
-        messages_raw: allMessages,
-        recording_url: artifact.recordingUrl ?? call.recordingUrl ?? null,
-        ai_summary: analysis.summary ?? null,
-        ai_success_evaluation: analysis.successEvaluation ?? null,
-        tool_results: toolResults,
-        call_type: callType,
-        sentiment,
-        credits_charged: 0,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "vapi_call_id" }
-    )
-    .select("id")
-    .single();
+  // Compute started_at/ended_at from messages if Vapi didn't provide them
+  const computedStartedAt = call.startedAt
+    ?? (allMessages.length > 0 && typeof allMessages[0]?.time === "number"
+      ? new Date(allMessages[0].time).toISOString()
+      : null);
+  const computedEndedAt = call.endedAt
+    ?? (allMessages.length > 0 && typeof allMessages[allMessages.length - 1]?.time === "number"
+      ? new Date(allMessages[allMessages.length - 1].time).toISOString()
+      : null);
+
+  // Build the row data — credits_charged is NEVER set here to avoid overwrite on retries
+  const callData = {
+    merchant_id: merchant.id,
+    vapi_call_id: vapiCallId,
+    vapi_assistant_id: assistantId,
+    caller_number: call.customer?.number ?? null,
+    called_number: call.phoneNumber?.number ?? null,
+    direction: call.type === "outboundPhoneCall" ? "outbound" : "inbound",
+    started_at: computedStartedAt,
+    ended_at: computedEndedAt,
+    duration_seconds: durationSeconds,
+    ended_reason: endedReason ?? null,
+    transcript,
+    messages_raw: allMessages,
+    recording_url: artifact.recordingUrl ?? call.recordingUrl ?? null,
+    ai_summary: analysis.summary ?? null,
+    ai_success_evaluation: analysis.successEvaluation ?? null,
+    tool_results: toolResults,
+    call_type: callType,
+    sentiment,
+    updated_at: new Date().toISOString(),
+  };
+
+  let callLog: { id: string } | null = null;
+  let insertError: { message: string } | null = null;
+
+  if (isNewCall) {
+    // New call — insert with credits_charged: 0 (will be updated after deduction)
+    const result = await supabase
+      .from("call_logs")
+      .insert({ ...callData, credits_charged: 0 })
+      .select("id")
+      .single();
+    callLog = result.data;
+    insertError = result.error;
+  } else {
+    // Duplicate delivery — update everything EXCEPT credits_charged (protect billing data)
+    const result = await supabase
+      .from("call_logs")
+      .update(callData)
+      .eq("id", existingLog.id)
+      .select("id")
+      .single();
+    callLog = result.data;
+    insertError = result.error;
+  }
 
   if (insertError) {
     console.error("[webhook] call_logs upsert failed:", insertError.message);
@@ -487,6 +598,12 @@ async function handleEndOfCallReport(
 
   // 7. Credit deduction — skip short calls (hang-ups, wrong numbers) AND duplicate deliveries
   let creditsCharged = 0;
+  if (durationSeconds < SHORT_CALL_THRESHOLD_SECS) {
+    console.log(`[webhook] Skipping deduction: duration=${durationSeconds}s < ${SHORT_CALL_THRESHOLD_SECS}s threshold`);
+  }
+  if (!isNewCall) {
+    console.log(`[webhook] Duplicate delivery for ${vapiCallId}, skipping credit deduction`);
+  }
   if (durationSeconds >= SHORT_CALL_THRESHOLD_SECS && callLog && isNewCall) {
     try {
       const { data: deducted } = await supabase.rpc("deduct_call_credits", {

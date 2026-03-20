@@ -21,6 +21,7 @@ export interface CallLog {
   messages_raw?: unknown[];
   called_number?: string;
   ai_success_evaluation?: string;
+  recording_url?: string;
 }
 
 export interface ChartPoint {

@@ -1,17 +1,9 @@
 "use client";
 
-import { PhoneIncoming, PhoneOutgoing, Eye } from "lucide-react";
+import { PhoneIncoming, PhoneOutgoing, Eye, Play, Download } from "lucide-react";
 import { SENTIMENT_CONFIG, CALL_TYPE_COLORS, CALL_TYPE_LABELS } from "@/lib/constants";
 import type { CallLog } from "@/lib/mockApi";
 import React from "react";
-
-/** Mask phone number: show country code + last 4 digits */
-function maskPhone(num: string): string {
-  if (!num || num.length < 6) return num || "";
-  // Country code is +X or +XX or +XXX
-  const ccEnd = num.startsWith("+") ? (num.length > 12 ? 3 : 2) : 0;
-  return `${num.slice(0, ccEnd)} *** *** ${num.slice(-4)}`;
-}
 
 function Badge({ color, children }: { color: string; children: React.ReactNode }) {
   return (
@@ -66,7 +58,7 @@ export function CallLogTable({ calls, expandedId, onToggle }: CallLogTableProps)
                       {call.direction === "inbound" ? "IN" : "OUT"}
                     </Badge>
                   </td>
-                  <td className="py-3 px-2 text-sm text-[#1B2A4A] font-mono">{maskPhone(call.caller_number)}</td>
+                  <td className="py-3 px-2 text-sm text-[#1B2A4A] font-mono">{call.caller_number || "Browser Call"}</td>
                   <td className="py-3 px-2">
                     <Badge color={CALL_TYPE_COLORS[call.call_type] || "#8AADA6"}>{CALL_TYPE_LABELS[call.call_type] || call.call_type}</Badge>
                   </td>
@@ -85,20 +77,44 @@ export function CallLogTable({ calls, expandedId, onToggle }: CallLogTableProps)
                   <td className="py-3 px-2 text-sm text-[#4A7A6D] max-w-xs truncate">{call.ai_summary || "-"}</td>
                   <td className="py-3 px-2 text-sm font-mono text-[#4A7A6D]">{call.credits_charged}s</td>
                   <td className="py-3 px-2">
-                    {call.transcript && (
-                      <button
-                        onClick={() => onToggle(call.id)}
-                        aria-expanded={isExpanded}
-                        aria-label="View call details"
-                        className={`p-1.5 rounded-lg transition-colors ${
-                          isExpanded
-                            ? "bg-[#00A99D]/20 text-[#00A99D]"
-                            : "hover:bg-[#F0F9F8] text-[#8AADA6] hover:text-[#1B2A4A]"
-                        }`}
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                    )}
+                    <div className="flex items-center gap-1">
+                      {(call.transcript || call.ai_summary) && (
+                        <button
+                          onClick={() => onToggle(call.id)}
+                          aria-expanded={isExpanded}
+                          aria-label="View call details"
+                          title="View transcript & details"
+                          className={`p-1.5 rounded-lg transition-colors ${
+                            isExpanded
+                              ? "bg-[#00A99D]/20 text-[#00A99D]"
+                              : "hover:bg-[#F0F9F8] text-[#8AADA6] hover:text-[#1B2A4A]"
+                          }`}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                      )}
+                      {(call as CallLog & { recording_url?: string }).recording_url && (
+                        <>
+                          <a
+                            href={(call as CallLog & { recording_url?: string }).recording_url!}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Play recording"
+                            className="p-1.5 rounded-lg hover:bg-[#F0F9F8] text-[#8AADA6] hover:text-[#1B2A4A] transition-colors"
+                          >
+                            <Play className="w-4 h-4" />
+                          </a>
+                          <a
+                            href={(call as CallLog & { recording_url?: string }).recording_url!}
+                            download
+                            title="Download recording"
+                            className="p-1.5 rounded-lg hover:bg-[#F0F9F8] text-[#8AADA6] hover:text-[#1B2A4A] transition-colors"
+                          >
+                            <Download className="w-4 h-4" />
+                          </a>
+                        </>
+                      )}
+                    </div>
                   </td>
                 </tr>
                 {isExpanded && call.transcript && (
