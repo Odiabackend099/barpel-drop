@@ -104,14 +104,27 @@ export function CallLogTable({ calls, expandedId, onToggle }: CallLogTableProps)
                           >
                             <Play className="w-4 h-4" />
                           </a>
-                          <a
-                            href={(call as CallLog & { recording_url?: string }).recording_url!}
-                            download
+                          <button
+                            onClick={async () => {
+                              try {
+                                const url = (call as CallLog & { recording_url?: string }).recording_url!;
+                                const res = await fetch(url);
+                                const blob = await res.blob();
+                                const a = document.createElement("a");
+                                a.href = URL.createObjectURL(blob);
+                                a.download = `call-${call.id.slice(0, 8)}.wav`;
+                                a.click();
+                                URL.revokeObjectURL(a.href);
+                              } catch {
+                                // Fallback: open in new tab if fetch fails (CORS)
+                                window.open((call as CallLog & { recording_url?: string }).recording_url!, "_blank");
+                              }
+                            }}
                             title="Download recording"
                             className="p-1.5 rounded-lg hover:bg-[#F0F9F8] text-[#8AADA6] hover:text-[#1B2A4A] transition-colors"
                           >
                             <Download className="w-4 h-4" />
-                          </a>
+                          </button>
                         </>
                       )}
                     </div>

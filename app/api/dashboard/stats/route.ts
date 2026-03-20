@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
 
   const { data: merchant } = await supabase
     .from("merchants")
-    .select("id")
+    .select("id, credit_balance")
     .eq("user_id", user.id)
     .is("deleted_at", null)
     .single();
@@ -44,8 +44,16 @@ export async function GET(request: NextRequest) {
   const totalCalls = stats?.total_calls ?? 0;
   const moneySaved = parseFloat((totalCalls * MONEY_SAVED_PER_CALL).toFixed(2));
 
+  // Map RPC field names to what the dashboard frontend expects
   return NextResponse.json({
-    ...(stats ?? {}),
+    total_calls: stats?.total_calls ?? 0,
+    credits_remaining: merchant.credit_balance ?? 0,
+    avg_handle_time: stats?.avg_duration_seconds ?? 0,
     money_saved: moneySaved,
+    credits_used: stats?.credits_used ?? 0,
+    chart_data: stats?.daily_volume ?? [],
+    call_types: stats?.calls_by_type ?? {},
+    calls_by_sentiment: stats?.calls_by_sentiment ?? {},
+    recent_calls: stats?.recent_calls ?? [],
   });
 }
