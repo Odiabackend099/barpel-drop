@@ -4,25 +4,8 @@ import {
   sendLeadNotificationEmail,
   sendLeadAutoReplyEmail,
 } from "@/lib/email/client";
-
-// ─── Rate limiting (in-memory, per IP, 1 submission / 10 min) ────────────────
-const RATE_LIMIT_MS = 10 * 60 * 1000; // 10 minutes
-const rateLimitMap = new Map<string, number>();
-
-function isRateLimited(ip: string): boolean {
-  const last = rateLimitMap.get(ip);
-  if (last && Date.now() - last < RATE_LIMIT_MS) return true;
-  rateLimitMap.set(ip, Date.now());
-  return false;
-}
-
-// Clean up old entries every hour to prevent unbounded memory growth
-setInterval(() => {
-  const cutoff = Date.now() - RATE_LIMIT_MS;
-  for (const [ip, ts] of Array.from(rateLimitMap.entries())) {
-    if (ts < cutoff) rateLimitMap.delete(ip);
-  }
-}, 60 * 60 * 1000);
+import { rateLimit } from "@/lib/rate-limit";
+import { notifyOwner } from "@/lib/twilio/whatsapp";
 
 // ─── Email format validation ──────────────────────────────────────────────────
 function isValidEmail(email: string): boolean {
@@ -92,10 +75,10 @@ async function notifySlack(lead: {
 
 // ─── Handler ──────────────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
-  // 1. Rate limit
+  // 1. Rate limit — 1 per IP per 10 min, cross-instance via Redis
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  if (isRateLimited(ip)) {
+  if (await rateLimit(`rl:contact:${ip}`, 1, 10 * 60)) {
     return NextResponse.json(
       { error: "Too many submissions. Please wait a few minutes." },
       { status: 429 }
@@ -180,6 +163,11 @@ export async function POST(req: NextRequest) {
       console.error("[contact] Auto-reply failed:", e)
     ),
   ]);
+
+  // WhatsApp ping to founder — fire and forget, never blocks the response
+  notifyOwner(
+    `Contact form: ${lead.name} (${lead.email})${lead.interest ? ` — ${lead.interest}` : ""}`
+  ).catch(console.error);
 
   return NextResponse.json({ success: true });
 }

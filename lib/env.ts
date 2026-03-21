@@ -66,6 +66,10 @@ const serverSchema = z.object({
   UPSTASH_REDIS_REST_URL: z.string().url(),
   UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
 
+  // WhatsApp owner notifications via Twilio WhatsApp (optional — soft-fail if missing)
+  TWILIO_WHATSAPP_FROM: z.string().min(1).optional(),    // e.g. whatsapp:+14155238886 (sandbox)
+  OWNER_WHATSAPP_NUMBERS: z.string().min(1).optional(),  // comma-separated E.164: +44 7476 692326
+
   // Notifications — contact form lead capture
   SLACK_WEBHOOK_URL: z.string().url().optional(),
 

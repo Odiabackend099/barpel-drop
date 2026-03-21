@@ -7,6 +7,7 @@ import {
   sendSupportTeamNotificationEmail,
 } from "@/lib/email/client";
 import { rateLimit } from "@/lib/rate-limit";
+import { notifyOwner } from "@/lib/twilio/whatsapp";
 
 // ─── Valid categories ────────────────────────────────────────────────────────
 const VALID_CATEGORIES = [
@@ -130,6 +131,9 @@ export async function POST(req: NextRequest) {
       emailResults[1].status === "rejected" ? emailResults[1].reason : null
     );
   }
+
+  // WhatsApp ping to founder — immediate visibility, fire and forget
+  notifyOwner(`[${ticketRef}] Support from ${userEmail}: ${subject.trim()}`).catch(console.error);
 
   // Ticket is persisted in DB, so return success. Users will see the ticketRef
   // and support team can look it up. Email failures are logged for admin alerts.
