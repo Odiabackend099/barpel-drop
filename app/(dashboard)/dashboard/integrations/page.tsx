@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
@@ -144,7 +145,7 @@ export default function IntegrationsPage() {
           Integrations
         </h1>
         <p className="text-sm text-muted-foreground font-sans">
-          Connect your store and manage your AI phone line
+          Your connected services and phone line
         </p>
       </div>
 
@@ -154,33 +155,48 @@ export default function IntegrationsPage() {
         </div>
       )}
 
-      <PhoneLineSection
-        merchant={merchant}
-        onDelete={deleteAiVoice}
-        onTogglePause={togglePause}
-        onOpenCountrySelector={() => setCountryModalOpen(true)}
-      />
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={{ visible: { transition: { staggerChildren: 0.08 } } }}
+        className="space-y-6"
+      >
+        <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
+          <PhoneLineSection
+            merchant={merchant}
+            onDelete={deleteAiVoice}
+            onTogglePause={togglePause}
+            onOpenCountrySelector={() => setCountryModalOpen(true)}
+          />
+        </motion.div>
 
-      <CountrySelectorModal
-        open={countryModalOpen}
-        onClose={() => setCountryModalOpen(false)}
-        onSelect={handleCountrySelect}
-        defaultCountry={merchant?.country}
-      />
+        <CountrySelectorModal
+          open={countryModalOpen}
+          onClose={() => setCountryModalOpen(false)}
+          onSelect={handleCountrySelect}
+          defaultCountry={merchant?.country}
+        />
 
-      <ShopifySection
-        shopifyIntegration={shopifyIntegration}
-        isShopifyConnected={isShopifyConnected}
-        onRefetch={refetch}
-      />
+        <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
+          <ShopifySection
+            shopifyIntegration={shopifyIntegration}
+            isShopifyConnected={isShopifyConnected}
+            onRefetch={refetch}
+          />
+        </motion.div>
 
-      <AbandonedCartSection
-        merchant={merchant}
-        shopifyIntegration={shopifyIntegration}
-        isShopifyConnected={isShopifyConnected}
-      />
+        <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
+          <AbandonedCartSection
+            merchant={merchant}
+            shopifyIntegration={shopifyIntegration}
+            isShopifyConnected={isShopifyConnected}
+          />
+        </motion.div>
 
-      <ComingSoonSection />
+        <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
+          <ComingSoonSection />
+        </motion.div>
+      </motion.div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { motion } from "framer-motion";
 import { Sparkles, Check, Mic, AlertTriangle, Play, Pause as PauseIcon, ChevronDown, Volume2, PauseCircle, PlayCircle } from "lucide-react";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import Vapi from "@vapi-ai/web";
@@ -303,13 +304,18 @@ export default function VoicePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      className="space-y-6"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+    >
       <div>
         <h1 className="text-2xl font-bold text-slate-900 font-display tracking-tight mb-1">
           Customize Your AI
         </h1>
         <p className="text-sm text-muted-foreground font-sans">
-          Tell your AI how to speak to your customers.
+          Shape how your AI sounds and speaks
         </p>
       </div>
 
@@ -362,7 +368,7 @@ export default function VoicePage() {
 
             {/* Greeting suggestion banner */}
             {suggestedGreeting && (
-              <div className="mt-2 p-3 rounded-lg border border-[#00A99D]/20 bg-[#00A99D]/5 backdrop-blur-sm">
+              <div className="mt-2 p-3 rounded-lg border border-brand-600/20 bg-brand-600/5 backdrop-blur-sm">
                 <p className="text-xs text-slate-900 font-sans mb-1.5">
                   <span className="font-semibold">Suggested greeting:</span>{" "}
                   &ldquo;{suggestedGreeting}&rdquo;
@@ -598,8 +604,8 @@ export default function VoicePage() {
                             </span>
                             {isPlaying && (
                               <span className="relative flex h-2 w-2 flex-shrink-0">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00A99D] opacity-75" />
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00A99D]" />
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-600 opacity-75" />
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-600" />
                               </span>
                             )}
                           </div>
@@ -670,8 +676,8 @@ export default function VoicePage() {
                             </span>
                             {isPlaying && (
                               <span className="relative flex h-2 w-2 flex-shrink-0">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00A99D] opacity-75" />
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00A99D]" />
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-600 opacity-75" />
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-600" />
                               </span>
                             )}
                           </div>
@@ -723,6 +729,6 @@ export default function VoicePage() {
           </a>
         </p>
       </div>
-    </div>
+    </motion.div>
   );
 }

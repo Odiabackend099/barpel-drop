@@ -99,5 +99,6 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     message: "A call is being placed to your number. Enter the code you hear.",
+    validation_code: validationCode,
   });
 }

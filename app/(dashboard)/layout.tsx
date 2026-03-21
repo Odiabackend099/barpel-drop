@@ -36,7 +36,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <Navbar onMenuToggle={() => setSidebarOpen((prev) => !prev)} />
-        <main className="flex-1 p-4 sm:p-6 overflow-auto bg-white">
+        <main className="flex-1 p-4 sm:p-6 overflow-auto bg-slate-50/50">
           <ErrorBoundary>{children}</ErrorBoundary>
         </main>
       </div>

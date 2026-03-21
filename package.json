@@ -21,7 +21,10 @@
     "test:contact:chrome": "playwright test tests/contact-form.spec.ts --headed --project=chromium",
     "test:contact:debug": "playwright test tests/contact-form.spec.ts --headed --debug",
     "test:contact:ui": "playwright test --ui",
-    "test:contact:report": "playwright show-report test-results/html"
+    "test:contact:report": "playwright show-report test-results/html",
+    "test:onboarding": "playwright test tests/onboarding-smoke.spec.ts --project=chromium",
+    "test:onboarding:headed": "playwright test tests/onboarding-smoke.spec.ts --project=chromium --headed",
+    "prepare": "husky"
   },
   "dependencies": {
     "@dodopayments/nextjs": "^0.3.4",
@@ -97,6 +100,7 @@
     "@types/react-dom": "^18",
     "eslint": "^8",
     "eslint-config-next": "14.2.35",
+    "husky": "^9.1.7",
     "playwright": "^1.58.2",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",

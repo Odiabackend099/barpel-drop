@@ -109,8 +109,8 @@ function SuccessContent() {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-6">
-          <div className="w-16 h-16 bg-[#C8F0E8] rounded-full flex items-center justify-center mx-auto mb-4">
-            <Check className="w-8 h-8 text-[#00A99D]" />
+          <div className="w-16 h-16 bg-brand-muted rounded-full flex items-center justify-center mx-auto mb-4">
+            <Check className="w-8 h-8 text-brand-600" />
           </div>
           <h1 className="text-2xl font-bold text-[#1B2A4A] mb-2">Plan Activated!</h1>
           {planName && (
@@ -122,11 +122,11 @@ function SuccessContent() {
             Credits have been added to your account.
           </p>
           {fromOnboarding ? (
-            <p className="text-sm text-[#00A99D]">Continuing setup...</p>
+            <p className="text-sm text-brand-600">Continuing setup...</p>
           ) : (
             <button
               onClick={() => router.push("/dashboard/billing")}
-              className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#00A99D] to-[#7DD9C0] text-white font-semibold rounded-xl hover:shadow-lg hover:-translate-y-0.5 transition-all text-sm"
+              className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-brand-600 to-brand-400 text-white font-semibold rounded-xl hover:shadow-lg hover:-translate-y-0.5 transition-all text-sm"
             >
               Go to Billing
             </button>
@@ -141,7 +141,7 @@ function SuccessContent() {
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-6">
           <div className="w-16 h-16 bg-[#F0F9F8] rounded-full flex items-center justify-center mx-auto mb-4">
-            <Loader2 className="w-8 h-8 text-[#00A99D] animate-spin" />
+            <Loader2 className="w-8 h-8 text-brand-600 animate-spin" />
           </div>
           <h1 className="text-2xl font-bold text-[#1B2A4A] mb-2">Payment Received</h1>
           <p className="text-[#4A7A6D] mb-6">
@@ -150,7 +150,7 @@ function SuccessContent() {
           </p>
           <button
             onClick={() => router.push("/dashboard/billing")}
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#00A99D] to-[#7DD9C0] text-white font-semibold rounded-xl hover:shadow-lg hover:-translate-y-0.5 transition-all text-sm"
+            className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-brand-600 to-brand-400 text-white font-semibold rounded-xl hover:shadow-lg hover:-translate-y-0.5 transition-all text-sm"
           >
             Go to Billing
           </button>
@@ -163,7 +163,7 @@ function SuccessContent() {
     <div className="min-h-[60vh] flex items-center justify-center">
       <div className="text-center max-w-md mx-auto px-6">
         <div className="w-16 h-16 bg-[#F0F9F8] rounded-full flex items-center justify-center mx-auto mb-4">
-          <Loader2 className="w-8 h-8 text-[#00A99D] animate-spin" />
+          <Loader2 className="w-8 h-8 text-brand-600 animate-spin" />
         </div>
         <h1 className="text-2xl font-bold text-[#1B2A4A] mb-2">Activating your plan...</h1>
         <p className="text-sm text-muted-foreground">

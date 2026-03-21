@@ -76,7 +76,7 @@ export function CountrySelectorModal({
       <AlertDialogContent className="max-w-md">
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2 text-[#1B2A4A]">
-            <Globe className="w-5 h-5 text-[#00A99D]" />
+            <Globe className="w-5 h-5 text-brand-600" />
             Choose your number&apos;s country
           </AlertDialogTitle>
           <AlertDialogDescription className="sr-only">
@@ -91,7 +91,7 @@ export function CountrySelectorModal({
               onClick={() => setSelected(option.code)}
               className={`w-full text-left p-3 rounded-lg border transition-all ${
                 selected === option.code
-                  ? "border-[#00A99D] bg-[#00A99D]/5 ring-1 ring-[#00A99D]"
+                  ? "border-brand-600 bg-brand-50 ring-1 ring-brand-600"
                   : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
               }`}
             >
@@ -102,7 +102,7 @@ export function CountrySelectorModal({
                     <p className="text-sm font-medium text-[#1B2A4A]">
                       {option.label}
                       {option.recommended && (
-                        <span className="ml-2 text-[10px] font-bold tracking-wide uppercase text-[#00A99D] bg-[#00A99D]/10 px-1.5 py-0.5 rounded">
+                        <span className="ml-2 text-[10px] font-bold tracking-wide uppercase text-brand-600 bg-brand-50 px-1.5 py-0.5 rounded">
                           Recommended
                         </span>
                       )}
@@ -115,12 +115,12 @@ export function CountrySelectorModal({
                 <div
                   className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
                     selected === option.code
-                      ? "border-[#00A99D]"
+                      ? "border-brand-600"
                       : "border-gray-300"
                   }`}
                 >
                   {selected === option.code && (
-                    <div className="w-2 h-2 rounded-full bg-[#00A99D]" />
+                    <div className="w-2 h-2 rounded-full bg-brand-600" />
                   )}
                 </div>
               </div>
@@ -132,7 +132,7 @@ export function CountrySelectorModal({
           <AlertDialogCancel onClick={onClose}>Cancel</AlertDialogCancel>
           <Button
             onClick={handleContinue}
-            className="bg-gradient-to-r from-[#00A99D] to-[#7DD9C0] text-white hover:shadow-lg"
+            className="bg-gradient-to-r from-brand-600 to-brand-400 text-white hover:shadow-lg"
           >
             Continue
           </Button>

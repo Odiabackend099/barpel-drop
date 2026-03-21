@@ -38,7 +38,7 @@ export function CreditBadge({ balanceSeconds, loading }: CreditBadgeProps) {
     ? 'bg-red-50 text-red-600 border-red-100 animate-pulse'
     : isAmber
     ? 'bg-amber-50 text-amber-600 border-amber-100'
-    : 'bg-emerald-50 text-emerald-700 border-emerald-100';
+    : 'bg-brand-50 text-brand-700 border-brand-100';
 
   const display = formatBalance(balanceSeconds);
 

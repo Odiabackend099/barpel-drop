@@ -133,7 +133,7 @@ export function SupportModal({ open, onClose, userEmail }: SupportModalProps) {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="support-subject">Subject</Label>
-                  <span className="text-xs text-[#8AADA6]">
+                  <span className="text-xs text-muted-foreground">
                     {subject.length}/120
                   </span>
                 </div>
@@ -149,7 +149,7 @@ export function SupportModal({ open, onClose, userEmail }: SupportModalProps) {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="support-message">Message</Label>
-                  <span className="text-xs text-[#8AADA6]">
+                  <span className="text-xs text-muted-foreground">
                     {message.length}/2000
                   </span>
                 </div>
@@ -175,7 +175,7 @@ export function SupportModal({ open, onClose, userEmail }: SupportModalProps) {
               <Button
                 onClick={handleSubmit}
                 disabled={!canSubmit}
-                className="bg-[#00A99D] hover:bg-[#008F85] text-white"
+                className="bg-brand-600 hover:bg-brand-700 text-white"
               >
                 {submitting ? (
                   <>
@@ -191,7 +191,7 @@ export function SupportModal({ open, onClose, userEmail }: SupportModalProps) {
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-[#00A99D]">
+              <DialogTitle className="flex items-center gap-2 text-brand-600">
                 <CheckCircle2 className="w-5 h-5" />
                 Request submitted
               </DialogTitle>
@@ -199,7 +199,7 @@ export function SupportModal({ open, onClose, userEmail }: SupportModalProps) {
 
             <div className="py-4 space-y-4">
               <div className="bg-[#F0FAF9] border border-[#D0EDE8] rounded-lg p-4 text-center">
-                <p className="text-xs text-[#8AADA6] mb-1">Your ticket reference</p>
+                <p className="text-xs text-muted-foreground mb-1">Your ticket reference</p>
                 <p className="text-xl font-bold font-mono text-[#1B2A4A]">
                   {ticketRef}
                 </p>
@@ -211,11 +211,11 @@ export function SupportModal({ open, onClose, userEmail }: SupportModalProps) {
                 few hours on business days (Mon–Fri, 9am–6pm PT).
               </p>
 
-              <p className="text-xs text-[#8AADA6]">
+              <p className="text-xs text-muted-foreground">
                 In the meantime, you can check our{" "}
                 <a
                   href="/contact"
-                  className="text-[#00A99D] hover:underline"
+                  className="text-brand-600 hover:underline"
                 >
                   FAQ & Contact page
                 </a>{" "}
@@ -224,7 +224,7 @@ export function SupportModal({ open, onClose, userEmail }: SupportModalProps) {
             </div>
 
             <DialogFooter>
-              <Button onClick={handleClose} className="bg-[#00A99D] hover:bg-[#008F85] text-white">
+              <Button onClick={handleClose} className="bg-brand-600 hover:bg-brand-700 text-white">
                 Done
               </Button>
             </DialogFooter>

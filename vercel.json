@@ -20,6 +20,9 @@
     }
   ],
   "functions": {
+    "app/api/onboarding/complete/**": { "maxDuration": 300 },
+    "app/api/provisioning/**": { "maxDuration": 300 },
+    "app/api/merchant/ai-voice/**": { "maxDuration": 60 },
     "app/api/vapi/**": { "maxDuration": 30 },
     "app/api/billing/webhook/**": { "maxDuration": 30 },
     "app/api/**": { "maxDuration": 30 }

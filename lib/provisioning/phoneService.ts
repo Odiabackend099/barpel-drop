@@ -429,6 +429,23 @@ export async function provisionMerchantLine(
   const { countryCode, addressSid, internationallyProvisioned } =
     getTwilioParams(merchant.country ?? "GB");
 
+  // Fail fast: UK numbers require a Twilio address SID. If it is not configured,
+  // set needs_address immediately rather than making Twilio API calls that will
+  // time out and leave the merchant stuck in "provisioning" indefinitely.
+  if (countryCode === "GB" && !addressSid) {
+    await supabase
+      .from("merchants")
+      .update({
+        provisioning_status: "needs_address",
+        provisioning_error: "UK phone numbers require a verified address. Our team will provision your number within 24 hours.",
+      })
+      .eq("id", merchantId);
+    return {
+      success: false,
+      error: "UK phone numbers require a verified address. Our team will provision your number within 24 hours.",
+    };
+  }
+
   let twilioNumberSid = merchant.twilio_number_sid as string | null;
   let purchasedPhoneNumber: string | null = null;
   let vapiAgentId = merchant.vapi_agent_id as string | null;

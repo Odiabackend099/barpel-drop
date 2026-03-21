@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { ShoppingBag, Clock, Loader2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -69,7 +70,11 @@ export function ShopifySection({
 
   return (
     <>
-      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+      <motion.div
+        className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm"
+        whileHover={{ y: -2, boxShadow: "0 8px 30px rgba(13,148,136,0.08)" }}
+        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      >
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div className="flex items-start gap-4 flex-1 min-w-0">
             <div
@@ -132,7 +137,7 @@ export function ShopifySection({
             </Button>
           )}
         </div>
-      </div>
+      </motion.div>
 
       {/* Disconnect Confirmation Modal */}
       <Dialog open={disconnectOpen} onOpenChange={setDisconnectOpen}>

@@ -146,6 +146,7 @@ function OnboardingContent() {
   const [callerIdLoading, setCallerIdLoading] = useState(false);
   const [callerIdCode, setCallerIdCode] = useState<string | null>(null);
   const [callerIdError, setCallerIdError] = useState("");
+  const [callerIdVerified, setCallerIdVerified] = useState(false);
   // Step 4: BYOC modal
   const [byocOpen, setBYOCOpen] = useState(false);
 
@@ -226,6 +227,9 @@ function OnboardingContent() {
         }
       }
       setLoadingStep(false);
+      // Clean up Dodo session storage keys now that the page has loaded
+      sessionStorage.removeItem("pre_checkout_balance");
+      sessionStorage.removeItem("dodo_return_context");
     }
     syncStep();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -456,6 +460,10 @@ function OnboardingContent() {
         onCancel: () => {
           setBillingLoading(false);
         },
+        onError: (err: { message?: string }) => {
+          setError(`Payment error: ${err.message ?? "Please try again."}`);
+          setBillingLoading(false);
+        },
       });
     } catch {
       setError("Network error — please check your connection and try again.");
@@ -549,9 +557,22 @@ function OnboardingContent() {
 
       {/* ── LEFT PANEL (dark, 40%) ── */}
       <div className="hidden md:flex w-2/5 bg-[#0f172a] flex-col justify-between p-10 relative overflow-hidden">
-        {/* Ambient orbs */}
-        <div className="absolute -top-32 -right-32 w-80 h-80 rounded-full bg-brand-600/10 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-32 -left-32 w-80 h-80 rounded-full bg-brand-600/5 blur-3xl pointer-events-none" />
+        {/* Ambient orbs with drift */}
+        <motion.div
+          className="absolute -top-32 -right-32 w-80 h-80 rounded-full bg-brand-600/10 blur-3xl pointer-events-none"
+          animate={{ x: [0, 20, -10, 0], y: [0, -15, 10, 0] }}
+          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute -bottom-32 -left-32 w-80 h-80 rounded-full bg-brand-600/5 blur-3xl pointer-events-none"
+          animate={{ x: [0, -15, 10, 0], y: [0, 20, -10, 0] }}
+          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
+        />
+        {/* Gradient mesh overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ backgroundImage: "radial-gradient(at 30% 20%, rgba(13,148,136,0.15) 0, transparent 50%), radial-gradient(at 70% 80%, rgba(13,148,136,0.08) 0, transparent 50%)" }}
+        />
 
         <div className="relative">
           {/* Logo */}
@@ -563,10 +584,10 @@ function OnboardingContent() {
 
           {/* Headline */}
           <h1 className="font-display text-4xl italic text-white leading-tight mb-3">
-            Your AI is ready.
+            Let&apos;s get you live.
           </h1>
           <p className="text-slate-400 text-sm leading-relaxed mb-12">
-            Let&apos;s go live in 3 minutes.
+            Most merchants finish setup in under 3 minutes.
           </p>
 
           {/* Step progress dots */}
@@ -577,9 +598,16 @@ function OnboardingContent() {
               const isActive = stepNum === currentStep;
               return (
                 <div key={step.label} className="flex items-center gap-3">
-                  <div className={`w-2 h-2 rounded-full transition-all duration-300 flex-shrink-0 ${
-                    isDone || isActive ? "bg-brand-400" : "bg-white/15"
-                  } ${isActive ? "scale-125" : ""}`} />
+                  <div className="relative w-2 h-2 flex-shrink-0">
+                    <div className={`w-2 h-2 rounded-full transition-colors duration-300 ${isDone || isActive ? "bg-brand-400" : "bg-white/15"}`} />
+                    {isActive && (
+                      <motion.div
+                        layoutId="onboarding-dot"
+                        className="absolute inset-[-3px] rounded-full border-2 border-brand-400/50"
+                        transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                      />
+                    )}
+                  </div>
                   <span className={`text-sm transition-colors ${
                     isActive ? "text-white font-medium" : isDone ? "text-slate-500" : "text-slate-600"
                   }`}>
@@ -594,7 +622,7 @@ function OnboardingContent() {
 
         {/* Trust signal + footer */}
         <div className="relative">
-          <p className="text-slate-400 text-sm mb-3">200+ merchants already automated</p>
+          <p className="text-slate-400 text-sm mb-3">Trusted by 200+ Shopify merchants</p>
           <p className="text-slate-600 text-xs">Powered by Vapi · Twilio · AI</p>
         </div>
       </div>
@@ -658,7 +686,7 @@ function OnboardingContent() {
                       whileHover={{ y: -2 }}
                       transition={{ type: "spring", stiffness: 400, damping: 25 }}
                     >
-                      <div className="h-1 bg-gradient-to-r from-[#00A99D] to-emerald-400" />
+                      <div className="h-1 bg-gradient-to-r from-brand-600 to-brand-400" />
                       <motion.div
                         className="p-8"
                         initial={{ opacity: 0, y: 6 }}
@@ -672,7 +700,7 @@ function OnboardingContent() {
                           What&apos;s your business called?
                         </h2>
                         <p className="text-sm text-slate-500 mb-6">
-                          This is how your AI agent will introduce itself on calls.
+                          Your AI will greet callers as &ldquo;{businessName || "Your Business"} Support.&rdquo;
                         </p>
 
                         <div className="space-y-4">
@@ -685,7 +713,7 @@ function OnboardingContent() {
                               onKeyDown={(e) => e.key === "Enter" && handleSaveBusinessName()}
                               placeholder="e.g. PowerFit Gadgets"
                               maxLength={60}
-                              className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600/20 focus:border-brand-600 transition-colors"
+                              className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600/20 focus:border-brand-600 transition-shadow duration-200 focus:shadow-[0_0_0_4px_rgba(13,148,136,0.1)]"
                               autoFocus
                             />
                           </div>
@@ -695,7 +723,7 @@ function OnboardingContent() {
                             <select
                               value={country}
                               onChange={(e) => setCountry(e.target.value)}
-                              className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600/20 focus:border-brand-600 transition-colors"
+                              className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600/20 focus:border-brand-600 transition-shadow duration-200 focus:shadow-[0_0_0_4px_rgba(13,148,136,0.1)]"
                             >
                               <option value="">Select your country</option>
                               {COUNTRIES.map((c) => (
@@ -712,7 +740,7 @@ function OnboardingContent() {
                         <button
                           onClick={handleSaveBusinessName}
                           disabled={saving || !businessName.trim() || !country}
-                          className="mt-6 w-full flex items-center justify-center gap-2 py-3 rounded-full bg-brand-600 text-white font-semibold text-sm hover:bg-brand-700 shadow-brand transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="mt-6 w-full flex items-center justify-center gap-2 py-3 rounded-full bg-brand-600 text-white font-semibold text-sm hover:bg-brand-700 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] shadow-brand transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:translate-y-0"
                         >
                           {saving ? "Saving..." : "Continue"}
                           <ArrowRight className="w-4 h-4" />
@@ -731,7 +759,7 @@ function OnboardingContent() {
                       whileHover={{ y: -2 }}
                       transition={{ type: "spring", stiffness: 400, damping: 25 }}
                     >
-                      <div className="h-1 bg-gradient-to-r from-teal-400 to-cyan-400" />
+                      <div className="h-1 bg-gradient-to-r from-brand-600 to-brand-400" />
                       <motion.div
                         className="p-8"
                         initial={{ opacity: 0, y: 6 }}
@@ -745,7 +773,7 @@ function OnboardingContent() {
                           Connect Your Shopify Store
                         </h2>
                         <p className="text-sm text-slate-500 mb-6">
-                          Log into Shopify and approve access in one click.
+                          One click to connect. Your AI handles order lookups instantly.
                         </p>
 
                         {shopifyConnected ? (
@@ -764,7 +792,7 @@ function OnboardingContent() {
                                 await saveToDb({ onboarding_step: 3 });
                                 goToStep(3);
                               }}
-                              className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-brand-600 text-white font-semibold text-sm hover:bg-brand-700 shadow-brand transition-colors"
+                              className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-brand-600 text-white font-semibold text-sm hover:bg-brand-700 shadow-brand hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200"
                             >
                               Continue <ArrowRight className="w-4 h-4" />
                             </button>
@@ -792,7 +820,7 @@ function OnboardingContent() {
                             <button
                               onClick={handleConnectShopify}
                               disabled={connectingShopify}
-                              className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-brand-600 text-white font-semibold text-sm hover:bg-brand-700 shadow-brand transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-brand-600 text-white font-semibold text-sm hover:bg-brand-700 shadow-brand hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:translate-y-0"
                             >
                               {connectingShopify ? "Connecting..." : "Connect My Shopify Store"}
                               <ArrowRight className="w-4 h-4" />
@@ -978,7 +1006,7 @@ function OnboardingContent() {
                             <button
                               onClick={handleCompleteOnboarding}
                               disabled={saving}
-                              className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-brand-600 text-white font-semibold text-sm hover:bg-brand-700 shadow-brand transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-brand-600 text-white font-semibold text-sm hover:bg-brand-700 shadow-brand hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:translate-y-0"
                             >
                               <Phone className="w-4 h-4" />
                               {saving ? "Setting up..." : "Get My AI Number \u2014 Free"}
@@ -1051,7 +1079,7 @@ function OnboardingContent() {
                             <p className="text-sm text-slate-500">Phone line ready!</p>
                             <button
                               onClick={() => goToStep(5)}
-                              className="mt-2 flex items-center justify-center gap-2 py-3 px-6 rounded-full bg-brand-600 text-white font-semibold text-sm hover:bg-brand-700 shadow-brand transition-colors"
+                              className="mt-2 flex items-center justify-center gap-2 py-3 px-6 rounded-full bg-brand-600 text-white font-semibold text-sm hover:bg-brand-700 shadow-brand hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200"
                             >
                               Continue
                               <ArrowRight className="w-4 h-4" />
@@ -1076,7 +1104,7 @@ function OnboardingContent() {
                                 await saveToDb({ onboarding_step: 5, onboarded_at: new Date().toISOString() });
                                 goToStep(5);
                               }}
-                              className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-brand-600 text-white font-semibold text-sm hover:bg-brand-700 shadow-brand transition-colors"
+                              className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-brand-600 text-white font-semibold text-sm hover:bg-brand-700 shadow-brand hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200"
                             >
                               Continue to Dashboard
                               <ArrowRight className="w-4 h-4" />
@@ -1097,7 +1125,7 @@ function OnboardingContent() {
                       whileHover={{ y: -2 }}
                       transition={{ type: "spring", stiffness: 400, damping: 25 }}
                     >
-                      <div className="h-1 bg-gradient-to-r from-emerald-400 to-teal-400" />
+                      <div className="h-1 bg-gradient-to-r from-brand-600 to-brand-400" />
                       <motion.div
                         className="p-8"
                         initial={{ opacity: 0, y: 6 }}
@@ -1310,7 +1338,14 @@ function OnboardingContent() {
                                     </div>
                                   )}
 
-                                  {callerIdCode ? (
+                                  {callerIdVerified ? (
+                                    <div className="p-3 bg-brand-muted border border-brand-600/20 rounded-lg flex items-center gap-2">
+                                      <Check className="w-4 h-4 text-brand-600 flex-shrink-0" />
+                                      <p className="text-xs font-medium text-brand-700">
+                                        {callerIdPhone} verified for outbound caller ID.
+                                      </p>
+                                    </div>
+                                  ) : callerIdCode ? (
                                     <div className="space-y-3">
                                       <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
                                         <p className="text-xs font-medium text-amber-800">
@@ -1320,8 +1355,36 @@ function OnboardingContent() {
                                           {callerIdCode}
                                         </p>
                                       </div>
+                                      <button
+                                        onClick={async () => {
+                                          setCallerIdLoading(true);
+                                          setCallerIdError("");
+                                          try {
+                                            const res = await fetch("/api/caller-id/verify", {
+                                              method: "POST",
+                                              headers: { "Content-Type": "application/json" },
+                                              body: JSON.stringify({ phone_number: callerIdPhone, code: callerIdCode }),
+                                            });
+                                            const data = await res.json();
+                                            if (!res.ok) {
+                                              setCallerIdError(data.error || "Verification failed. Please try again.");
+                                            } else {
+                                              setCallerIdVerified(true);
+                                              setCallerIdCode(null);
+                                            }
+                                          } catch {
+                                            setCallerIdError("Network error. Please try again.");
+                                          } finally {
+                                            setCallerIdLoading(false);
+                                          }
+                                        }}
+                                        disabled={callerIdLoading}
+                                        className="w-full py-2 rounded-lg bg-brand-600 text-white text-xs font-semibold hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                      >
+                                        {callerIdLoading ? "Verifying..." : "Done — I entered the code"}
+                                      </button>
                                       <p className="text-xs text-slate-400">
-                                        After you enter the code on the call, your number will be verified for outbound caller ID.
+                                        After you enter the code on the call, click the button above.
                                       </p>
                                     </div>
                                   ) : (
@@ -1376,7 +1439,7 @@ function OnboardingContent() {
 
                             <button
                               onClick={handleGoToDashboard}
-                              className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-brand-600 text-white font-semibold text-sm hover:bg-brand-700 shadow-brand transition-colors"
+                              className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-brand-600 text-white font-semibold text-sm hover:bg-brand-700 shadow-brand hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200"
                             >
                               Go to My Dashboard
                               <ArrowRight className="w-4 h-4" />

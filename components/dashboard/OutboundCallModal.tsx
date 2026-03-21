@@ -62,8 +62,8 @@ export function OutboundCallModal({ open, onClose }: { open: boolean; onClose: (
 
         {success ? (
           <div className="flex flex-col items-center gap-4 py-4 text-center">
-            <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
-              <Check className="w-6 h-6 text-emerald-600" />
+            <div className="w-12 h-12 rounded-full bg-brand-50 flex items-center justify-center">
+              <Check className="w-6 h-6 text-brand-600" />
             </div>
             <p className="text-sm text-[#1B2A4A] font-medium">
               Call initiated. Your phone will ring within 10 seconds.

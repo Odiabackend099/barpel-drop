@@ -41,8 +41,8 @@ interface PhoneLineSectionProps {
 function StatusBadge({ status }: { status: string }) {
   if (status === "active") {
     return (
-      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-100">
-        <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
+      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-brand-100">
+        <span className="w-2 h-2 rounded-full bg-brand-300 animate-pulse" />
         Active
       </span>
     );
@@ -137,7 +137,7 @@ export function PhoneLineSection({
     <>
       <div
         className="rounded-xl p-5 text-white"
-        style={{ background: "linear-gradient(135deg, #00A99D, #0d8a80)" }}
+        style={{ background: "linear-gradient(135deg, #0d9488, #0b7f74)" }}
       >
         {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-4">
@@ -321,7 +321,7 @@ export function PhoneLineSection({
             <Button
               size="sm"
               onClick={onOpenCountrySelector}
-              className="bg-white text-[#00A99D] hover:bg-white/90 font-semibold w-fit"
+              className="bg-white text-brand-600 hover:bg-white/90 font-semibold w-fit"
             >
               <Phone className="w-3 h-3 mr-1" />
               Get My AI Number

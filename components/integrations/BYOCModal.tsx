@@ -179,7 +179,7 @@ export function BYOCModal({ open, onClose }: BYOCModalProps) {
             Cancel
           </Button>
           <Button
-            className="flex-1 bg-gradient-to-r from-[#00A99D] to-[#7DD9C0] text-white"
+            className="flex-1 bg-gradient-to-r from-brand-600 to-brand-400 text-white"
             disabled={!isValid || loading}
             onClick={handleSubmit}
           >

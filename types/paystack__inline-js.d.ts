@@ -10,6 +10,7 @@ declare module "@paystack/inline-js" {
     metadata?: Record<string, unknown>;
     onSuccess?: (response: { reference: string; status: string }) => void;
     onCancel?: () => void;
+    onError?: (error: { message?: string }) => void;
     callback?: (response: { reference: string; status: string; transaction: string }) => void;
     onClose?: () => void;
   }

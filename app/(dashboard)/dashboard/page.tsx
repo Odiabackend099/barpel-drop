@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { Phone, Clock, CreditCard as CardIcon, TrendingUp, Info } from "lucide-react";
 import Link from "next/link";
 import {
@@ -126,7 +127,7 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-slate-900 font-display tracking-tight mb-1">Dashboard</h1>
-        <p className="text-sm text-muted-foreground font-sans">Overview of your AI support performance</p>
+        <p className="text-sm text-muted-foreground font-sans">Here&apos;s how your AI is performing</p>
       </div>
 
       {/* Empty state for zero calls */}
@@ -143,13 +144,21 @@ export default function DashboardPage() {
       {/* Stats */}
       {(stats?.total_calls ?? 0) > 0 && (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <motion.div
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+            initial="hidden"
+            animate="visible"
+            variants={{ visible: { transition: { staggerChildren: 0.06 } } }}
+          >
+            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
             <StatCard
               icon={Phone}
               label="Total Calls (30d)"
               value={(stats?.total_calls ?? 0).toString()}
               color="#00A99D"
             />
+            </motion.div>
+            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
             <StatCard
               icon={Clock}
               label="Credits Remaining"
@@ -158,6 +167,8 @@ export default function DashboardPage() {
               progress
               progressValue={((stats?.credits_remaining ?? 0) / 6000) * 100}
             />
+            </motion.div>
+            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
             <StatCard
               icon={CardIcon}
               label={
@@ -178,19 +189,27 @@ export default function DashboardPage() {
               value={`$${moneySaved.toFixed(2)}`}
               color="#1B2A4A"
             />
+            </motion.div>
+            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
             <StatCard
               icon={TrendingUp}
               label="Avg Handle Time"
               value={`${Math.floor((stats?.avg_handle_time ?? 0) / 60)}m ${(stats?.avg_handle_time ?? 0) % 60}s`}
               color="#F5A623"
             />
-          </div>
+            </motion.div>
+          </motion.div>
 
           {/* Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <motion.div
+            className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.5, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+          >
             <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm lg:col-span-2">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold text-slate-900 font-sans">Call Volume — Last 14 Days</h3>
+                <h3 className="text-sm font-bold text-slate-900 font-sans">Call volume, last 2 weeks</h3>
               </div>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
@@ -247,7 +266,7 @@ export default function DashboardPage() {
                 })}
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Recent Calls */}
           <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">

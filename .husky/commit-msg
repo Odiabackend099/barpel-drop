@@ -1,0 +1,26 @@
+#!/bin/sh
+# Barpel Onboarding Lock — blocks commits to protected onboarding files
+# without [onboarding-approved] in the commit message.
+# See ONBOARDING.md for the full list of protected files and the reason.
+
+ONBOARDING_FILES=$(git diff --cached --name-only | grep -E \
+  "app/onboarding/|app/api/shopify/oauth/|app/api/onboarding/|app/api/provisioning/|app/api/billing/dodo/initiate|app/api/billing/paystack/initiate|app/api/caller-id/|lib/provisioning/|lib/callForwarding/|^middleware\.ts$")
+
+if [ -n "$ONBOARDING_FILES" ]; then
+  COMMIT_MSG=$(cat "$1")
+
+  if echo "$COMMIT_MSG" | grep -q "\[onboarding-approved\]"; then
+    echo "Onboarding change approved — proceeding with commit."
+  else
+    echo ""
+    echo "BLOCKED: You are modifying locked onboarding files:"
+    echo "$ONBOARDING_FILES" | sed 's/^/   /'
+    echo ""
+    echo "  The onboarding is permanently locked per ONBOARDING.md"
+    echo ""
+    echo "  To proceed, add [onboarding-approved] to your commit message:"
+    echo "    git commit -m \"fix: your change [onboarding-approved]\""
+    echo ""
+    exit 1
+  fi
+fi

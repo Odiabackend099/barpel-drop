@@ -1,0 +1,17 @@
+#!/bin/sh
+# Barpel Onboarding Lock — detects commits to protected onboarding files.
+# Message validation is handled by .husky/commit-msg (receives $1 = message file).
+# See ONBOARDING.md for the full list of protected files and the reason.
+
+ONBOARDING_FILES=$(git diff --cached --name-only | grep -E \
+  "app/onboarding/|app/api/shopify/oauth/|app/api/onboarding/|app/api/provisioning/|app/api/billing/dodo/initiate|app/api/billing/paystack/initiate|app/api/caller-id/|lib/provisioning/|lib/callForwarding/|^middleware\.ts$")
+
+if [ -n "$ONBOARDING_FILES" ]; then
+  echo ""
+  echo "NOTE: Locked onboarding files staged:"
+  echo "$ONBOARDING_FILES" | sed 's/^/   /'
+  echo ""
+  echo "  Your commit message MUST include [onboarding-approved]"
+  echo "  (checked by commit-msg hook)"
+  echo ""
+fi

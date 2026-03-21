@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 import {
   LayoutDashboard,
   Phone,
@@ -50,7 +51,6 @@ export function Sidebar({ open, onClose, collapsed, onToggleCollapse }: SidebarP
 
   const balanceMinutes = Math.floor(balance / 60);
 
-  // Progress bar color based on balance thresholds
   const barColor =
     balance >= 600
       ? "bg-brand-600"
@@ -82,7 +82,7 @@ export function Sidebar({ open, onClose, collapsed, onToggleCollapse }: SidebarP
           ${open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
       >
-        {/* Header — logo + brand + collapse toggle */}
+        {/* Header */}
         <div className="p-3 border-b border-white/10">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2.5 min-w-0">
@@ -118,14 +118,27 @@ export function Sidebar({ open, onClose, collapsed, onToggleCollapse }: SidebarP
                 href={item.href}
                 onClick={onClose}
                 title={collapsed ? item.label : undefined}
-                className={`w-full flex items-center ${collapsed ? "justify-center" : ""} gap-3 ${collapsed ? "px-2" : "px-3"} py-2.5 rounded-lg text-sm font-medium transition-all text-left ${
+                className={`relative w-full flex items-center ${collapsed ? "justify-center" : ""} gap-3 ${collapsed ? "px-2" : "px-3"} py-2.5 rounded-lg text-sm font-medium transition-colors text-left ${
                   active
-                    ? "bg-white/5 text-white border-l-2 border-brand-600"
+                    ? "text-white"
                     : "text-slate-400 hover:text-white hover:bg-white/5"
                 }`}
               >
-                <Icon className="w-4 h-4 shrink-0" />
-                {!collapsed && item.label}
+                {active && (
+                  <motion.div
+                    layoutId="sidebar-active"
+                    className="absolute inset-0 bg-white/5 rounded-lg border-l-2 border-brand-600"
+                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                  />
+                )}
+                <motion.span
+                  className="relative z-10 shrink-0"
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                >
+                  <Icon className="w-4 h-4" />
+                </motion.span>
+                {!collapsed && <span className="relative z-10">{item.label}</span>}
               </Link>
             );
           })}

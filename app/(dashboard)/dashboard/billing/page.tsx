@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { Star, Check, TrendingUp, CreditCard as CardIcon, Zap, XCircle, RefreshCw, Globe } from "lucide-react";
 import {
   AreaChart,
@@ -322,10 +323,15 @@ export default function BillingPage() {
   }, [refreshBalance]);
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      className="space-y-6"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+    >
       {/* Success Toast */}
       {successMessage && (
-        <div className="fixed top-20 right-6 z-50 bg-[#C8F0E8] border border-[#7DD9C0] text-brand-600 px-4 py-3 rounded-lg flex items-center gap-2 animate-fade-in shadow-lg font-sans">
+        <div className="fixed top-20 right-6 z-50 bg-brand-muted border border-[#7DD9C0] text-brand-600 px-4 py-3 rounded-lg flex items-center gap-2 animate-fade-in shadow-lg font-sans">
           <Check className="w-5 h-5" />
           {successMessage}
         </div>
@@ -333,7 +339,7 @@ export default function BillingPage() {
 
       <div>
         <h1 className="text-2xl font-bold text-slate-900 font-display tracking-tight mb-1">Billing</h1>
-        <p className="text-sm text-muted-foreground font-sans">Your plan and usage.</p>
+        <p className="text-sm text-muted-foreground font-sans">Manage your plan and track spending</p>
       </div>
 
       {/* Low balance warning */}
@@ -359,7 +365,7 @@ export default function BillingPage() {
       {/* Current Balance */}
       <div
         className="bg-white border rounded-xl p-5 shadow-sm"
-        style={{ borderColor: "#00A99D40", boxShadow: "0 0 20px #00A99D15" }}
+        style={{ borderColor: "rgba(13,148,136,0.25)", boxShadow: "0 0 20px rgba(13,148,136,0.08)" }}
       >
         {loading ? (
           <Skeleton className="h-20 w-full rounded-lg" />
@@ -374,7 +380,7 @@ export default function BillingPage() {
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">&asymp; {credits} minutes of AI support</p>
               </div>
-              <div className="w-16 h-16 bg-[#C8F0E8] rounded-full flex items-center justify-center">
+              <div className="w-16 h-16 bg-brand-muted rounded-full flex items-center justify-center">
                 <CardIcon className="w-8 h-8 text-brand-600" />
               </div>
             </div>
@@ -393,11 +399,11 @@ export default function BillingPage() {
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-[#C8F0E8] rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-brand-muted rounded-full flex items-center justify-center">
                 <Check className="w-4 h-4 text-brand-600" />
               </div>
               <div>
-                <p className="text-sm text-[#8AADA6] font-sans">Current Plan</p>
+                <p className="text-sm text-muted-foreground font-sans">Current Plan</p>
                 <p className="text-lg font-bold text-slate-900 capitalize">{activePlan}</p>
               </div>
             </div>
@@ -424,14 +430,14 @@ export default function BillingPage() {
       <div className="flex items-center justify-center gap-3 py-2">
         <span
           className={`text-sm font-medium transition-colors ${
-            billingCycle === "monthly" ? "text-slate-900" : "text-[#8AADA6]"
+            billingCycle === "monthly" ? "text-slate-900" : "text-muted-foreground"
           }`}
         >
           Monthly
         </span>
         <button
           onClick={() => setBillingCycle(billingCycle === "monthly" ? "annual" : "monthly")}
-          className="relative w-12 h-6 bg-[#00A99D] rounded-full transition-colors"
+          className="relative w-12 h-6 bg-brand-600 rounded-full transition-colors"
           aria-label="Toggle billing period"
         >
           <span
@@ -442,13 +448,13 @@ export default function BillingPage() {
         </button>
         <span
           className={`text-sm font-medium transition-colors ${
-            billingCycle === "annual" ? "text-slate-900" : "text-[#8AADA6]"
+            billingCycle === "annual" ? "text-slate-900" : "text-muted-foreground"
           }`}
         >
           Annual
         </span>
         {billingCycle === "annual" && (
-          <span className="px-2 py-0.5 text-xs font-bold text-brand-600 bg-[#C8F0E8] rounded-full">
+          <span className="px-2 py-0.5 text-xs font-bold text-brand-600 bg-brand-muted rounded-full">
             Save 10%
           </span>
         )}
@@ -461,7 +467,7 @@ export default function BillingPage() {
           className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
             paymentRegion === "usd"
               ? "bg-white text-slate-900 shadow-sm"
-              : "text-[#8AADA6] hover:text-slate-500"
+              : "text-muted-foreground hover:text-slate-500"
           }`}
         >
           <Globe className="w-3.5 h-3.5" />
@@ -472,7 +478,7 @@ export default function BillingPage() {
           className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
             paymentRegion === "ngn"
               ? "bg-white text-slate-900 shadow-sm"
-              : "text-[#8AADA6] hover:text-slate-500"
+              : "text-muted-foreground hover:text-slate-500"
           }`}
         >
           NGN — Nigeria
@@ -722,6 +728,6 @@ export default function BillingPage() {
           </div>
         )
       )}
-    </div>
+    </motion.div>
   );
 }

@@ -27,15 +27,15 @@ export function CallLogTable({ calls, expandedId, onToggle }: CallLogTableProps)
     <div className="overflow-x-auto">
       <table className="w-full">
         <thead>
-          <tr className="border-b border-[#D0EDE8]">
-            <th className="text-left py-3 px-2 text-xs font-medium text-[#8AADA6]">Direction</th>
-            <th className="text-left py-3 px-2 text-xs font-medium text-[#8AADA6]">Caller</th>
-            <th className="text-left py-3 px-2 text-xs font-medium text-[#8AADA6]">Type</th>
-            <th className="text-left py-3 px-2 text-xs font-medium text-[#8AADA6]">Duration</th>
-            <th className="text-left py-3 px-2 text-xs font-medium text-[#8AADA6]">Sentiment</th>
-            <th className="text-left py-3 px-2 text-xs font-medium text-[#8AADA6]">Summary</th>
-            <th className="text-left py-3 px-2 text-xs font-medium text-[#8AADA6]">Credits</th>
-            <th className="text-left py-3 px-2 text-xs font-medium text-[#8AADA6]">Actions</th>
+          <tr className="border-b border-brand-100">
+            <th className="text-left py-3 px-2 text-xs font-medium text-muted-foreground">Direction</th>
+            <th className="text-left py-3 px-2 text-xs font-medium text-muted-foreground">Caller</th>
+            <th className="text-left py-3 px-2 text-xs font-medium text-muted-foreground">Type</th>
+            <th className="text-left py-3 px-2 text-xs font-medium text-muted-foreground">Duration</th>
+            <th className="text-left py-3 px-2 text-xs font-medium text-muted-foreground">Sentiment</th>
+            <th className="text-left py-3 px-2 text-xs font-medium text-muted-foreground">Summary</th>
+            <th className="text-left py-3 px-2 text-xs font-medium text-muted-foreground">Credits</th>
+            <th className="text-left py-3 px-2 text-xs font-medium text-muted-foreground">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -47,7 +47,7 @@ export function CallLogTable({ calls, expandedId, onToggle }: CallLogTableProps)
 
             return (
               <React.Fragment key={call.id}>
-                <tr className="border-b border-[#D0EDE8]/50 hover:bg-[#F0F9F8]/50 transition-colors">
+                <tr className="border-b border-brand-100/50 hover:bg-brand-50/50 transition-colors">
                   <td className="py-3 px-2">
                     <Badge color={call.direction === "inbound" ? "#00A99D" : "#7DD9C0"}>
                       {call.direction === "inbound" ? (
@@ -86,8 +86,8 @@ export function CallLogTable({ calls, expandedId, onToggle }: CallLogTableProps)
                           title="View transcript & details"
                           className={`p-1.5 rounded-lg transition-colors ${
                             isExpanded
-                              ? "bg-[#00A99D]/20 text-[#00A99D]"
-                              : "hover:bg-[#F0F9F8] text-[#8AADA6] hover:text-[#1B2A4A]"
+                              ? "bg-brand-600/20 text-brand-600"
+                              : "hover:bg-[#F0F9F8] text-muted-foreground hover:text-[#1B2A4A]"
                           }`}
                         >
                           <Eye className="w-4 h-4" />
@@ -100,7 +100,7 @@ export function CallLogTable({ calls, expandedId, onToggle }: CallLogTableProps)
                             target="_blank"
                             rel="noopener noreferrer"
                             title="Play recording"
-                            className="p-1.5 rounded-lg hover:bg-[#F0F9F8] text-[#8AADA6] hover:text-[#1B2A4A] transition-colors"
+                            className="p-1.5 rounded-lg hover:bg-[#F0F9F8] text-muted-foreground hover:text-[#1B2A4A] transition-colors"
                           >
                             <Play className="w-4 h-4" />
                           </a>
@@ -121,7 +121,7 @@ export function CallLogTable({ calls, expandedId, onToggle }: CallLogTableProps)
                               }
                             }}
                             title="Download recording"
-                            className="p-1.5 rounded-lg hover:bg-[#F0F9F8] text-[#8AADA6] hover:text-[#1B2A4A] transition-colors"
+                            className="p-1.5 rounded-lg hover:bg-[#F0F9F8] text-muted-foreground hover:text-[#1B2A4A] transition-colors"
                           >
                             <Download className="w-4 h-4" />
                           </button>
@@ -135,25 +135,25 @@ export function CallLogTable({ calls, expandedId, onToggle }: CallLogTableProps)
                     <td colSpan={8} className="py-4 px-4">
                       <div className="space-y-3">
                         {call.ai_summary && (
-                          <div className="bg-[#F0F9F8] border border-[#D0EDE8] rounded-lg p-4">
-                            <p className="text-xs text-[#8AADA6] mb-2 font-medium uppercase tracking-wide">AI Summary</p>
+                          <div className="bg-[#F0F9F8] border border-brand-100 rounded-lg p-4">
+                            <p className="text-xs text-muted-foreground mb-2 font-medium uppercase tracking-wide">AI Summary</p>
                             <p className="text-sm text-[#1B2A4A]">{call.ai_summary}</p>
                           </div>
                         )}
                         {call.tool_results && (call.tool_results as unknown[]).length > 0 && (
-                          <div className="bg-[#F0F9F8] border border-[#D0EDE8] rounded-lg p-4">
-                            <p className="text-xs text-[#8AADA6] mb-2 font-medium uppercase tracking-wide">Tool Results</p>
+                          <div className="bg-[#F0F9F8] border border-brand-100 rounded-lg p-4">
+                            <p className="text-xs text-muted-foreground mb-2 font-medium uppercase tracking-wide">Tool Results</p>
                             <div className="space-y-1">
                               {(call.tool_results as Array<{ name?: string; result?: string }>).map((tr, i) => (
                                 <p key={i} className="text-sm text-[#1B2A4A] font-mono">
-                                  <span className="text-[#00A99D] font-semibold">{tr.name || "tool"}</span>: {tr.result || JSON.stringify(tr)}
+                                  <span className="text-brand-600 font-semibold">{tr.name || "tool"}</span>: {tr.result || JSON.stringify(tr)}
                                 </p>
                               ))}
                             </div>
                           </div>
                         )}
-                        <div className="bg-[#F0F9F8] border border-[#D0EDE8] rounded-lg p-4">
-                          <p className="text-xs text-[#8AADA6] mb-2 font-medium uppercase tracking-wide">Transcript</p>
+                        <div className="bg-[#F0F9F8] border border-brand-100 rounded-lg p-4">
+                          <p className="text-xs text-muted-foreground mb-2 font-medium uppercase tracking-wide">Transcript</p>
                           <p className="text-sm text-[#1B2A4A] whitespace-pre-wrap">{call.transcript}</p>
                         </div>
                       </div>

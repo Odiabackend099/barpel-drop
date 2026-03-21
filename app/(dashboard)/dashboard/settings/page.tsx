@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { motion } from "framer-motion";
 import { useMerchant } from "@/hooks/useMerchant";
 import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -271,14 +272,23 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6 space-y-6">
-      <h1 className="text-2xl font-bold text-slate-900">Settings</h1>
+    <motion.div
+      className="max-w-2xl mx-auto p-6 space-y-6"
+      initial="hidden"
+      animate="visible"
+      variants={{ visible: { transition: { staggerChildren: 0.08 } } }}
+    >
+      <div>
+        <h1 className="text-2xl font-bold text-slate-900 font-display tracking-tight mb-1">Settings</h1>
+        <p className="text-sm text-muted-foreground font-sans">Manage your account, notifications, and data</p>
+      </div>
 
       {/* Section 1: Profile */}
+      <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-slate-900 text-base">
-            <User className="w-4 h-4 text-[#00A99D]" />
+            <User className="w-4 h-4 text-brand-600" />
             Profile
           </CardTitle>
         </CardHeader>
@@ -403,12 +413,14 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+      </motion.div>
 
       {/* Section 2: Notifications */}
+      <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-slate-900 text-base">
-            <Bell className="w-4 h-4 text-[#00A99D]" />
+            <Bell className="w-4 h-4 text-brand-600" />
             Notifications
           </CardTitle>
         </CardHeader>
@@ -490,12 +502,14 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+      </motion.div>
 
       {/* Section 3: Data & Privacy */}
+      <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-slate-900 text-base">
-            <Shield className="w-4 h-4 text-[#00A99D]" />
+            <Shield className="w-4 h-4 text-brand-600" />
             Data &amp; Privacy
           </CardTitle>
         </CardHeader>
@@ -514,7 +528,7 @@ export default function SettingsPage() {
               size="sm"
               onClick={handleExport}
               disabled={exporting}
-              className="border-[#00A99D] text-[#00A99D] hover:bg-[#00A99D]/5"
+              className="border-brand-600 text-brand-600 hover:bg-brand-50"
             >
               {exporting ? (
                 <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
@@ -537,7 +551,7 @@ export default function SettingsPage() {
               </p>
             </div>
             <Link href="/privacy">
-              <Button variant="ghost" size="sm" className="text-[#00A99D]">
+              <Button variant="ghost" size="sm" className="text-brand-600">
                 <ExternalLink className="w-4 h-4 mr-1.5" />
                 View
               </Button>
@@ -545,8 +559,10 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+      </motion.div>
 
       {/* Section 4: Danger Zone */}
+      <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
       <Card className="border-red-200">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-red-600 text-base">
@@ -577,11 +593,12 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+      </motion.div>
 
       <DeleteAccountModal
         open={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
       />
-    </div>
+    </motion.div>
   );
 }

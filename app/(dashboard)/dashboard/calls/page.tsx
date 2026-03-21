@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { Phone, Download, ChevronLeft, ChevronRight, PhoneOff } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
@@ -48,11 +49,16 @@ export default function CallsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      className="space-y-6"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+    >
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 font-display tracking-tight mb-1">Call Logs</h1>
-          <p className="text-sm text-muted-foreground font-sans">View and analyze all your AI calls</p>
+          <p className="text-sm text-muted-foreground font-sans">Your complete call history</p>
         </div>
         <button
           onClick={handleExportCsv}
@@ -198,7 +204,7 @@ export default function CallsPage() {
                 aria-label="Previous page"
                 className="p-1.5 rounded-lg border border-slate-200 hover:border-brand-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
-                <ChevronLeft className="w-4 h-4 text-[#4A7A6D]" />
+                <ChevronLeft className="w-4 h-4 text-muted-foreground" />
               </button>
               <button
                 onClick={() => setPage(Math.min(totalPages, page + 1))}
@@ -206,12 +212,12 @@ export default function CallsPage() {
                 aria-label="Next page"
                 className="p-1.5 rounded-lg border border-slate-200 hover:border-brand-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
-                <ChevronRight className="w-4 h-4 text-[#4A7A6D]" />
+                <ChevronRight className="w-4 h-4 text-muted-foreground" />
               </button>
             </div>
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { waitUntil } from "@vercel/functions";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sanitiseMerchantPrompt } from "@/lib/sanitise";
@@ -153,12 +154,16 @@ export async function PATCH(request: Request) {
     );
   }
 
-  // Sync to Vapi if assistant exists — GET-then-PATCH to avoid wiping nested fields
+  // Sync to Vapi if assistant exists — GET-then-PATCH to avoid wiping nested fields.
+  // waitUntil keeps the Vercel Lambda alive until the sync completes (fire-and-forget
+  // without waitUntil would be killed after the HTTP response is sent).
   if (merchant.vapi_agent_id) {
-    syncToVapi(merchant, sanitizedPrompt, sanitizedFirstMessage, body).catch(
-      (e: Error) => {
-        console.error("[vapi] ai-voice sync failed:", e.message);
-      }
+    waitUntil(
+      syncToVapi(merchant, sanitizedPrompt, sanitizedFirstMessage, body).catch(
+        (e: Error) => {
+          console.error("[vapi] ai-voice sync failed:", e.message);
+        }
+      )
     );
   }
 
