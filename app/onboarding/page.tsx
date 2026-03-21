@@ -13,23 +13,20 @@ import {
   Copy,
   Check,
   Phone,
-  ChevronDown,
-  ChevronUp,
 } from "lucide-react";
 import { BarpelLogo } from "@/components/brand/BarpelLogo";
 import { createClient } from "@/lib/supabase/client";
 import { CREDIT_PACKAGES } from "@/lib/constants";
 import { BYOCModal } from "@/components/integrations/BYOCModal";
-import { useFlutterwave, closePaymentModal } from "flutterwave-react-v3";
 import confetti from "canvas-confetti";
 import { track } from "@/lib/analytics";
-
-const DUMMY_FLW_CONFIG = {
-  public_key: "", tx_ref: "", amount: 0, currency: "USD",
-  payment_options: "card",
-  customer: { email: "", name: "" },
-  customizations: { title: "", description: "", logo: "" },
-};
+import {
+  CALL_FORWARDING_CODES,
+  COUNTRY_NAMES,
+  getCarriersForCountry,
+  getUssdCode,
+  getCancelCode,
+} from "@/lib/callForwarding/ussdCodes";
 
 const STEPS = [
   { icon: Store, label: "Business Name" },
@@ -69,17 +66,41 @@ const COUNTRIES = [
   { value: "KE", label: "Kenya", flag: "\u{1F1F0}\u{1F1EA}" },
 ];
 
-const FORWARDING_CODES: Array<{ carrier: string; how: string }> = [
-  { carrier: "MTN Nigeria", how: "Dial *21*[number]# then press Call" },
-  { carrier: "Airtel Nigeria", how: "Dial *21*[number]# then press Call" },
-  { carrier: "Glo Nigeria", how: "Dial *21*[number]# then press Call" },
-  { carrier: "EE UK", how: "Call 150 \u2192 Settings \u2192 Divert calls \u2192 All calls" },
-  { carrier: "Vodafone UK", how: "Dial **21*[number]# then press Call" },
-  { carrier: "O2 UK", how: "Call 1747 then follow the prompts" },
-  { carrier: "AT&T US", how: "Dial *21*[number]# or use MyAT&T app \u2192 More \u2192 Settings \u2192 Call Forwarding" },
-  { carrier: "T-Mobile US", how: "Dial **21*[number]# then press Call" },
-  { carrier: "Rogers Canada", how: "Dial *72[number] then press Call" },
-];
+// Old FORWARDING_CODES removed — now using lib/callForwarding/ussdCodes.ts
+
+function UssdCodeBlock({
+  label,
+  code,
+  copied,
+  onCopy,
+}: {
+  label: string;
+  code: string;
+  copied: string | null;
+  onCopy: (v: string | null) => void;
+}) {
+  const isCopied = copied === code;
+  return (
+    <div>
+      <p className="text-[10px] text-[#8AADA6] mb-1">{label}</p>
+      <div className="flex items-center gap-2 bg-[#F0F9F8] border border-[#D0EDE8] rounded-lg px-3 py-2">
+        <code className="flex-1 text-base font-mono font-bold text-navy tracking-wide">
+          {code}
+        </code>
+        <button
+          onClick={() => {
+            navigator.clipboard.writeText(code);
+            onCopy(code);
+            setTimeout(() => onCopy(null), 2000);
+          }}
+          className="text-xs text-teal font-medium whitespace-nowrap"
+        >
+          {isCopied ? "\u2713 Copied" : "Copy"}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function OnboardingPage() {
   return (
@@ -122,20 +143,20 @@ function OnboardingContent() {
 
   // Step 5 tab state
   const [activeTab, setActiveTab] = useState<"A" | "B" | "C">("A");
-  const [showForwarding, setShowForwarding] = useState(false);
+  // Call forwarding UI state
+  const [fwdCountry, setFwdCountry] = useState("");
+  const [fwdCarrier, setFwdCarrier] = useState("");
+  const [fwdType, setFwdType] = useState<"conditional" | "all">("conditional");
+  const [fwdCopied, setFwdCopied] = useState<string | null>(null);
+  // Caller ID verification state
+  const [callerIdPhone, setCallerIdPhone] = useState("");
+  const [callerIdLoading, setCallerIdLoading] = useState(false);
+  const [callerIdCode, setCallerIdCode] = useState<string | null>(null);
+  const [callerIdError, setCallerIdError] = useState("");
   // Step 4: BYOC modal
   const [byocOpen, setBYOCOpen] = useState(false);
 
-  // Flutterwave state for Step 3
-  const [flwConfig, setFlwConfig] = useState<object>(DUMMY_FLW_CONFIG);
-  const [readyToPay, setReadyToPay] = useState(false);
   const [billingLoading, setBillingLoading] = useState(false);
-
-  // Shopify store name input for Step 2
-  const [shopifyStoreName, setShopifyStoreName] = useState("");
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleFlutterPayment = useFlutterwave(flwConfig as any);
 
   const supabase = createClient();
 
@@ -216,36 +237,6 @@ function OnboardingContent() {
     syncStep();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // Open Flutterwave modal after config is committed to state
-  useEffect(() => {
-    if (!readyToPay) return;
-    setReadyToPay(false);
-    handleFlutterPayment({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      callback: async (response: any) => {
-        closePaymentModal();
-        if (response.status === "successful") {
-          await fetch("/api/billing/flutterwave/verify", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              transaction_id: response.transaction_id,
-              tx_ref: response.tx_ref,
-            }),
-          });
-          await saveToDb({ onboarding_step: 4 });
-          goToStep(4);
-        }
-        setBillingLoading(false);
-      },
-      onClose: () => {
-        setBillingLoading(false);
-        setReadyToPay(false);
-      },
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [readyToPay]);
 
   // Supabase Realtime subscription for provisioning updates
   useEffect(() => {
@@ -432,15 +423,10 @@ function OnboardingContent() {
   }
 
   function handleConnectShopify() {
-    if (!shopifyStoreName.trim()) {
-      setError("Please enter your store name.");
-      return;
-    }
     setConnectingShopify(true);
     setError("");
     track("onboarding_step", { step: 2, action: "completed" });
-    const shop = `${shopifyStoreName.trim().toLowerCase()}.myshopify.com`;
-    window.location.href = `/api/shopify/oauth/start?returnTo=onboarding&shop=${encodeURIComponent(shop)}`;
+    window.location.href = `/api/shopify/oauth/start?returnTo=onboarding`;
   }
 
   async function handleSkipShopify() {
@@ -453,10 +439,10 @@ function OnboardingContent() {
     setBillingLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/billing/flutterwave/initiate", {
+      const res = await fetch("/api/billing/paystack/initiate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: packageId }),
+        body: JSON.stringify({ plan: packageId, billing_cycle: "monthly" }),
       });
       const config = await res.json();
       if (!res.ok) {
@@ -464,9 +450,49 @@ function OnboardingContent() {
         setBillingLoading(false);
         return;
       }
-      setFlwConfig(config);
+      const PaystackPop = (await import("@paystack/inline-js")).default;
       track("onboarding_step", { step: 3, action: "completed" });
-      setReadyToPay(true);
+      PaystackPop.newTransaction({
+        key:        config.public_key,
+        accessCode: config.access_code,
+        onSuccess: async () => {
+          await saveToDb({ onboarding_step: 4 });
+          goToStep(4);
+          setBillingLoading(false);
+        },
+        onCancel: () => {
+          setBillingLoading(false);
+        },
+      });
+    } catch {
+      setError("Network error — please check your connection and try again.");
+      setBillingLoading(false);
+    }
+  }
+
+  async function handleDodoBuyCredits(packageId: string) {
+    setBillingLoading(true);
+    setError("");
+    try {
+      // Save progress to DB before redirect — preserves step position on return
+      await saveToDb({ onboarding_step: 3 });
+
+      const res = await fetch("/api/billing/dodo/initiate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: packageId, billing_cycle: "monthly" }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "Something went wrong. Please try again.");
+        setBillingLoading(false);
+        return;
+      }
+      track("onboarding_step", { step: 3, action: "completed" });
+      // Success page checks these flags to redirect back to onboarding on return
+      sessionStorage.setItem("pre_checkout_balance", String(creditBalance));
+      sessionStorage.setItem("dodo_return_context", "onboarding");
+      window.location.href = data.checkout_url;
     } catch {
       setError("Network error — please check your connection and try again.");
       setBillingLoading(false);
@@ -784,22 +810,9 @@ function OnboardingContent() {
                               </div>
                             )}
 
-                            <div className="mb-4">
-                              <label className="block text-sm font-medium text-navy mb-1">
-                                Enter your store name
-                              </label>
-                              <input
-                                type="text"
-                                value={shopifyStoreName}
-                                onChange={(e) => setShopifyStoreName(e.target.value)}
-                                placeholder="powerfit-gadgets"
-                                className="w-full px-4 py-3 rounded-xl border border-[#D0EDE8] text-sm text-navy placeholder-[#8AADA6] focus:outline-none focus:ring-2 focus:ring-teal/40"
-                                onKeyDown={(e) => e.key === "Enter" && handleConnectShopify()}
-                              />
-                              <p className="mt-1 text-xs text-[#8AADA6]">
-                                This is the part before .myshopify.com
-                              </p>
-                            </div>
+                            <p className="text-sm text-[#4A7A6D] mb-4">
+                              You&apos;ll be redirected to Shopify to log in and authorize Barpel.
+                            </p>
 
                             <button
                               onClick={handleConnectShopify}
@@ -878,11 +891,15 @@ function OnboardingContent() {
                           </div>
                         )}
 
+                        {/* USD (International) — Dodo Payments */}
+                        <p className="text-xs font-semibold text-[#8AADA6] uppercase tracking-wide mb-1">
+                          Pay in USD — International Cards
+                        </p>
                         <div className="space-y-3">
                           {CREDIT_PACKAGES.map((pkg) => (
                             <button
-                              key={pkg.id}
-                              onClick={() => handleBuyCredits(pkg.id)}
+                              key={`dodo-${pkg.id}`}
+                              onClick={() => handleDodoBuyCredits(pkg.id)}
                               disabled={billingLoading}
                               className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border text-left transition-colors hover:bg-[#F0F9F8] disabled:opacity-50 disabled:cursor-not-allowed ${
                                 "popular" in pkg && pkg.popular ? "border-teal bg-[#F0F9F8]" : "border-[#D0EDE8]"
@@ -891,15 +908,45 @@ function OnboardingContent() {
                               <div>
                                 <span className="font-semibold text-navy text-sm">{pkg.name}</span>
                                 <span className="text-xs text-[#8AADA6] ml-2">
-                                  {pkg.minutes} credits &middot; ${pkg.perMin}/credit
+                                  {pkg.credits} credits &middot; ${pkg.perMin}/credit
                                 </span>
                               </div>
                               <span className="font-bold text-navy">
-                                ${(pkg.priceUsdCents / 100).toFixed(0)}
+                                ${(pkg.priceUsdCents / 100).toFixed(0)}/mo
                               </span>
                             </button>
                           ))}
                         </div>
+
+                        {/* NGN (Nigeria) — Paystack */}
+                        {isAfrica && (
+                          <>
+                            <div className="flex items-center gap-3 my-4">
+                              <div className="flex-1 h-px bg-[#D0EDE8]" />
+                              <span className="text-xs text-[#8AADA6]">or pay in NGN</span>
+                              <div className="flex-1 h-px bg-[#D0EDE8]" />
+                            </div>
+                            <div className="space-y-3">
+                              {CREDIT_PACKAGES.map((pkg) => (
+                                <button
+                                  key={`pstk-${pkg.id}`}
+                                  onClick={() => handleBuyCredits(pkg.id)}
+                                  disabled={billingLoading}
+                                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-[#D0EDE8] text-left transition-colors hover:bg-[#F0F9F8] disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  <div>
+                                    <span className="font-semibold text-navy text-sm">{pkg.name}</span>
+                                    <span className="text-xs text-[#8AADA6] ml-2">via Paystack</span>
+                                  </div>
+                                  <span className="font-bold text-navy">
+                                    ${(pkg.priceUsdCents / 100).toFixed(0)}/mo
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                          </>
+                        )}
+
 
                         {error && <p className="mt-2 text-xs text-red-500">{error}</p>}
 
@@ -962,7 +1009,7 @@ function OnboardingContent() {
                               {saving ? "Setting up..." : "Get My AI Number \u2014 Free"}
                             </button>
                             <p className="text-center text-xs text-[#8AADA6] mt-1.5">
-                              This uses your free trial minutes.
+                              This uses your free credits.
                             </p>
 
                             <div className="flex items-center gap-3 my-5">
@@ -1121,10 +1168,12 @@ function OnboardingContent() {
                               </button>
                             </div>
 
-                            {isAfrica && (
+                            {isAfrica && phoneNumber && (
                               <div className="mb-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
                                 <p className="text-xs text-blue-700">
-                                  This is a virtual UK number. Your customers can call it internationally. We recommend setting up call forwarding from the Integrations page.
+                                  {phoneNumber.startsWith("+1")
+                                    ? "This is your US support number. Your customers can reach you internationally. We recommend setting up call forwarding below."
+                                    : "This is your international support number. We recommend setting up call forwarding below."}
                                 </p>
                               </div>
                             )}
@@ -1164,38 +1213,112 @@ function OnboardingContent() {
                               )}
 
                               {activeTab === "B" && (
-                                <div className="mt-4 p-4 bg-[#F0F9F8] rounded-xl border border-[#D0EDE8] space-y-3 text-sm">
+                                <div className="mt-4 p-4 bg-[#F0F9F8] rounded-xl border border-[#D0EDE8] space-y-4 text-sm">
                                   <p className="text-[#4A7A6D]">
-                                    Forward your existing number to your Barpel AI line so all calls go to your AI automatically.
+                                    Forward your existing number to your AI line so customers call your store number and the AI answers.
                                   </p>
-                                  <button
-                                    onClick={() => setShowForwarding(!showForwarding)}
-                                    className="flex items-center gap-2 text-teal font-semibold text-xs"
-                                  >
-                                    {showForwarding ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                                    {showForwarding ? "Hide" : "Show"} carrier codes
-                                  </button>
-                                  {showForwarding && (
-                                    <div className="overflow-x-auto">
-                                      <table className="w-full text-xs">
-                                        <thead>
-                                          <tr className="border-b border-[#D0EDE8]">
-                                            <th className="text-left py-1.5 text-[#8AADA6] font-medium">Carrier</th>
-                                            <th className="text-left py-1.5 text-[#8AADA6] font-medium">How to forward</th>
-                                          </tr>
-                                        </thead>
-                                        <tbody>
-                                          {FORWARDING_CODES.map((row) => (
-                                            <tr key={row.carrier} className="border-b border-[#D0EDE8]/50">
-                                              <td className="py-2 pr-4 font-medium text-navy whitespace-nowrap">{row.carrier}</td>
-                                              <td className="py-2 text-[#4A7A6D]">
-                                                {row.how.replace("[your Barpel number]", phoneNumber).replace("[number]", phoneNumber)}
-                                              </td>
-                                            </tr>
-                                          ))}
-                                        </tbody>
-                                      </table>
+
+                                  <div>
+                                    <label className="block text-xs font-medium text-navy mb-1">Country</label>
+                                    <select
+                                      value={fwdCountry}
+                                      onChange={(e) => { setFwdCountry(e.target.value); setFwdCarrier(""); }}
+                                      className="w-full px-3 py-2 rounded-lg border border-[#D0EDE8] bg-white text-navy text-sm focus:outline-none focus:ring-2 focus:ring-teal/40"
+                                    >
+                                      <option value="">Select your country</option>
+                                      {Object.keys(CALL_FORWARDING_CODES).map((code) => (
+                                        <option key={code} value={code}>
+                                          {COUNTRY_NAMES[code] ?? code}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </div>
+
+                                  {fwdCountry && (
+                                    <div>
+                                      <label className="block text-xs font-medium text-navy mb-1">Carrier / Network</label>
+                                      <select
+                                        value={fwdCarrier}
+                                        onChange={(e) => setFwdCarrier(e.target.value)}
+                                        className="w-full px-3 py-2 rounded-lg border border-[#D0EDE8] bg-white text-navy text-sm focus:outline-none focus:ring-2 focus:ring-teal/40"
+                                      >
+                                        <option value="">Select your carrier</option>
+                                        {getCarriersForCountry(fwdCountry).map((c) => (
+                                          <option key={c} value={c}>{c}</option>
+                                        ))}
+                                      </select>
                                     </div>
+                                  )}
+
+                                  {fwdCarrier && (
+                                    <>
+                                      <div>
+                                        <label className="block text-xs font-medium text-navy mb-2">Forwarding type</label>
+                                        <div className="flex gap-2">
+                                          <button
+                                            onClick={() => setFwdType("conditional")}
+                                            className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium border transition ${
+                                              fwdType === "conditional"
+                                                ? "bg-[#0d9488] text-white border-[#0d9488]"
+                                                : "bg-white text-[#4A7A6D] border-[#D0EDE8]"
+                                            }`}
+                                          >
+                                            When busy / no answer
+                                            <span className="block text-[10px] font-normal mt-0.5 opacity-80">Recommended</span>
+                                          </button>
+                                          <button
+                                            onClick={() => setFwdType("all")}
+                                            className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium border transition ${
+                                              fwdType === "all"
+                                                ? "bg-[#0d9488] text-white border-[#0d9488]"
+                                                : "bg-white text-[#4A7A6D] border-[#D0EDE8]"
+                                            }`}
+                                          >
+                                            All calls
+                                            <span className="block text-[10px] font-normal mt-0.5 opacity-80">AI answers everything</span>
+                                          </button>
+                                        </div>
+                                      </div>
+
+                                      <div className="bg-white rounded-xl p-4 border border-[#D0EDE8] space-y-3">
+                                        <p className="text-xs font-medium text-navy">
+                                          Dial {fwdType === "all" ? "this code" : "these codes"} on your {fwdCarrier} phone:
+                                        </p>
+
+                                        {fwdType === "all" ? (
+                                          <UssdCodeBlock
+                                            label="Forward ALL calls"
+                                            code={getUssdCode(fwdCountry, fwdCarrier, "forwardAll", phoneNumber)}
+                                            copied={fwdCopied}
+                                            onCopy={setFwdCopied}
+                                          />
+                                        ) : (
+                                          <>
+                                            <UssdCodeBlock
+                                              label="When you don&apos;t answer (30 seconds)"
+                                              code={getUssdCode(fwdCountry, fwdCarrier, "forwardNoAnswer", phoneNumber)}
+                                              copied={fwdCopied}
+                                              onCopy={setFwdCopied}
+                                            />
+                                            <UssdCodeBlock
+                                              label="When you&apos;re on another call"
+                                              code={getUssdCode(fwdCountry, fwdCarrier, "forwardBusy", phoneNumber)}
+                                              copied={fwdCopied}
+                                              onCopy={setFwdCopied}
+                                            />
+                                          </>
+                                        )}
+
+                                        <div className="border-t border-[#D0EDE8] pt-2">
+                                          <p className="text-[10px] text-[#8AADA6]">
+                                            To cancel forwarding later, dial:{" "}
+                                            <code className="bg-[#F0F9F8] px-1 rounded font-mono">
+                                              {getCancelCode(fwdCountry, fwdCarrier)}
+                                            </code>
+                                          </p>
+                                        </div>
+                                      </div>
+                                    </>
                                   )}
                                 </div>
                               )}
@@ -1203,18 +1326,72 @@ function OnboardingContent() {
                               {activeTab === "C" && (
                                 <div className="mt-4 p-4 bg-[#F0F9F8] rounded-xl border border-[#D0EDE8] space-y-3 text-sm text-[#4A7A6D]">
                                   <p>
-                                    Enter your existing number and we&apos;ll verify it so outbound calls show your store number on customers&apos; screens.
+                                    Enter your existing store number. We&apos;ll verify it so outbound calls (like cart recovery) show your number on customers&apos; screens.
                                   </p>
-                                  <div className="flex gap-2">
-                                    <input
-                                      type="text"
-                                      placeholder="+44... or +1... (E.164 format)"
-                                      className="flex-1 px-3 py-2 rounded-lg border border-[#D0EDE8] bg-white text-navy text-sm focus:outline-none focus:border-teal"
-                                    />
-                                    <button className="px-3 py-2 rounded-lg bg-[#0d9488] text-white text-xs font-semibold hover:bg-[#0b8276] transition-colors">
-                                      Verify Number
-                                    </button>
-                                  </div>
+
+                                  {callerIdError && (
+                                    <div className="p-2 bg-red-50 border border-red-100 rounded-lg">
+                                      <p className="text-xs text-red-600">{callerIdError}</p>
+                                    </div>
+                                  )}
+
+                                  {callerIdCode ? (
+                                    <div className="space-y-3">
+                                      <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                                        <p className="text-xs font-medium text-amber-800">
+                                          Twilio is calling {callerIdPhone}. Answer and enter this code when prompted:
+                                        </p>
+                                        <p className="text-2xl font-mono font-bold text-amber-900 mt-1 tracking-widest">
+                                          {callerIdCode}
+                                        </p>
+                                      </div>
+                                      <p className="text-xs text-[#8AADA6]">
+                                        After you enter the code on the call, your number will be verified for outbound caller ID.
+                                      </p>
+                                    </div>
+                                  ) : (
+                                    <div className="flex gap-2">
+                                      <input
+                                        type="text"
+                                        value={callerIdPhone}
+                                        onChange={(e) => setCallerIdPhone(e.target.value)}
+                                        placeholder="+234... or +1... (E.164 format)"
+                                        className="flex-1 px-3 py-2 rounded-lg border border-[#D0EDE8] bg-white text-navy text-sm focus:outline-none focus:ring-2 focus:ring-teal/40"
+                                      />
+                                      <button
+                                        onClick={async () => {
+                                          if (!callerIdPhone.startsWith("+") || callerIdPhone.length < 10) {
+                                            setCallerIdError("Enter a valid phone number in E.164 format (e.g. +2348012345678)");
+                                            return;
+                                          }
+                                          setCallerIdLoading(true);
+                                          setCallerIdError("");
+                                          try {
+                                            const res = await fetch("/api/caller-id/start", {
+                                              method: "POST",
+                                              headers: { "Content-Type": "application/json" },
+                                              body: JSON.stringify({ phone_number: callerIdPhone }),
+                                            });
+                                            const data = await res.json();
+                                            if (!res.ok) {
+                                              setCallerIdError(data.error || "Verification failed");
+                                            } else {
+                                              setCallerIdCode(data.validation_code);
+                                            }
+                                          } catch {
+                                            setCallerIdError("Network error. Please try again.");
+                                          } finally {
+                                            setCallerIdLoading(false);
+                                          }
+                                        }}
+                                        disabled={callerIdLoading}
+                                        className="px-3 py-2 rounded-lg bg-[#0d9488] text-white text-xs font-semibold hover:bg-[#0b8276] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                      >
+                                        {callerIdLoading ? "Calling..." : "Verify Number"}
+                                      </button>
+                                    </div>
+                                  )}
+
                                   <p className="text-xs text-[#8AADA6]">
                                     Optional — you can set this up later from the Integrations page.
                                   </p>

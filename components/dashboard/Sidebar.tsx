@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -12,9 +13,12 @@ import {
   PanelLeftOpen,
   Zap,
   Settings,
+  LifeBuoy,
 } from "lucide-react";
 import { BarpelLogo } from "@/components/brand/BarpelLogo";
 import { useCredits } from "@/hooks/useCredits";
+import { SupportModal } from "@/components/dashboard/SupportModal";
+import { createClient } from "@/lib/supabase/client";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -35,6 +39,14 @@ interface SidebarProps {
 export function Sidebar({ open, onClose, collapsed, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname();
   const { balance, loading: creditsLoading } = useCredits();
+  const [supportOpen, setSupportOpen] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    createClient().auth.getUser().then(({ data: { user } }) => {
+      setUserEmail(user?.email ?? null);
+    });
+  }, []);
 
   const balanceMinutes = Math.floor(balance / 60);
 
@@ -119,6 +131,18 @@ export function Sidebar({ open, onClose, collapsed, onToggleCollapse }: SidebarP
           })}
         </nav>
 
+        {/* Help & Support */}
+        <div className={`${collapsed ? "px-2" : "px-4"} pb-1`}>
+          <button
+            onClick={() => setSupportOpen(true)}
+            title="Help & Support"
+            className={`w-full flex items-center ${collapsed ? "justify-center" : "gap-3"} ${collapsed ? "px-2" : "px-3"} py-2 rounded-lg text-sm transition-colors text-[#8AADA6] hover:text-[#4A7A6D] hover:bg-[#D0EDE8]/40`}
+          >
+            <LifeBuoy className="w-4 h-4 shrink-0" />
+            {!collapsed && <span>Help &amp; Support</span>}
+          </button>
+        </div>
+
         {/* Credit Widget */}
         <div className={`${collapsed ? "px-2" : "px-4"} pb-2`}>
           {collapsed ? (
@@ -165,6 +189,12 @@ export function Sidebar({ open, onClose, collapsed, onToggleCollapse }: SidebarP
           </p>
         )}
       </aside>
+
+      <SupportModal
+        open={supportOpen}
+        onClose={() => setSupportOpen(false)}
+        userEmail={userEmail}
+      />
     </>
   );
 }

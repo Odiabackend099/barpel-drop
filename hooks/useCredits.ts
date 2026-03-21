@@ -15,7 +15,12 @@ export function useCredits() {
   const [loading, setLoading] = useState(true);
   const [flwPlan, setFlwPlan] = useState<string | null>(null);
   const [flwSubscriptionId, setFlwSubscriptionId] = useState<string | null>(null);
+  const [paystackPlan, setPaystackPlan] = useState<string | null>(null);
+  const [paystackSubscriptionId, setPaystackSubscriptionId] = useState<string | null>(null);
   const [planStatus, setPlanStatus] = useState<string | null>(null);
+  const [dodoPlan, setDodoPlan] = useState<string | null>(null);
+  const [dodoSubscriptionId, setDodoSubscriptionId] = useState<string | null>(null);
+  const [dodoCustomerId, setDodoCustomerId] = useState<string | null>(null);
   const userIdRef = useRef<string | null>(null);
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
 
@@ -58,7 +63,7 @@ export function useCredits() {
 
         const { data, error: dbError } = await supabase
           .from("merchants")
-          .select("credit_balance, flw_plan, flw_subscription_id, plan_status")
+          .select("credit_balance, flw_plan, flw_subscription_id, paystack_plan, paystack_subscription_id, plan_status, dodo_plan, dodo_subscription_id, dodo_customer_id")
           .eq("user_id", user.id)
           .single();
 
@@ -68,7 +73,12 @@ export function useCredits() {
           setBalance(data.credit_balance ?? 0);
           setFlwPlan(data.flw_plan ?? null);
           setFlwSubscriptionId(data.flw_subscription_id ?? null);
+          setPaystackPlan(data.paystack_plan ?? null);
+          setPaystackSubscriptionId(data.paystack_subscription_id ?? null);
           setPlanStatus(data.plan_status ?? null);
+          setDodoPlan(data.dodo_plan ?? null);
+          setDodoSubscriptionId(data.dodo_subscription_id ?? null);
+          setDodoCustomerId(data.dodo_customer_id ?? null);
         }
       } catch (err) {
         console.error("[useCredits] Failed to fetch balance:", err);
@@ -105,7 +115,12 @@ export function useCredits() {
             setBalance((row.credit_balance as number) ?? 0);
             if ("flw_plan" in row) setFlwPlan((row.flw_plan as string) ?? null);
             if ("flw_subscription_id" in row) setFlwSubscriptionId((row.flw_subscription_id as string) ?? null);
+            if ("paystack_plan" in row) setPaystackPlan((row.paystack_plan as string) ?? null);
+            if ("paystack_subscription_id" in row) setPaystackSubscriptionId((row.paystack_subscription_id as string) ?? null);
             if ("plan_status" in row) setPlanStatus((row.plan_status as string) ?? null);
+            if ("dodo_plan" in row) setDodoPlan((row.dodo_plan as string) ?? null);
+            if ("dodo_subscription_id" in row) setDodoSubscriptionId((row.dodo_subscription_id as string) ?? null);
+            if ("dodo_customer_id" in row) setDodoCustomerId((row.dodo_customer_id as string) ?? null);
           }
         }
       )
@@ -121,5 +136,5 @@ export function useCredits() {
   const credits = Math.floor(balance / 60);
   const usagePercent = totalCapacity > 0 ? (balance / totalCapacity) * 100 : 0;
 
-  return { balance, balanceMinutes, balanceSeconds, credits, totalCapacity, usagePercent, transactions, usageData, loading, refreshBalance, flwPlan, flwSubscriptionId, planStatus };
+  return { balance, balanceMinutes, balanceSeconds, credits, totalCapacity, usagePercent, transactions, usageData, loading, refreshBalance, flwPlan, flwSubscriptionId, paystackPlan, paystackSubscriptionId, planStatus, dodoPlan, dodoSubscriptionId, dodoCustomerId };
 }

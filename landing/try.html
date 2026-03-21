@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stop Losing Sales to Missed Calls | Barpel AI</title>
+  <meta name="description" content="Barpel AI answers every customer call 24/7. Handle order tracking, returns, and cart recovery automatically. Start free in 7 minutes — no credit card required.">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Stop Losing Sales to Missed Customer Calls | Barpel AI">
+  <meta property="og:description" content="AI Voice Receptionist for Shopify stores. 24/7 call handling, order tracking, returns. From $29/mo.">
+  <meta property="og:url" content="https://dropship.barpel.ai/">
+  <meta property="og:image" content="https://dropship.barpel.ai/og-image.png">
+  <meta property="og:site_name" content="Barpel AI">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Stop Losing Sales to Missed Customer Calls | Barpel AI">
+  <meta name="twitter:description" content="AI Voice Receptionist for Shopify stores. From $29/mo.">
+  <meta name="twitter:image" content="https://dropship.barpel.ai/og-image.png">
+
+  <link rel="preconnect" href="https://dropship.barpel.ai">
+  <link rel="canonical" href="https://dropship.barpel.ai/">
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <meta name="msapplication-TileImage" content="apple-touch-icon.png">
+  <meta name="msapplication-TileColor" content="#0B1120">
+
+  <style>
+    /* ── Design tokens ─────────────────────────────────── */
+    :root {
+      --cta-primary:   #00A99D;
+      --cta-hover:     #009488;
+      --bg-primary:    #0B1120;
+      --bg-card:       #111827;
+      --bg-card-alt:   #0F1929;
+      --border:        #1F2D3D;
+      --border-accent: rgba(0,169,157,0.35);
+      --text-primary:  #F1F5F9;
+      --text-muted:    #8AADA6;
+      --text-dim:      #4A6572;
+      --badge-success: #00F590;
+      --strike-red:    #EF4444;
+      --radius:        12px;
+    }
+
+    /* ── Reset ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-size: 16px;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { cursor: pointer; font-family: inherit; border: none; }
+    img { max-width: 100%; display: block; }
+
+    /* ── Layout ────────────────────────────────────────── */
+    .container {
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* ── Nav ───────────────────────────────────────────── */
+    .nav {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: rgba(11,17,32,0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 100;
+    }
+    .nav-logo img {
+      height: 36px;
+      width: auto;
+      display: block;
+    }
+    .nav-cta {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--bg-primary);
+      background: var(--cta-primary);
+      padding: 8px 16px;
+      border-radius: 8px;
+      white-space: nowrap;
+    }
+
+    /* ── Hero ──────────────────────────────────────────── */
+    .hero {
+      padding: 40px 0 32px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--cta-primary);
+      background: rgba(0,169,157,0.1);
+      border: 1px solid rgba(0,169,157,0.25);
+      border-radius: 100px;
+      padding: 5px 12px;
+      margin-bottom: 20px;
+    }
+    .badge::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--cta-primary);
+      flex-shrink: 0;
+    }
+    .hero h1 {
+      font-size: clamp(26px, 7vw, 36px);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+    }
+    .hero h1 em {
+      font-style: normal;
+      color: var(--cta-primary);
+    }
+    .subheadline {
+      font-size: 15px;
+      line-height: 1.65;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    /* ── Demo audio player ─────────────────────────────── */
+    .demo-audio { margin-bottom: 24px; }
+    .demo-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--cta-primary);
+      text-align: center;
+      margin-bottom: 10px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .audio-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+    .audio-play-btn {
+      flex-shrink: 0;
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      border-radius: 50%;
+      background: var(--cta-primary);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .audio-play-btn:active { transform: scale(0.94); }
+    .audio-play-btn svg { display: block; }
+    .audio-info { flex: 1; min-width: 0; }
+    .audio-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .audio-bar {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 5px;
+    }
+    .audio-progress {
+      height: 100%;
+      width: 0%;
+      background: var(--cta-primary);
+      border-radius: 2px;
+      transition: width 0.25s linear;
+    }
+    .audio-time {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    /* ── CTA button ────────────────────────────────────── */
+    .cta-btn {
+      display: block;
+      width: 100%;
+      padding: 16px 20px;
+      background: var(--cta-primary);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      text-align: center;
+      border-radius: var(--radius);
+      letter-spacing: -0.01em;
+      transition: background 0.15s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+      margin-bottom: 12px;
+    }
+    .cta-btn:active { background: var(--cta-hover); transform: scale(0.99); }
+
+    /* ── Trust + price pill ────────────────────────────── */
+    .trust {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .price-pill {
+      display: inline-block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--badge-success);
+      background: rgba(0,245,144,0.08);
+      border: 1px solid rgba(0,245,144,0.2);
+      border-radius: 100px;
+      padding: 4px 14px;
+      margin-bottom: 0;
+    }
+    .hero-price-row {
+      text-align: center;
+      margin-top: 4px;
+    }
+
+    /* ── Divider ───────────────────────────────────────── */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 32px 0;
+    }
+
+    /* ── Section title ─────────────────────────────────── */
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    /* ── Comparison ────────────────────────────────────── */
+    .comparison { padding: 8px 0 0; }
+    .compare-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+    }
+    .compare-old { opacity: 0.75; margin-bottom: 0; }
+    .compare-new {
+      border-color: var(--cta-primary);
+      box-shadow: 0 0 0 1px var(--cta-primary), 0 8px 24px rgba(0,169,157,0.12);
+    }
+    .compare-label {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+    .compare-label-new { color: var(--cta-primary); }
+    .compare-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 0;
+      font-size: 14px;
+      color: var(--text-muted);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .compare-row:last-child { border-bottom: none; }
+    .compare-price { font-weight: 600; color: var(--text-primary); }
+    .strike {
+      text-decoration: line-through;
+      color: var(--strike-red);
+      font-weight: 600;
+    }
+    .compare-highlight {
+      font-weight: 700;
+      color: var(--badge-success);
+    }
+    .compare-vs {
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-dim);
+      padding: 12px 0;
+    }
+    .compare-savings {
+      text-align: center;
+      font-size: 14px;
+      color: var(--text-primary);
+      margin-top: 16px;
+      padding: 13px 16px;
+      background: rgba(0,245,144,0.07);
+      border: 1px solid rgba(0,245,144,0.18);
+      border-radius: 10px;
+      line-height: 1.5;
+    }
+    .compare-savings strong { color: var(--badge-success); }
+
+    /* ── Social proof strip ────────────────────────────── */
+    .proof-strip {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+    .proof-strip::-webkit-scrollbar { display: none; }
+    .proof-chip {
+      flex-shrink: 0;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 6px 14px;
+      white-space: nowrap;
+    }
+
+    /* ── How it works ──────────────────────────────────── */
+    .steps { display: flex; flex-direction: column; gap: 16px; }
+    .step {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    .step-num {
+      flex-shrink: 0;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: rgba(0,169,157,0.12);
+      border: 1px solid rgba(0,169,157,0.3);
+      color: var(--cta-primary);
+      font-size: 13px;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .step-body h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+    .step-body p {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    /* ── Pricing card ──────────────────────────────────── */
+    .pricing-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-accent);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: 0 0 0 1px rgba(0,169,157,0.15), 0 16px 48px rgba(0,0,0,0.3);
+    }
+    .pricing-plan-name {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--cta-primary);
+      margin-bottom: 8px;
+    }
+    .pricing-amount {
+      font-size: 38px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text-primary);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .pricing-amount span { font-size: 18px; font-weight: 500; vertical-align: top; margin-top: 6px; display: inline-block; }
+    .pricing-period { font-size: 16px; font-weight: 400; color: var(--text-muted); }
+    .pricing-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      margin-top: 6px;
+      line-height: 1.45;
+    }
+    .pricing-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+    .pricing-features li {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    .pricing-features li::before {
+      content: '✓';
+      color: var(--cta-primary);
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .pricing-cta {
+      display: block;
+      width: 100%;
+      padding: 15px;
+      background: var(--cta-primary);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      text-align: center;
+      border-radius: 10px;
+      transition: background 0.15s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .pricing-cta:active { background: var(--cta-hover); transform: scale(0.99); }
+    .view-plans {
+      display: block;
+      text-align: center;
+      font-size: 13px;
+      color: var(--cta-primary);
+      margin-top: 14px;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    /* ── WhatsApp ──────────────────────────────────────── */
+    .whatsapp-section { text-align: center; }
+    .whatsapp-label {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+    .whatsapp-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 24px;
+      background: #25D366;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: var(--radius);
+      transition: opacity 0.15s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .whatsapp-btn:active { opacity: 0.9; transform: scale(0.98); }
+    .whatsapp-btn svg { flex-shrink: 0; }
+
+    /* ── Signup form ───────────────────────────────────── */
+    .signup-section { }
+    .signup-section h2 {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+    .signup-section p.signup-sub {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+    .form-field { margin-bottom: 14px; }
+    .form-field label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .form-field input {
+      width: 100%;
+      padding: 13px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-primary);
+      font-size: 15px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+      -webkit-appearance: none;
+    }
+    .form-field input:focus { border-color: var(--cta-primary); }
+    .form-field input::placeholder { color: var(--text-dim); }
+    .form-submit {
+      width: 100%;
+      padding: 16px;
+      background: var(--cta-primary);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: var(--radius);
+      border: none;
+      margin-top: 4px;
+      transition: background 0.15s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .form-submit:active:not(:disabled) { background: var(--cta-hover); transform: scale(0.99); }
+    .form-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+    .form-error {
+      font-size: 13px;
+      color: var(--strike-red);
+      margin-top: 10px;
+      text-align: center;
+      display: none;
+    }
+    .form-success {
+      text-align: center;
+      padding: 32px 0;
+      display: none;
+    }
+    .form-success .success-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+    .form-success h3 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--badge-success);
+      margin-bottom: 8px;
+    }
+    .form-success p {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* ── Footer ────────────────────────────────────────── */
+    .footer {
+      border-top: 1px solid var(--border);
+      padding: 24px 20px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.7;
+    }
+    .footer a { color: var(--cta-primary); text-decoration: underline; text-underline-offset: 2px; }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <a href="https://dropship.barpel.ai/" class="nav-logo">
+      <img src="logo.png" alt="Barpel AI" width="auto" height="36">
+    </a>
+    <a href="https://dropship.barpel.ai/signup" class="nav-cta">Start Free</a>
+  </nav>
+
+  <!-- ───────────────── HERO ───────────────── -->
+  <section class="hero">
+    <div class="container">
+      <div class="badge">AI Voice Receptionist &middot; Shopify &amp; TikTok Shop</div>
+
+      <h1>Stop Losing Sales to <em>Missed Customer Calls</em></h1>
+
+      <p class="subheadline">
+        Barpel answers every call 24/7&thinsp;&mdash;&thinsp;handles order tracking,
+        returns, and cart recovery in 30+ languages. Deploy in 7 minutes.
+      </p>
+
+      <!-- Demo audio player -->
+      <div class="demo-audio">
+        <div class="demo-label">Hear your AI handle a real call (60 sec)</div>
+        <div class="audio-card">
+          <button class="audio-play-btn" id="audioPlayBtn" aria-label="Play audio demo" type="button">
+            <svg id="playIcon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <polygon points="5,3 19,12 5,21"/>
+            </svg>
+            <svg id="pauseIcon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="display:none">
+              <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
+            </svg>
+          </button>
+          <div class="audio-info">
+            <div class="audio-title">Customer: &ldquo;Where is my order #4521?&rdquo;</div>
+            <div class="audio-bar">
+              <div class="audio-progress" id="audioProgress"></div>
+            </div>
+            <div class="audio-time" id="audioTime">0:00 / 1:02</div>
+          </div>
+        </div>
+        <audio id="demoAudio" preload="metadata">
+          <source src="demo-call.mp3" type="audio/mp3">
+        </audio>
+      </div>
+
+      <a href="https://dropship.barpel.ai/signup" class="cta-btn">
+        Start Free Trial &mdash; Hear Your AI in 60 Seconds
+      </a>
+
+      <p class="trust">&#128274; Paystack secured &middot; Cancel anytime &middot; No credit card required</p>
+
+      <div class="hero-price-row">
+        <span class="price-pill">From $29/mo</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────────────── COMPARISON ───────────────── -->
+  <section class="comparison">
+    <div class="container">
+      <p class="section-title">What Support Really Costs You</p>
+
+      <div class="compare-card compare-old">
+        <div class="compare-label">Hiring a Virtual Assistant</div>
+        <div class="compare-row">
+          <span>Monthly salary</span>
+          <span class="strike">$800 &ndash; $1,500</span>
+        </div>
+        <div class="compare-row">
+          <span>Availability</span>
+          <span class="compare-price">40 hrs/week</span>
+        </div>
+        <div class="compare-row">
+          <span>Time to hire</span>
+          <span class="compare-price">2 &ndash; 4 weeks</span>
+        </div>
+        <div class="compare-row">
+          <span>Missed calls</span>
+          <span class="strike">$500+/mo in chargebacks</span>
+        </div>
+      </div>
+
+      <div class="compare-vs">vs</div>
+
+      <div class="compare-card compare-new">
+        <div class="compare-label compare-label-new">Barpel Drop AI</div>
+        <div class="compare-row">
+          <span>Monthly cost</span>
+          <span class="compare-highlight">$29/mo</span>
+        </div>
+        <div class="compare-row">
+          <span>Availability</span>
+          <span class="compare-highlight">24/7 &times; 365</span>
+        </div>
+        <div class="compare-row">
+          <span>Time to deploy</span>
+          <span class="compare-highlight">7 minutes</span>
+        </div>
+        <div class="compare-row">
+          <span>Missed calls</span>
+          <span class="compare-highlight">Zero</span>
+        </div>
+      </div>
+
+      <div class="compare-savings">
+        You save <strong>$800 &ndash; $1,500/month</strong> with better coverage
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ───────────────── SOCIAL PROOF ───────────────── -->
+  <div class="container">
+    <div class="proof-strip">
+      <div class="proof-chip">&#9733; 4.9 / 5 on Shopify App Store</div>
+      <div class="proof-chip">2,000+ active stores</div>
+      <div class="proof-chip">30+ languages</div>
+      <div class="proof-chip">78% call resolution rate</div>
+      <div class="proof-chip">GDPR compliant</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ───────────────── HOW IT WORKS ───────────────── -->
+  <div class="container">
+    <p class="section-title">Up and running in 7 minutes</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h3>Connect your Shopify store</h3>
+          <p>One-click OAuth. Barpel reads your orders, products, and customer data instantly.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h3>Get your AI phone number</h3>
+          <p>A dedicated number is provisioned in seconds. Forward your existing line or use it standalone.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h3>Your AI answers every call</h3>
+          <p>Order status, returns, FAQs, cart recovery &mdash; handled automatically, 24/7.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ───────────────── PRICING ───────────────── -->
+  <div class="container">
+    <p class="section-title">Simple pricing, no surprises</p>
+
+    <div class="pricing-card">
+      <div class="pricing-plan-name">Starter Plan</div>
+      <div class="pricing-amount">
+        <span>$</span>29<span class="pricing-period"> / month</span>
+      </div>
+      <p class="pricing-sub">Starter plan. 30 credits, 1 phone number. 14-day free trial.</p>
+
+      <ul class="pricing-features">
+        <li>30 call credits per month</li>
+        <li>1 dedicated phone number</li>
+        <li>Shopify order tracking integration</li>
+        <li>24/7 AI voice answering</li>
+        <li>English + 30 other languages</li>
+        <li>Email support</li>
+      </ul>
+
+      <a href="https://dropship.barpel.ai/signup" class="pricing-cta">Start 14-Day Free Trial</a>
+    </div>
+
+    <a href="https://dropship.barpel.ai/#pricing" class="view-plans">View all plans &rarr;</a>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ───────────────── WHATSAPP ───────────────── -->
+  <div class="container whatsapp-section">
+    <p class="whatsapp-label">Have questions? Chat with us directly &mdash; we reply in minutes.</p>
+    <a
+      href="https://wa.me/447476692326?text=Hi%2C%20I%27d%20like%20to%20learn%20more%20about%20Barpel%20AI"
+      class="whatsapp-btn"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+      </svg>
+      Chat on WhatsApp
+    </a>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ───────────────── SIGNUP FORM ───────────────── -->
+  <div class="container signup-section">
+    <h2>Start your free trial</h2>
+    <p class="signup-sub">Set up in 7 minutes. No credit card required.</p>
+
+    <form id="signupForm" novalidate>
+      <div class="form-field">
+        <label for="name">Full name</label>
+        <input type="text" id="name" name="name" placeholder="Jane Smith" autocomplete="name" required>
+      </div>
+      <div class="form-field">
+        <label for="email">Email address</label>
+        <input type="email" id="email" name="email" placeholder="jane@yourstore.com" autocomplete="email" required>
+      </div>
+      <div class="form-field">
+        <label for="phone">Phone number <span style="font-weight:400;opacity:0.6">(optional)</span></label>
+        <input type="tel" id="phone" name="phone" placeholder="+1 555 000 0000" autocomplete="tel">
+      </div>
+      <button type="submit" class="form-submit" id="formSubmitBtn">Start Free Trial</button>
+      <p class="form-error" id="formError"></p>
+    </form>
+
+    <div class="form-success" id="formSuccess">
+      <div class="success-icon">&#10003;</div>
+      <h3>You&rsquo;re in!</h3>
+      <p>Check your inbox &mdash; we&rsquo;ve sent your setup link.<br>You&rsquo;ll be live in under 7 minutes.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ───────────────── FOOTER ───────────────── -->
+  <footer class="footer">
+    <p>&copy; 2026 Barpel AI &middot;
+      <a href="https://dropship.barpel.ai/privacy">Privacy</a> &middot;
+      <a href="https://dropship.barpel.ai/terms">Terms</a>
+    </p>
+    <p style="margin-top:6px">Secured by Paystack &middot; GDPR compliant &middot; Cancel anytime</p>
+  </footer>
+
+  <script>
+    /* ── Audio player ─────────────────────────────────── */
+    (function () {
+      var btn      = document.getElementById('audioPlayBtn');
+      var audio    = document.getElementById('demoAudio');
+      var progress = document.getElementById('audioProgress');
+      var timeEl   = document.getElementById('audioTime');
+      var playIco  = document.getElementById('playIcon');
+      var pauseIco = document.getElementById('pauseIcon');
+
+      if (!btn || !audio) return;
+
+      function fmtTime(s) {
+        var sec = Math.floor(isNaN(s) ? 0 : s);
+        return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
+      }
+
+      function setPlaying(isPlaying) {
+        playIco.style.display  = isPlaying ? 'none'  : 'block';
+        pauseIco.style.display = isPlaying ? 'block' : 'none';
+        btn.setAttribute('aria-label', isPlaying ? 'Pause audio demo' : 'Play audio demo');
+      }
+
+      btn.addEventListener('click', function () {
+        if (audio.paused) {
+          audio.play().then(function () { setPlaying(true); }).catch(function () {});
+        } else {
+          audio.pause();
+          setPlaying(false);
+        }
+      });
+
+      audio.addEventListener('timeupdate', function () {
+        var dur = audio.duration;
+        var cur = audio.currentTime;
+        var pct = (!isNaN(dur) && dur > 0) ? (cur / dur) * 100 : 0;
+        progress.style.width = pct + '%';
+        var durDisplay = !isNaN(dur) ? dur : 62;
+        timeEl.textContent = fmtTime(cur) + ' / ' + fmtTime(durDisplay);
+      });
+
+      audio.addEventListener('ended', function () {
+        setPlaying(false);
+        progress.style.width = '0%';
+        audio.currentTime = 0;
+      });
+
+      audio.addEventListener('pause', function () { setPlaying(false); });
+      audio.addEventListener('play',  function () { setPlaying(true);  });
+    }());
+
+    /* ── Signup form ──────────────────────────────────── */
+    (function () {
+      var SUPABASE_URL  = 'https://mpgbxegbuffkjbsaeawk.supabase.co';
+      var ANON_KEY      = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wZ2J4ZWdidWZma2pic2FlYXdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTE1MjUsImV4cCI6MjA4ODcyNzUyNX0.cM_-jwiaDOFC7NZ9d2X9TmaMF4NSvfphGRrdJDIOn6g';
+      var EMAIL_RE      = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      var form    = document.getElementById('signupForm');
+      var btn     = document.getElementById('formSubmitBtn');
+      var errEl   = document.getElementById('formError');
+      var success = document.getElementById('formSuccess');
+
+      if (!form) return;
+
+      function showError(msg) {
+        errEl.textContent = msg;
+        errEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Start Free Trial';
+      }
+
+      function clearError() {
+        errEl.textContent = '';
+        errEl.style.display = 'none';
+      }
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        clearError();
+
+        var name  = document.getElementById('name').value.trim();
+        var email = document.getElementById('email').value.trim();
+        var phone = document.getElementById('phone').value.trim();
+
+        if (!name)               { return showError('Please enter your name.'); }
+        if (!email)              { return showError('Please enter your email address.'); }
+        if (!EMAIL_RE.test(email)) { return showError('Please enter a valid email address.'); }
+
+        btn.disabled = true;
+        btn.textContent = 'Submitting\u2026';
+
+        fetch(SUPABASE_URL + '/rest/v1/landing_signups', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': ANON_KEY,
+            'Authorization': 'Bearer ' + ANON_KEY,
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({
+            name:       name,
+            email:      email,
+            phone:      phone || null,
+            source:     'try-landing-page',
+            created_at: new Date().toISOString()
+          })
+        })
+        .then(function (res) {
+          if (res.ok || res.status === 201) {
+            form.style.display = 'none';
+            success.style.display = 'block';
+          } else {
+            showError('Something went wrong. Please try again.');
+          }
+        })
+        .catch(function () {
+          showError('Connection error \u2014 check your internet and try again.');
+        });
+      });
+    }());
+  </script>
+
+</body>
+</html>

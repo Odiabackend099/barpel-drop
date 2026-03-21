@@ -34,6 +34,7 @@ export async function PATCH(request: Request) {
     "low_balance_sms",
     "monthly_summary_email",
     "payment_receipt_email",
+    "failed_lookup_sms",
   ];
 
   const updates: Record<string, unknown> = {};

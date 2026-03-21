@@ -144,7 +144,7 @@ const jsonLd = {
           "name": "Is Barpel AI secure and compliant?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes. Barpel AI is SOC 2 Type II certified, GDPR compliant, HIPAA ready, and uses end-to-end encryption for all customer call data. Payments are secured by Flutterwave."
+            "text": "Yes. Barpel AI is SOC 2 Type II certified, GDPR compliant, HIPAA ready, and uses end-to-end encryption for all customer call data. Payments are secured by Paystack."
           }
         }
       ]

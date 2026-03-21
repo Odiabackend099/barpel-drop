@@ -36,16 +36,17 @@ function getTwilioParams(country: string): {
     case "NG":
     case "GH":
     case "KE":
-      // African merchants get UK numbers — flagged as internationally_provisioned
+      // African merchants get US numbers (no address SID needed) — flagged as internationally_provisioned
       return {
-        countryCode: "GB",
-        addressSid: process.env.TWILIO_UK_ADDRESS_SID ?? null,
+        countryCode: "US",
+        addressSid: process.env.TWILIO_US_ADDRESS_SID ?? null,
         internationallyProvisioned: true,
       };
     default:
+      // Default to US — no address SID required, works globally
       return {
-        countryCode: "GB",
-        addressSid: process.env.TWILIO_UK_ADDRESS_SID ?? null,
+        countryCode: "US",
+        addressSid: process.env.TWILIO_US_ADDRESS_SID ?? null,
         internationallyProvisioned: false,
       };
   }
@@ -287,7 +288,7 @@ export async function createVapiAssistant(
     transcriber: {
       provider: "deepgram",
       model: "nova-2",
-      language: "en",
+      language: "multi",
       keywords: ["order", "tracking", "refund", "delivery", "cancel"],
     },
 
@@ -308,6 +309,10 @@ export async function createVapiAssistant(
 
     serverUrl: webhookUrl,
     serverUrlSecret: process.env.VAPI_WEBHOOK_SECRET,
+    artifactPlan: {
+      recordingEnabled: true,
+      videoRecordingEnabled: false,
+    },
     metadata: { merchant_id: merchantId },
   };
 

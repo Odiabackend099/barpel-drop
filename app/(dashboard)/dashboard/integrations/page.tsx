@@ -1,8 +1,9 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { createClient } from "@/lib/supabase/client";
 import { useMerchant } from "@/hooks/useMerchant";
 import { useIntegrations } from "@/hooks/useIntegrations";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -51,6 +52,49 @@ export default function IntegrationsPage() {
   const [provisioningError, setProvisioningError] = useState<string | null>(
     null
   );
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Polling fallback — when provisioning_status is "provisioning", poll every 5s
+  // until a terminal state is reached. This covers cases where Realtime doesn't fire.
+  useEffect(() => {
+    if (!merchant || merchant.provisioning_status !== "provisioning") {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = null;
+      }
+      return;
+    }
+
+    const supabase = createClient();
+    pollingRef.current = setInterval(async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from("merchants")
+        .select("provisioning_status")
+        .eq("user_id", user.id)
+        .single();
+      if (
+        data &&
+        ["active", "failed", "needs_address"].includes(
+          data.provisioning_status
+        )
+      ) {
+        if (pollingRef.current) clearInterval(pollingRef.current);
+        pollingRef.current = null;
+        window.location.reload();
+      }
+    }, 5000);
+
+    return () => {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = null;
+      }
+    };
+  }, [merchant?.provisioning_status]);
 
   const handleCountrySelect = async (country: string) => {
     setCountryModalOpen(false);

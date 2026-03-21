@@ -648,8 +648,8 @@ async function handleEndOfCallReport(
 
       const smsBody =
         updatedBalance <= 0
-          ? `Barpel Alert: You've used all your minutes for this month. Your AI line is paused. Top up at ${billingUrl}`
-          : `Barpel Alert: You have ${minutesRemaining} minutes left this month. Top up now to keep your AI line running: ${billingUrl}`;
+          ? `Barpel Alert: You've used all your credits for this month. Your AI line is paused. Top up at ${billingUrl}`
+          : `Barpel Alert: You have ${minutesRemaining} credits left this month. Top up now to keep your AI line running: ${billingUrl}`;
 
       await sendSms(merchant.support_phone, smsBody).catch(() => {
         // SMS failure must not block call processing

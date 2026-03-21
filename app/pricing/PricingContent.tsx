@@ -174,7 +174,7 @@ const faqs = [
   {
     question: 'What payment methods do you accept?',
     answer:
-      'We accept all major credit and debit cards (Visa, Mastercard, American Express). All payments are processed securely through Flutterwave.',
+      'We accept all major credit and debit cards (Visa, Mastercard, American Express). All payments are processed securely through Paystack.',
   },
 ];
 

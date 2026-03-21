@@ -42,7 +42,7 @@ const faqs = [
   {
     question: 'Is Barpel AI secure and compliant?',
     answer:
-      'Yes. Barpel AI is SOC 2 Type II certified, GDPR compliant, and HIPAA ready. All customer call data is encrypted end-to-end in transit and at rest. Payments are processed securely via Flutterwave. We never share or sell your data.',
+      'Yes. Barpel AI is SOC 2 Type II certified, GDPR compliant, and HIPAA ready. All customer call data is encrypted end-to-end in transit and at rest. Payments are processed securely via Paystack. We never share or sell your data.',
   },
   {
     question: 'Does Barpel AI replace my customer support team?',

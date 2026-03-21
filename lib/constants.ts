@@ -15,7 +15,8 @@ If you still cannot find an order after the customer provides a number, say: "I 
 Never make up tracking information. Use the tools to get real data.
 When a customer asks what products you sell, what you have, whether something is in stock, or how much something costs, call the search_products function immediately. Do not guess or make up product names or prices. If they name a specific product, pass that word as search_term. If they ask generally, call search_products with no search_term. Read back prices naturally.
 If a customer sounds frustrated or upset, acknowledge their concern empathetically before proceeding — say something like "I completely understand your frustration, let me help sort this out right away."
-If the customer goes silent, wait a moment, then gently prompt: "Are you still there? I'm happy to help whenever you're ready." If still no response after a second prompt, say goodbye politely and end the call.`;
+If the customer goes silent, wait a moment, then gently prompt: "Are you still there? I'm happy to help whenever you're ready." If still no response after a second prompt, say goodbye politely and end the call.
+Detect the language the customer is speaking and respond in that same language throughout the call. If you cannot understand the customer after two attempts, politely ask them to repeat in English.`;
 
 /** Default first message spoken by the AI when a call is answered */
 export const DEFAULT_FIRST_MESSAGE = "Thank you for calling {BUSINESS_NAME} support. How can I help you today?";
@@ -62,11 +63,52 @@ export const COLORS = {
   footerBg: "#1B2A4A",
 } as const;
 
-/** Credit packages — subscription model (1 credit = 1 minute) */
+/**
+ * Dodo Payments product IDs — set via env vars after creating subscription products
+ * in the Dodo Payments dashboard.
+ * Product IDs are in the format prod_xxxx.
+ * Products must be created with the exact prices matching CREDIT_PACKAGES.
+ */
+export const DODO_PRODUCT_MAP = {
+  starter: {
+    monthly: process.env.DODO_PRODUCT_ID_STARTER_MONTHLY ?? "",
+    annual:  process.env.DODO_PRODUCT_ID_STARTER_ANNUAL  ?? "",
+  },
+  growth: {
+    monthly: process.env.DODO_PRODUCT_ID_GROWTH_MONTHLY ?? "",
+    annual:  process.env.DODO_PRODUCT_ID_GROWTH_ANNUAL  ?? "",
+  },
+  scale: {
+    monthly: process.env.DODO_PRODUCT_ID_SCALE_MONTHLY ?? "",
+    annual:  process.env.DODO_PRODUCT_ID_SCALE_ANNUAL  ?? "",
+  },
+} as const;
+
+/**
+ * Paystack plan codes — set via env vars after creating plans in the Paystack dashboard.
+ * Plan codes are in the format PLN_xxxx.
+ * Plans must be created with currency=USD and the amounts matching CREDIT_PACKAGES.
+ */
+export const PAYSTACK_PLAN_CODES = {
+  starter: {
+    monthly: process.env.PAYSTACK_PLAN_CODE_STARTER ?? "",
+    annual:  process.env.PAYSTACK_PLAN_CODE_STARTER_ANNUAL ?? "",
+  },
+  growth: {
+    monthly: process.env.PAYSTACK_PLAN_CODE_GROWTH ?? "",
+    annual:  process.env.PAYSTACK_PLAN_CODE_GROWTH_ANNUAL ?? "",
+  },
+  scale: {
+    monthly: process.env.PAYSTACK_PLAN_CODE_SCALE ?? "",
+    annual:  process.env.PAYSTACK_PLAN_CODE_SCALE_ANNUAL ?? "",
+  },
+} as const;
+
+/** Credit packages — subscription model (1 credit = 1 minute of call time) */
 export const CREDIT_PACKAGES = [
-  { id: "starter", name: "Starter", minutes: 30, priceUsdCents: 2900, annualPriceUsdCents: 31300, perMin: 0.97, overage: 0.99 },
-  { id: "growth", name: "Growth", minutes: 100, priceUsdCents: 7900, annualPriceUsdCents: 85300, perMin: 0.79, overage: 0.79, popular: true },
-  { id: "scale", name: "Scale", minutes: 250, priceUsdCents: 17900, annualPriceUsdCents: 193300, perMin: 0.72, overage: 0.69 },
+  { id: "starter", name: "Starter", credits: 30, priceUsdCents: 2900, annualPriceUsdCents: 31300, perMin: 0.97, overage: 0.99 },
+  { id: "growth", name: "Growth", credits: 100, priceUsdCents: 7900, annualPriceUsdCents: 85300, perMin: 0.79, overage: 0.79, popular: true },
+  { id: "scale", name: "Scale", credits: 250, priceUsdCents: 17900, annualPriceUsdCents: 193300, perMin: 0.72, overage: 0.69 },
 ] as const;
 
 /**

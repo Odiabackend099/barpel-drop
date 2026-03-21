@@ -9,13 +9,13 @@ import Logo from '@/components/marketing/Logo';
 import { createClient } from '@/lib/supabase/client';
 
 const trialBenefits = [
-  '14-day free trial of Growth plan',
-  '500 free minutes',
+  '5 free credits — no card required',
   'Full feature access',
+  'Credits expire fast — top up anytime',
   'Cancel anytime',
 ];
 
-const trustedLogos = ['Dropbox', 'Ancestry', 'Zendesk', "L'Oreal"];
+const trustedLogos = ['Shopify', 'Twilio', 'TikTok Shop', 'Amazon'];
 
 function getPasswordStrength(password: string): { label: string; color: string; width: string } {
   if (password.length === 0) return { label: '', color: '', width: '0%' };
@@ -399,7 +399,7 @@ export default function SignupContent() {
                 >
                   <Sparkles className="w-4 h-4" />
                   <span className="text-xs font-medium bg-white/20 px-3 py-1 rounded-full">
-                    Try Growth plan free
+                    Start free — no card required
                   </span>
                 </motion.div>
 
@@ -409,7 +409,7 @@ export default function SignupContent() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 }}
                 >
-                  Explore premium features with your free 14-day trial
+                  Get 5 free credits — no card needed
                 </motion.h2>
 
                 <motion.ul
@@ -439,7 +439,7 @@ export default function SignupContent() {
                   transition={{ delay: 0.8 }}
                 >
                   <p className="text-sm text-white/70 mb-4">
-                    Join leading companies using Barpel
+                    Works with your tools
                   </p>
                   <div className="flex flex-wrap gap-4">
                     {trustedLogos.map((logo, i) => (

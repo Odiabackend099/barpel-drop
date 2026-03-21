@@ -9,12 +9,12 @@ const MONTHLY_RENEWAL_BUFFER_DAYS = 32;
 const ANNUAL_RENEWAL_BUFFER_DAYS = 367; // 365 + 2-day buffer
 
 /** Plan amounts for receipt emails — derived from CREDIT_PACKAGES (single source of truth). */
-const PLAN_AMOUNTS: Record<string, { monthlyAmount: number; annualAmount: number; minutes: number }> = {};
+const PLAN_AMOUNTS: Record<string, { monthlyAmount: number; annualAmount: number; credits: number }> = {};
 for (const pkg of CREDIT_PACKAGES) {
   PLAN_AMOUNTS[pkg.id] = {
     monthlyAmount: pkg.priceUsdCents / 100,
     annualAmount: pkg.annualPriceUsdCents / 100,
-    minutes: pkg.minutes,
+    credits: pkg.credits,
   };
 }
 
@@ -212,7 +212,7 @@ async function handleFlutterwaveEvent(event: Record<string, unknown>) {
             to: authData.user.email,
             planName: `${existingTx.plan.charAt(0).toUpperCase() + existingTx.plan.slice(1)} (${billingCycle})`,
             amount: `$${amount.toFixed(0)}.00`,
-            minutesAdded: planInfo?.minutes ?? Math.round(pkg.credits_seconds / 60),
+            minutesAdded: planInfo?.credits ?? Math.round(pkg.credits_seconds / 60),
             nextRenewalDate: nextRenewal.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
           });
         }
@@ -364,7 +364,7 @@ async function handleFlutterwaveEvent(event: Record<string, unknown>) {
             to: authData.user.email,
             planName: `${merchant.flw_plan.charAt(0).toUpperCase() + merchant.flw_plan.slice(1)} (${billingCycle})`,
             amount: `$${amount.toFixed(0)}.00`,
-            minutesAdded: planInfo?.minutes ?? Math.round(pkg.credits_seconds / 60),
+            minutesAdded: planInfo?.credits ?? Math.round(pkg.credits_seconds / 60),
             nextRenewalDate: nextRenewal.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
           });
         }
