@@ -44,12 +44,30 @@ const serverSchema = z.object({
   FLW_PLAN_ID_GROWTH_ANNUAL: z.string().min(1).optional(),
   FLW_PLAN_ID_SCALE_ANNUAL: z.string().min(1).optional(),
 
+  // Paystack — primary subscription payment processor
+  PAYSTACK_SECRET_KEY: z.string().startsWith("sk_").optional(),
+  PAYSTACK_WEBHOOK_SECRET: z.string().min(1).optional(),
+  // Paystack plan codes (PLN_xxx) — created once in Paystack dashboard
+  PAYSTACK_PLAN_CODE_STARTER:         z.string().min(1).optional(),
+  PAYSTACK_PLAN_CODE_GROWTH:          z.string().min(1).optional(),
+  PAYSTACK_PLAN_CODE_SCALE:           z.string().min(1).optional(),
+  PAYSTACK_PLAN_CODE_STARTER_ANNUAL:  z.string().min(1).optional(),
+  PAYSTACK_PLAN_CODE_GROWTH_ANNUAL:   z.string().min(1).optional(),
+  PAYSTACK_PLAN_CODE_SCALE_ANNUAL:    z.string().min(1).optional(),
+
   // AfterShip (optional for now per spec)
   AFTERSHIP_API_KEY: z.string().min(1).optional(),
 
+  // Email notifications — transactional emails via Resend
+  RESEND_API_KEY: z.string().min(1), // REQUIRED — if missing, all emails fail silently
+  RESEND_FROM_EMAIL: z.string().email(), // REQUIRED — FROM address for all emails
+
+  // Upstash Redis — distributed rate limiting (replaces in-memory Maps)
+  UPSTASH_REDIS_REST_URL: z.string().url(),
+  UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
+
   // Notifications — contact form lead capture
   SLACK_WEBHOOK_URL: z.string().url().optional(),
-  RESEND_FROM_EMAIL: z.string().email().optional(),
 
   // App
   NEXT_PUBLIC_BASE_URL: z.string().url(),
@@ -63,6 +81,7 @@ const clientSchema = z.object({
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
   NEXT_PUBLIC_BASE_URL: z.string().url(),
   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().min(1),
+  NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY: z.string().startsWith("pk_").optional(),
   NEXT_PUBLIC_VAPI_PUBLIC_KEY: z.string().min(1),
   // Optional — controls mock API in local dev only
   NEXT_PUBLIC_USE_MOCK_API: z.string().optional().default("false"),

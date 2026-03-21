@@ -27,12 +27,14 @@ interface NotificationPreferences {
   low_balance_sms: boolean;
   monthly_summary_email: boolean;
   payment_receipt_email: boolean;
+  failed_lookup_sms: boolean;
 }
 
 const DEFAULT_PREFS: NotificationPreferences = {
   low_balance_sms: true,
   monthly_summary_email: true,
   payment_receipt_email: true,
+  failed_lookup_sms: true,
 };
 
 export default function SettingsPage() {
@@ -171,6 +173,20 @@ export default function SettingsPage() {
       const supabase = createClient();
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
+
+      // Send security notification email — MUST succeed, security-critical
+      const notificationRes = await fetch("/api/notifications/password-changed", {
+        method: "POST",
+      });
+
+      if (!notificationRes.ok) {
+        const data = await notificationRes.json().catch(() => ({}));
+        throw new Error(
+          (data as { error?: string }).error ??
+            "Password changed, but confirmation email failed. Please contact support."
+        );
+      }
+
       toast.success("Password changed successfully");
       setNewPassword("");
       setConfirmPassword("");
@@ -450,6 +466,26 @@ export default function SettingsPage() {
                 updateNotificationPref("payment_receipt_email", v)
               }
               disabled={savingNotification === "payment_receipt_email"}
+            />
+          </div>
+
+          <Separator />
+
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-[#1B2A4A]">
+                Failed order lookup alerts
+              </p>
+              <p className="text-xs text-[#8AADA6]">
+                SMS when a customer calls about an order that can&apos;t be found
+              </p>
+            </div>
+            <Switch
+              checked={prefs.failed_lookup_sms}
+              onCheckedChange={(v) =>
+                updateNotificationPref("failed_lookup_sms", v)
+              }
+              disabled={savingNotification === "failed_lookup_sms"}
             />
           </div>
         </CardContent>
