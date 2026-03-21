@@ -1,0 +1,12 @@
+# Barpel Drop AI — Next.js 14 App Router
+# Any PR touching these files requires owner approval
+
+# Everything requires approval
+*                          @Odiabackend099
+
+# Critical infrastructure files — double protection
+/app/api/                  @Odiabackend099
+/lib/                      @Odiabackend099
+/package.json              @Odiabackend099
+/next.config.ts            @Odiabackend099
+/tailwind.config.ts        @Odiabackend099
