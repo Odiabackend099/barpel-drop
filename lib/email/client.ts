@@ -399,7 +399,7 @@ export async function sendNewUserAlertEmail(email: string, name?: string | null)
 /** Branded password reset email with secure link. */
 export async function sendPasswordResetEmail(to: string, resetUrl: string) {
   await getResend().emails.send({
-    from: `Barpel AI <hello@barpel.ai>`,
+    from: `Barpel AI Support <support@barpel.ai>`,
     to,
     subject: "Reset your Barpel AI password",
     html: `
@@ -427,7 +427,7 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string) {
 /** Security notification sent after a successful password change. */
 export async function sendPasswordChangedEmail(to: string) {
   await getResend().emails.send({
-    from: `Barpel AI <hello@barpel.ai>`,
+    from: `Barpel AI Support <support@barpel.ai>`,
     to,
     subject: "Your password was changed — Barpel AI",
     html: `
@@ -534,7 +534,7 @@ export async function sendSupportTicketConfirmEmail(
 /** Internal alert sent to support team + CEO when a dashboard support ticket is submitted. */
 export async function sendSupportTeamNotificationEmail(ticket: SupportTicket) {
   await getResend().emails.send({
-    from: `Barpel AI <hello@barpel.ai>`,
+    from: `Barpel AI Support <support@barpel.ai>`,
     to: "support@barpel.ai",
     cc: "raphael@barpel.ai",
     replyTo: ticket.userEmail,
