@@ -29,11 +29,11 @@ import {
 } from "@/lib/callForwarding/ussdCodes";
 
 const STEPS = [
-  { icon: Store, label: "Business Name" },
-  { icon: Sparkles, label: "Connect Store" },
-  { icon: CreditCard, label: "Get Credits" },
-  { icon: Phone, label: "AI Phone Line" },
-  { icon: Rocket, label: "Ready!" },
+  { icon: Store, label: "Store" },
+  { icon: Sparkles, label: "Connect" },
+  { icon: CreditCard, label: "Credits" },
+  { icon: Phone, label: "Live" },
+  { icon: Rocket, label: "Forward" },
 ];
 
 // Hero-style card entry/exit animation
@@ -49,13 +49,6 @@ const springTransition = {
   damping: 30,
 };
 
-// Ghost card gradient accents per step transition
-const GHOST_ACCENTS = [
-  "from-[#00A99D] to-emerald-400",    // step 1 → 2
-  "from-teal-400 to-cyan-400",        // step 2 → 3
-  "from-purple-400 to-pink-400",      // step 3 → 4
-  "from-amber-400 to-orange-400",     // step 4 → 5
-];
 
 const COUNTRIES = [
   { value: "NG", label: "Nigeria", flag: "\u{1F1F3}\u{1F1EC}" },
@@ -82,9 +75,9 @@ function UssdCodeBlock({
   const isCopied = copied === code;
   return (
     <div>
-      <p className="text-[10px] text-[#8AADA6] mb-1">{label}</p>
-      <div className="flex items-center gap-2 bg-[#F0F9F8] border border-[#D0EDE8] rounded-lg px-3 py-2">
-        <code className="flex-1 text-base font-mono font-bold text-navy tracking-wide">
+      <p className="text-[10px] text-slate-400 mb-1">{label}</p>
+      <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-input px-3 py-2">
+        <code className="flex-1 text-base font-mono font-bold text-slate-900 tracking-wide">
           {code}
         </code>
         <button
@@ -93,7 +86,7 @@ function UssdCodeBlock({
             onCopy(code);
             setTimeout(() => onCopy(null), 2000);
           }}
-          className="text-xs text-teal font-medium whitespace-nowrap"
+          className="text-xs text-brand-600 font-medium whitespace-nowrap"
         >
           {isCopied ? "\u2713 Copied" : "Copy"}
         </button>
@@ -106,8 +99,8 @@ export default function OnboardingPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#F0F9F8] flex items-center justify-center">
-          <div className="w-6 h-6 border-2 border-teal border-t-transparent rounded-full animate-spin" />
+        <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
+          <div className="w-6 h-6 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
         </div>
       }
     >
@@ -545,140 +538,122 @@ function OnboardingContent() {
 
   if (loadingStep) {
     return (
-      <div className="min-h-screen bg-[#F0F9F8] flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-teal border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
-  // Ghost card accent for the two peek-behind cards
-  const ghost1Accent = GHOST_ACCENTS[Math.min(currentStep - 1, GHOST_ACCENTS.length - 1)];
-  const ghost2Accent = GHOST_ACCENTS[Math.min(currentStep, GHOST_ACCENTS.length - 1)];
-
   return (
-    <div className="relative min-h-screen bg-[#F0F9F8] flex flex-col overflow-hidden">
-      {/* Ambient teal orbs — very low opacity for light bg */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden" style={{ zIndex: 0 }}>
-        <motion.div
-          className="absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full bg-teal-200/20"
-          style={{ filter: "blur(80px)" }}
-          animate={{ scale: [1, 1.1, 1] }}
-          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute -bottom-32 -left-32 w-[400px] h-[400px] rounded-full bg-emerald-200/15"
-          style={{ filter: "blur(60px)" }}
-          animate={{ scale: [1, 1.15, 1] }}
-          transition={{ duration: 22, repeat: Infinity, ease: "easeInOut", delay: 6 }}
-        />
-      </div>
+    <div className="flex min-h-screen overflow-hidden">
 
-      {/* Header */}
-      <header className="relative bg-white/80 backdrop-blur-sm border-b border-[#D0EDE8] px-6 py-4" style={{ zIndex: 10 }}>
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <BarpelLogo size={28} />
-            <span className="font-display font-bold text-navy text-lg tracking-tight">Barpel</span>
-          </div>
-          <span className="text-xs text-[#8AADA6]">Step {currentStep} of 5</span>
-        </div>
-      </header>
+      {/* ── LEFT PANEL (dark, 40%) ── */}
+      <div className="hidden md:flex w-2/5 bg-[#0f172a] flex-col justify-between p-10 relative overflow-hidden">
+        {/* Ambient orbs */}
+        <div className="absolute -top-32 -right-32 w-80 h-80 rounded-full bg-brand-600/10 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-32 -left-32 w-80 h-80 rounded-full bg-brand-600/5 blur-3xl pointer-events-none" />
 
-      {/* Progress bar — liquid flowing */}
-      <div className="relative bg-white/80 backdrop-blur-sm border-b border-[#D0EDE8]" style={{ zIndex: 10 }}>
-        <div className="max-w-2xl mx-auto px-6 pt-4 pb-3">
-          {/* Animated fill track */}
-          <div className="relative h-1 bg-[#D0EDE8] rounded-full overflow-hidden">
-            <motion.div
-              className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#00A99D] to-emerald-400 rounded-full"
-              animate={{ width: `${((currentStep - 1) / (STEPS.length - 1)) * 100}%` }}
-              transition={{ type: "spring", stiffness: 200, damping: 28 }}
-            />
-            {/* Shimmer sweep */}
-            <motion.div
-              className="absolute inset-y-0 w-16 bg-gradient-to-r from-transparent via-white/50 to-transparent"
-              animate={{ x: ["-64px", "100%"] }}
-              transition={{ duration: 1.8, repeat: Infinity, ease: "linear", repeatDelay: 2 }}
-            />
+        <div className="relative">
+          {/* Logo */}
+          <div className="flex items-center gap-2 mb-14">
+            <BarpelLogo size={32} />
+            <span className="font-display text-2xl text-white">Barpel</span>
+            <span className="font-display text-2xl text-brand-400"> AI</span>
           </div>
-          {/* Step dots + labels */}
-          <div className="flex justify-between mt-2.5">
+
+          {/* Headline */}
+          <h1 className="font-display text-4xl italic text-white leading-tight mb-3">
+            Your AI is ready.
+          </h1>
+          <p className="text-slate-400 text-sm leading-relaxed mb-12">
+            Let&apos;s go live in 3 minutes.
+          </p>
+
+          {/* Step progress dots */}
+          <div className="space-y-3">
             {STEPS.map((step, i) => {
               const stepNum = i + 1;
               const isDone = stepNum < currentStep;
               const isActive = stepNum === currentStep;
               return (
-                <div key={step.label} className="flex flex-col items-center gap-1">
-                  <motion.div
-                    className={`w-2 h-2 rounded-full ${
-                      isDone || isActive ? "bg-[#0d9488]" : "bg-[#D0EDE8]"
-                    }`}
-                    animate={isActive ? {
-                      scale: [1, 1.5, 1],
-                      boxShadow: [
-                        "0 0 0 0 rgba(13,148,136,0)",
-                        "0 0 0 4px rgba(13,148,136,0.2)",
-                        "0 0 0 0 rgba(13,148,136,0)",
-                      ],
-                    } : {}}
-                    transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-                  />
-                  <span className={`text-[10px] hidden sm:block ${
-                    isActive ? "text-[#0d9488] font-semibold" : isDone ? "text-[#0d9488]/60" : "text-[#8AADA6]"
+                <div key={step.label} className="flex items-center gap-3">
+                  <div className={`w-2 h-2 rounded-full transition-all duration-300 flex-shrink-0 ${
+                    isDone || isActive ? "bg-brand-400" : "bg-white/15"
+                  } ${isActive ? "scale-125" : ""}`} />
+                  <span className={`text-sm transition-colors ${
+                    isActive ? "text-white font-medium" : isDone ? "text-slate-500" : "text-slate-600"
                   }`}>
                     {step.label}
                   </span>
+                  {isDone && <span className="text-brand-400 text-xs ml-auto">✓</span>}
                 </div>
               );
             })}
           </div>
         </div>
+
+        {/* Trust signal + footer */}
+        <div className="relative">
+          <p className="text-slate-400 text-sm mb-3">200+ merchants already automated</p>
+          <p className="text-slate-600 text-xs">Powered by Vapi · Twilio · AI</p>
+        </div>
       </div>
 
-      {/* Step content — hero-style card stack */}
-      <div className="relative flex-1 flex items-start justify-center px-6 pt-10 pb-8" style={{ zIndex: 10 }}>
-        {/* Outer container gives room for ghost cards poking right and up */}
-        <div className="w-full max-w-md pr-12 pt-6">
-          {/* Card stack wrapper */}
-          <div className="relative">
+      {/* ── RIGHT PANEL (white, 60%) ── */}
+      <div className="flex-1 bg-white flex flex-col overflow-y-auto">
+        <div className="max-w-lg mx-auto w-full px-8 py-10 flex-1 flex flex-col">
 
-            {/* Ghost card 2 — furthest back, peeks top-right */}
-            {currentStep + 1 <= 5 && (
-              <motion.div
-                key={`ghost2-step${currentStep}`}
-                className="absolute inset-0 bg-white rounded-2xl border border-[#D0EDE8] overflow-hidden pointer-events-none"
-                style={{ zIndex: 1 }}
-                initial={{ x: 0, y: 0, scale: 1, opacity: 0 }}
-                animate={{ x: 56, y: -28, scale: 0.88, opacity: 0.4, rotateZ: 3 }}
-                transition={springTransition}
-              >
-                <div className={`h-1 bg-gradient-to-r ${ghost2Accent}`} />
-              </motion.div>
-            )}
+          {/* Mobile logo */}
+          <div className="flex items-center gap-2 mb-8 md:hidden">
+            <BarpelLogo size={24} />
+            <span className="font-display text-xl text-slate-900">Barpel</span>
+            <span className="font-display text-xl text-brand-600"> AI</span>
+          </div>
 
-            {/* Ghost card 1 — one step behind, peeks top-right */}
-            {currentStep < 5 && (
-              <motion.div
-                key={`ghost1-step${currentStep}`}
-                className="absolute inset-0 bg-white rounded-2xl border border-[#D0EDE8] overflow-hidden pointer-events-none"
-                style={{ zIndex: 2 }}
-                initial={{ x: 0, y: 0, scale: 1, opacity: 0 }}
-                animate={{ x: 28, y: -14, scale: 0.94, opacity: 0.7, rotateZ: 1.5 }}
-                transition={springTransition}
-              >
-                <div className={`h-1 bg-gradient-to-r ${ghost1Accent}`} />
-              </motion.div>
-            )}
+          {/* Connected step indicator */}
+          <div className="flex items-center mb-10">
+            {STEPS.map((step, i) => {
+              const stepNum = i + 1;
+              const isDone = stepNum < currentStep;
+              const isActive = stepNum === currentStep;
+              return (
+                <div key={step.label} className="flex items-center flex-1 last:flex-none">
+                  <div className="flex flex-col items-center">
+                    <div className={`
+                      w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300
+                      ${isDone ? "bg-brand-600 text-white" : ""}
+                      ${isActive ? "bg-brand-600 text-white ring-4 ring-brand-light" : ""}
+                      ${!isDone && !isActive ? "bg-slate-100 text-slate-400" : ""}
+                    `}>
+                      {isDone ? "✓" : stepNum}
+                    </div>
+                    <span className={`text-[10px] mt-1 font-medium tracking-wide hidden sm:block ${
+                      isActive ? "text-brand-600" : "text-slate-400"
+                    }`}>
+                      {step.label}
+                    </span>
+                  </div>
+                  {i < STEPS.length - 1 && (
+                    <div className={`flex-1 h-px mx-2 mb-4 transition-all duration-500 ${
+                      isDone ? "bg-brand-600" : "bg-slate-200"
+                    }`} />
+                  )}
+                </div>
+              );
+            })}
+          </div>
 
-            {/* Front card — active step, full content, sets container height */}
-            <div className="relative" style={{ zIndex: 10 }}>
+          {/* Step content */}
+          <div className="flex-1">
+            <div className="relative">
+
               <AnimatePresence mode="wait">
 
                 {/* ─── Step 1: Business Name + Country ─── */}
                 {currentStep === 1 && (
                   <motion.div key="step1" {...cardEnter} transition={springTransition}>
                     <motion.div
-                      className="bg-white rounded-2xl border border-[#D0EDE8] overflow-hidden"
+                      className="bg-white rounded-2xl border border-slate-200 overflow-hidden"
                       style={{ boxShadow: "0 20px 40px -8px rgba(0,0,0,0.10), 0 0 32px rgba(0,169,157,0.12)" }}
                       whileHover={{ y: -2 }}
                       transition={{ type: "spring", stiffness: 400, damping: 25 }}
@@ -690,19 +665,19 @@ function OnboardingContent() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.12, duration: 0.4, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
                       >
-                        <div className="w-12 h-12 rounded-xl bg-[#F0F9F8] flex items-center justify-center mb-6">
-                          <Store className="w-6 h-6 text-teal" />
+                        <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center mb-6">
+                          <Store className="w-6 h-6 text-brand-600" />
                         </div>
-                        <h2 className="font-display text-2xl font-bold text-navy mb-2 tracking-tight">
+                        <h2 className="font-display text-2xl font-bold text-slate-900 mb-2 tracking-tight">
                           What&apos;s your business called?
                         </h2>
-                        <p className="text-sm text-[#4A7A6D] mb-6">
+                        <p className="text-sm text-slate-500 mb-6">
                           This is how your AI agent will introduce itself on calls.
                         </p>
 
                         <div className="space-y-4">
                           <div>
-                            <label className="text-xs text-[#8AADA6] mb-1 block font-sans">Business Name</label>
+                            <label className="text-xs text-slate-400 mb-1 block font-sans">Business Name</label>
                             <input
                               type="text"
                               value={businessName}
@@ -710,17 +685,17 @@ function OnboardingContent() {
                               onKeyDown={(e) => e.key === "Enter" && handleSaveBusinessName()}
                               placeholder="e.g. PowerFit Gadgets"
                               maxLength={60}
-                              className="w-full px-4 py-3 rounded-xl border border-[#D0EDE8] bg-[#F0F9F8] text-navy placeholder:text-[#8AADA6] text-sm focus:outline-none focus:ring-2 focus:ring-teal/30 focus:border-teal transition-colors"
+                              className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600/20 focus:border-brand-600 transition-colors"
                               autoFocus
                             />
                           </div>
 
                           <div>
-                            <label className="text-xs text-[#8AADA6] mb-1 block font-sans">Country</label>
+                            <label className="text-xs text-slate-400 mb-1 block font-sans">Country</label>
                             <select
                               value={country}
                               onChange={(e) => setCountry(e.target.value)}
-                              className="w-full px-4 py-3 rounded-xl border border-[#D0EDE8] bg-[#F0F9F8] text-navy text-sm focus:outline-none focus:ring-2 focus:ring-teal/30 focus:border-teal transition-colors"
+                              className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600/20 focus:border-brand-600 transition-colors"
                             >
                               <option value="">Select your country</option>
                               {COUNTRIES.map((c) => (
@@ -737,7 +712,7 @@ function OnboardingContent() {
                         <button
                           onClick={handleSaveBusinessName}
                           disabled={saving || !businessName.trim() || !country}
-                          className="mt-6 w-full flex items-center justify-center gap-2 py-3 rounded-full bg-[#0d9488] text-white font-semibold text-sm hover:bg-[#0b8276] shadow-[0_4px_14px_0_rgba(13,148,136,0.25)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="mt-6 w-full flex items-center justify-center gap-2 py-3 rounded-full bg-brand-600 text-white font-semibold text-sm hover:bg-brand-700 shadow-brand transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {saving ? "Saving..." : "Continue"}
                           <ArrowRight className="w-4 h-4" />
@@ -751,7 +726,7 @@ function OnboardingContent() {
                 {currentStep === 2 && (
                   <motion.div key="step2" {...cardEnter} transition={springTransition}>
                     <motion.div
-                      className="bg-white rounded-2xl border border-[#D0EDE8] overflow-hidden"
+                      className="bg-white rounded-2xl border border-slate-200 overflow-hidden"
                       style={{ boxShadow: "0 20px 40px -8px rgba(0,0,0,0.10), 0 0 32px rgba(0,169,157,0.12)" }}
                       whileHover={{ y: -2 }}
                       transition={{ type: "spring", stiffness: 400, damping: 25 }}
@@ -763,25 +738,25 @@ function OnboardingContent() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.12, duration: 0.4, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
                       >
-                        <div className="w-12 h-12 rounded-xl bg-[#F0F9F8] flex items-center justify-center mb-6">
-                          <Sparkles className="w-6 h-6 text-teal" />
+                        <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center mb-6">
+                          <Sparkles className="w-6 h-6 text-brand-600" />
                         </div>
-                        <h2 className="font-display text-2xl font-bold text-navy mb-2 tracking-tight">
+                        <h2 className="font-display text-2xl font-bold text-slate-900 mb-2 tracking-tight">
                           Connect Your Shopify Store
                         </h2>
-                        <p className="text-sm text-[#4A7A6D] mb-6">
+                        <p className="text-sm text-slate-500 mb-6">
                           Log into Shopify and approve access in one click.
                         </p>
 
                         {shopifyConnected ? (
                           <div className="text-center py-4">
-                            <div className="w-16 h-16 rounded-full bg-[#C8F0E8] flex items-center justify-center mx-auto mb-4">
-                              <Check className="w-8 h-8 text-teal" />
+                            <div className="w-16 h-16 rounded-full bg-brand-muted flex items-center justify-center mx-auto mb-4">
+                              <Check className="w-8 h-8 text-brand-600" />
                             </div>
-                            <h3 className="font-display text-xl font-bold text-navy mb-1">
+                            <h3 className="font-display text-xl font-bold text-slate-900 mb-1">
                               Connected: {connectedShopName}
                             </h3>
-                            <p className="text-sm text-[#4A7A6D] mb-6">
+                            <p className="text-sm text-slate-500 mb-6">
                               Your Shopify store is linked. Your AI can now look up orders in real time.
                             </p>
                             <button
@@ -789,7 +764,7 @@ function OnboardingContent() {
                                 await saveToDb({ onboarding_step: 3 });
                                 goToStep(3);
                               }}
-                              className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-[#0d9488] text-white font-semibold text-sm hover:bg-[#0b8276] shadow-[0_4px_14px_0_rgba(13,148,136,0.25)] transition-colors"
+                              className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-brand-600 text-white font-semibold text-sm hover:bg-brand-700 shadow-brand transition-colors"
                             >
                               Continue <ArrowRight className="w-4 h-4" />
                             </button>
@@ -810,14 +785,14 @@ function OnboardingContent() {
                               </div>
                             )}
 
-                            <p className="text-sm text-[#4A7A6D] mb-4">
+                            <p className="text-sm text-slate-500 mb-4">
                               You&apos;ll be redirected to Shopify to log in and authorize Barpel.
                             </p>
 
                             <button
                               onClick={handleConnectShopify}
                               disabled={connectingShopify}
-                              className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-[#0d9488] text-white font-semibold text-sm hover:bg-[#0b8276] shadow-[0_4px_14px_0_rgba(13,148,136,0.25)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-brand-600 text-white font-semibold text-sm hover:bg-brand-700 shadow-brand transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               {connectingShopify ? "Connecting..." : "Connect My Shopify Store"}
                               <ArrowRight className="w-4 h-4" />
@@ -825,17 +800,17 @@ function OnboardingContent() {
 
                             <button
                               onClick={handleSkipShopify}
-                              className="mt-4 text-sm text-[#8AADA6] hover:text-navy transition-colors mx-auto block"
+                              className="mt-4 text-sm text-slate-400 hover:text-slate-900 transition-colors mx-auto block"
                             >
                               Skip for now — AI will answer calls but can&apos;t look up orders yet
                             </button>
-                            <p className="text-xs text-[#8AADA6] mt-1 text-center">
+                            <p className="text-xs text-slate-400 mt-1 text-center">
                               You can connect Shopify anytime from your dashboard
                             </p>
 
                             <button
                               onClick={() => goToStep(1)}
-                              className="mt-4 flex items-center gap-1 text-xs text-[#8AADA6] hover:text-navy transition-colors mx-auto"
+                              className="mt-4 flex items-center gap-1 text-xs text-slate-400 hover:text-slate-900 transition-colors mx-auto"
                             >
                               <ArrowLeft className="w-3 h-3" /> Back
                             </button>
@@ -850,7 +825,7 @@ function OnboardingContent() {
                 {currentStep === 3 && (
                   <motion.div key="step3" {...cardEnter} transition={springTransition}>
                     <motion.div
-                      className="bg-white rounded-2xl border border-[#D0EDE8] overflow-hidden"
+                      className="bg-white rounded-2xl border border-slate-200 overflow-hidden"
                       style={{ boxShadow: "0 20px 40px -8px rgba(0,0,0,0.10), 0 0 32px rgba(0,169,157,0.12)" }}
                       whileHover={{ y: -2 }}
                       transition={{ type: "spring", stiffness: 400, damping: 25 }}
@@ -862,13 +837,13 @@ function OnboardingContent() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.12, duration: 0.4, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
                       >
-                        <div className="w-12 h-12 rounded-xl bg-[#F0F9F8] flex items-center justify-center mb-6">
-                          <CreditCard className="w-6 h-6 text-teal" />
+                        <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center mb-6">
+                          <CreditCard className="w-6 h-6 text-brand-600" />
                         </div>
-                        <h2 className="font-display text-2xl font-bold text-navy mb-2 tracking-tight">
+                        <h2 className="font-display text-2xl font-bold text-slate-900 mb-2 tracking-tight">
                           Get call credits
                         </h2>
-                        <p className="text-sm text-[#4A7A6D] mb-6">
+                        <p className="text-sm text-slate-500 mb-6">
                           {freeMinutes > 0
                             ? `Choose a plan or start with your ${freeMinutes} free credits to try it out.`
                             : "Choose a plan to get started with AI support calls."}
@@ -877,7 +852,7 @@ function OnboardingContent() {
                         {freeMinutes > 0 && (
                           <button
                             onClick={handleSkipBilling}
-                            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full bg-[#0d9488] text-white font-semibold text-sm hover:bg-[#0b8276] shadow-[0_4px_14px_0_rgba(13,148,136,0.25)] transition-colors mb-2"
+                            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full bg-brand-600 text-white font-semibold text-sm hover:bg-brand-700 shadow-brand transition-colors mb-2"
                           >
                             Start with {freeMinutes} free credits — no card required
                           </button>
@@ -886,13 +861,13 @@ function OnboardingContent() {
                         {freeMinutes > 0 && (
                           <div className="flex items-center gap-3 my-4">
                             <div className="flex-1 h-px bg-[#D0EDE8]" />
-                            <span className="text-xs text-[#8AADA6]">or upgrade now</span>
+                            <span className="text-xs text-slate-400">or upgrade now</span>
                             <div className="flex-1 h-px bg-[#D0EDE8]" />
                           </div>
                         )}
 
                         {/* USD (International) — Dodo Payments */}
-                        <p className="text-xs font-semibold text-[#8AADA6] uppercase tracking-wide mb-1">
+                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
                           Pay in USD — International Cards
                         </p>
                         <div className="space-y-3">
@@ -901,17 +876,17 @@ function OnboardingContent() {
                               key={`dodo-${pkg.id}`}
                               onClick={() => handleDodoBuyCredits(pkg.id)}
                               disabled={billingLoading}
-                              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border text-left transition-colors hover:bg-[#F0F9F8] disabled:opacity-50 disabled:cursor-not-allowed ${
-                                "popular" in pkg && pkg.popular ? "border-teal bg-[#F0F9F8]" : "border-[#D0EDE8]"
+                              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border text-left transition-colors hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed ${
+                                "popular" in pkg && pkg.popular ? "border-brand-600 bg-slate-50" : "border-slate-200"
                               }`}
                             >
                               <div>
-                                <span className="font-semibold text-navy text-sm">{pkg.name}</span>
-                                <span className="text-xs text-[#8AADA6] ml-2">
+                                <span className="font-semibold text-slate-900 text-sm">{pkg.name}</span>
+                                <span className="text-xs text-slate-400 ml-2">
                                   {pkg.credits} credits &middot; ${pkg.perMin}/credit
                                 </span>
                               </div>
-                              <span className="font-bold text-navy">
+                              <span className="font-bold text-slate-900">
                                 ${(pkg.priceUsdCents / 100).toFixed(0)}/mo
                               </span>
                             </button>
@@ -923,7 +898,7 @@ function OnboardingContent() {
                           <>
                             <div className="flex items-center gap-3 my-4">
                               <div className="flex-1 h-px bg-[#D0EDE8]" />
-                              <span className="text-xs text-[#8AADA6]">or pay in NGN</span>
+                              <span className="text-xs text-slate-400">or pay in NGN</span>
                               <div className="flex-1 h-px bg-[#D0EDE8]" />
                             </div>
                             <div className="space-y-3">
@@ -932,13 +907,13 @@ function OnboardingContent() {
                                   key={`pstk-${pkg.id}`}
                                   onClick={() => handleBuyCredits(pkg.id)}
                                   disabled={billingLoading}
-                                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-[#D0EDE8] text-left transition-colors hover:bg-[#F0F9F8] disabled:opacity-50 disabled:cursor-not-allowed"
+                                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-slate-200 text-left transition-colors hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                   <div>
-                                    <span className="font-semibold text-navy text-sm">{pkg.name}</span>
-                                    <span className="text-xs text-[#8AADA6] ml-2">via Paystack</span>
+                                    <span className="font-semibold text-slate-900 text-sm">{pkg.name}</span>
+                                    <span className="text-xs text-slate-400 ml-2">via Paystack</span>
                                   </div>
-                                  <span className="font-bold text-navy">
+                                  <span className="font-bold text-slate-900">
                                     ${(pkg.priceUsdCents / 100).toFixed(0)}/mo
                                   </span>
                                 </button>
@@ -952,7 +927,7 @@ function OnboardingContent() {
 
                         <button
                           onClick={() => goToStep(2)}
-                          className="mt-4 flex items-center gap-1 text-xs text-[#8AADA6] hover:text-navy transition-colors mx-auto"
+                          className="mt-4 flex items-center gap-1 text-xs text-slate-400 hover:text-slate-900 transition-colors mx-auto"
                         >
                           <ArrowLeft className="w-3 h-3" /> Back
                         </button>
@@ -965,7 +940,7 @@ function OnboardingContent() {
                 {currentStep === 4 && (
                   <motion.div key="step4" {...cardEnter} transition={springTransition}>
                     <motion.div
-                      className="bg-white rounded-2xl border border-[#D0EDE8] overflow-hidden"
+                      className="bg-white rounded-2xl border border-slate-200 overflow-hidden"
                       style={{ boxShadow: "0 20px 40px -8px rgba(0,0,0,0.10), 0 0 32px rgba(0,169,157,0.12)" }}
                       whileHover={{ y: -2 }}
                       transition={{ type: "spring", stiffness: 400, damping: 25 }}
@@ -977,16 +952,16 @@ function OnboardingContent() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.12, duration: 0.4, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
                       >
-                        <div className="w-12 h-12 rounded-xl bg-[#F0F9F8] flex items-center justify-center mx-auto mb-6">
-                          <Phone className="w-6 h-6 text-teal" />
+                        <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center mx-auto mb-6">
+                          <Phone className="w-6 h-6 text-brand-600" />
                         </div>
 
                         {(provisioningStatus === "pending" || provisioningStatus === "failed") && (
                           <>
-                            <h2 className="font-display text-2xl font-bold text-navy mb-2 text-center tracking-tight">
+                            <h2 className="font-display text-2xl font-bold text-slate-900 mb-2 text-center tracking-tight">
                               Get Your AI Phone Line
                             </h2>
-                            <p className="text-sm text-[#4A7A6D] mb-6 text-center">
+                            <p className="text-sm text-slate-500 mb-6 text-center">
                               Your AI is ready. Now give it a number to answer calls on.
                             </p>
 
@@ -1003,34 +978,34 @@ function OnboardingContent() {
                             <button
                               onClick={handleCompleteOnboarding}
                               disabled={saving}
-                              className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-[#0d9488] text-white font-semibold text-sm hover:bg-[#0b8276] shadow-[0_4px_14px_0_rgba(13,148,136,0.25)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-brand-600 text-white font-semibold text-sm hover:bg-brand-700 shadow-brand transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               <Phone className="w-4 h-4" />
                               {saving ? "Setting up..." : "Get My AI Number \u2014 Free"}
                             </button>
-                            <p className="text-center text-xs text-[#8AADA6] mt-1.5">
+                            <p className="text-center text-xs text-slate-400 mt-1.5">
                               This uses your free credits.
                             </p>
 
                             <div className="flex items-center gap-3 my-5">
                               <div className="flex-1 h-px bg-[#D0EDE8]" />
-                              <span className="text-xs text-[#8AADA6]">or</span>
+                              <span className="text-xs text-slate-400">or</span>
                               <div className="flex-1 h-px bg-[#D0EDE8]" />
                             </div>
 
-                            <p className="text-sm text-[#4A7A6D] text-center mb-2">
+                            <p className="text-sm text-slate-500 text-center mb-2">
                               Already have a Twilio number?
                             </p>
                             <button
                               onClick={() => setBYOCOpen(true)}
-                              className="w-full flex items-center justify-center gap-2 py-3 rounded-full border border-[#D0EDE8] text-[#4A7A6D] font-medium text-sm hover:bg-[#F0F9F8] transition-colors"
+                              className="w-full flex items-center justify-center gap-2 py-3 rounded-full border border-slate-200 text-slate-500 font-medium text-sm hover:bg-slate-50 transition-colors"
                             >
                               Bring My Own Number
                             </button>
 
                             <div className="flex items-center gap-3 my-5">
                               <div className="flex-1 h-px bg-[#D0EDE8]" />
-                              <span className="text-xs text-[#8AADA6]">or</span>
+                              <span className="text-xs text-slate-400">or</span>
                               <div className="flex-1 h-px bg-[#D0EDE8]" />
                             </div>
 
@@ -1039,14 +1014,14 @@ function OnboardingContent() {
                                 await saveToDb({ onboarding_step: 5, onboarded_at: new Date().toISOString() });
                                 goToStep(5);
                               }}
-                              className="text-sm text-[#8AADA6] hover:text-navy transition-colors mx-auto block"
+                              className="text-sm text-slate-400 hover:text-slate-900 transition-colors mx-auto block"
                             >
                               Skip for now &mdash; set up from dashboard
                             </button>
 
                             <button
                               onClick={() => goToStep(3)}
-                              className="mt-4 flex items-center gap-1 text-xs text-[#8AADA6] hover:text-navy transition-colors mx-auto"
+                              className="mt-4 flex items-center gap-1 text-xs text-slate-400 hover:text-slate-900 transition-colors mx-auto"
                             >
                               <ArrowLeft className="w-3 h-3" /> Back
                             </button>
@@ -1055,15 +1030,15 @@ function OnboardingContent() {
 
                         {provisioningStatus === "provisioning" && (
                           <>
-                            <h2 className="font-display text-2xl font-bold text-navy mb-2 text-center tracking-tight">
+                            <h2 className="font-display text-2xl font-bold text-slate-900 mb-2 text-center tracking-tight">
                               Setting up your AI
                             </h2>
                             <div className="flex flex-col items-center gap-3 py-6">
-                              <div className="w-8 h-8 border-2 border-teal border-t-transparent rounded-full animate-spin" />
-                              <p className="text-sm text-[#4A7A6D]">
+                              <div className="w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
+                              <p className="text-sm text-slate-500">
                                 Creating your AI assistant and phone line&hellip;
                               </p>
-                              <p className="text-xs text-[#8AADA6]">
+                              <p className="text-xs text-slate-400">
                                 This usually takes about 30 seconds.
                               </p>
                             </div>
@@ -1072,11 +1047,11 @@ function OnboardingContent() {
 
                         {provisioningStatus === "active" && phoneNumber && (
                           <div className="flex flex-col items-center gap-3 py-4">
-                            <Check className="w-8 h-8 text-teal" />
-                            <p className="text-sm text-[#4A7A6D]">Phone line ready!</p>
+                            <Check className="w-8 h-8 text-brand-600" />
+                            <p className="text-sm text-slate-500">Phone line ready!</p>
                             <button
                               onClick={() => goToStep(5)}
-                              className="mt-2 flex items-center justify-center gap-2 py-3 px-6 rounded-full bg-[#0d9488] text-white font-semibold text-sm hover:bg-[#0b8276] shadow-[0_4px_14px_0_rgba(13,148,136,0.25)] transition-colors"
+                              className="mt-2 flex items-center justify-center gap-2 py-3 px-6 rounded-full bg-brand-600 text-white font-semibold text-sm hover:bg-brand-700 shadow-brand transition-colors"
                             >
                               Continue
                               <ArrowRight className="w-4 h-4" />
@@ -1086,7 +1061,7 @@ function OnboardingContent() {
 
                         {provisioningStatus === "needs_address" && (
                           <>
-                            <h2 className="font-display text-2xl font-bold text-navy mb-2 text-center tracking-tight">
+                            <h2 className="font-display text-2xl font-bold text-slate-900 mb-2 text-center tracking-tight">
                               Almost there!
                             </h2>
                             <div className="py-4">
@@ -1101,7 +1076,7 @@ function OnboardingContent() {
                                 await saveToDb({ onboarding_step: 5, onboarded_at: new Date().toISOString() });
                                 goToStep(5);
                               }}
-                              className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-[#0d9488] text-white font-semibold text-sm hover:bg-[#0b8276] shadow-[0_4px_14px_0_rgba(13,148,136,0.25)] transition-colors"
+                              className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-brand-600 text-white font-semibold text-sm hover:bg-brand-700 shadow-brand transition-colors"
                             >
                               Continue to Dashboard
                               <ArrowRight className="w-4 h-4" />
@@ -1117,7 +1092,7 @@ function OnboardingContent() {
                 {currentStep === 5 && (
                   <motion.div key="step5" {...cardEnter} transition={springTransition}>
                     <motion.div
-                      className="bg-white rounded-2xl border border-[#D0EDE8] overflow-hidden"
+                      className="bg-white rounded-2xl border border-slate-200 overflow-hidden"
                       style={{ boxShadow: "0 20px 40px -8px rgba(0,0,0,0.10), 0 0 32px rgba(0,169,157,0.12)" }}
                       whileHover={{ y: -2 }}
                       transition={{ type: "spring", stiffness: 400, damping: 25 }}
@@ -1129,30 +1104,30 @@ function OnboardingContent() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.12, duration: 0.4, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
                       >
-                        <div className="w-16 h-16 rounded-full bg-[#C8F0E8] flex items-center justify-center mx-auto mb-6">
-                          <Rocket className="w-8 h-8 text-teal" />
+                        <div className="w-16 h-16 rounded-full bg-brand-muted flex items-center justify-center mx-auto mb-6">
+                          <Rocket className="w-8 h-8 text-brand-600" />
                         </div>
 
                         {provisioningStatus === "active" && phoneNumber ? (
                           <>
-                            <h2 className="font-display text-2xl font-bold text-navy mb-2 text-center tracking-tight">
+                            <h2 className="font-display text-2xl font-bold text-slate-900 mb-2 text-center tracking-tight">
                               Your AI is live! 🎉
                             </h2>
-                            <p className="text-sm text-[#4A7A6D] mb-2 text-center">
+                            <p className="text-sm text-slate-500 mb-2 text-center">
                               Call your number right now to hear it in action.
                             </p>
-                            <p className="text-xs text-[#8AADA6] mb-6 text-center">
+                            <p className="text-xs text-slate-400 mb-6 text-center">
                               Share this number with your customers to start taking AI-powered calls.
                             </p>
 
-                            <div className="bg-[#F0F9F8] rounded-xl border border-[#D0EDE8] p-4 flex items-center justify-between mb-6">
+                            <div className="bg-slate-50 rounded-xl border border-slate-200 p-4 flex items-center justify-between mb-6">
                               <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-teal/10 flex items-center justify-center">
-                                  <Phone className="w-5 h-5 text-teal" />
+                                <div className="w-10 h-10 rounded-full bg-brand-600/10 flex items-center justify-center">
+                                  <Phone className="w-5 h-5 text-brand-600" />
                                 </div>
                                 <div className="text-left">
-                                  <p className="text-xs text-[#8AADA6]">Your AI phone number</p>
-                                  <p className="font-mono font-bold text-xl text-navy">{phoneNumber}</p>
+                                  <p className="text-xs text-slate-400">Your AI phone number</p>
+                                  <p className="font-mono font-bold text-xl text-slate-900">{phoneNumber}</p>
                                 </div>
                               </div>
                               <button
@@ -1161,9 +1136,9 @@ function OnboardingContent() {
                                 title="Copy number"
                               >
                                 {copied ? (
-                                  <Check className="w-4 h-4 text-teal" />
+                                  <Check className="w-4 h-4 text-brand-600" />
                                 ) : (
-                                  <Copy className="w-4 h-4 text-[#8AADA6]" />
+                                  <Copy className="w-4 h-4 text-slate-400" />
                                 )}
                               </button>
                             </div>
@@ -1179,15 +1154,15 @@ function OnboardingContent() {
                             )}
 
                             <div className="mb-6">
-                              <div className="flex border border-[#D0EDE8] rounded-xl overflow-hidden">
+                              <div className="flex border border-slate-200 rounded-xl overflow-hidden">
                                 {(["A", "B", "C"] as const).map((tab) => (
                                   <button
                                     key={tab}
                                     onClick={() => setActiveTab(tab)}
                                     className={`flex-1 py-2.5 text-xs font-semibold transition-colors ${
                                       activeTab === tab
-                                        ? "bg-[#0d9488] text-white"
-                                        : "bg-white text-[#4A7A6D] hover:bg-[#F0F9F8]"
+                                        ? "bg-brand-600 text-white"
+                                        : "bg-white text-slate-500 hover:bg-slate-50"
                                     }`}
                                   >
                                     {tab === "A" ? "Add to Store" : tab === "B" ? "Call Forwarding" : "Caller ID (Optional)"}
@@ -1196,34 +1171,34 @@ function OnboardingContent() {
                               </div>
 
                               {activeTab === "A" && (
-                                <div className="mt-4 p-4 bg-[#F0F9F8] rounded-xl border border-[#D0EDE8] space-y-3 text-sm text-[#1B2A4A]">
+                                <div className="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3 text-sm text-[#1B2A4A]">
                                   <p className="font-semibold">Share your AI support number in these locations:</p>
-                                  <ul className="space-y-2 text-[#4A7A6D]">
+                                  <ul className="space-y-2 text-slate-500">
                                     <li>
-                                      <span className="font-medium text-navy">Contact page</span> — Add as the primary support phone number
+                                      <span className="font-medium text-slate-900">Contact page</span> — Add as the primary support phone number
                                     </li>
                                     <li>
-                                      <span className="font-medium text-navy">Footer</span> — Add &ldquo;Questions? Call [number]&rdquo;
+                                      <span className="font-medium text-slate-900">Footer</span> — Add &ldquo;Questions? Call [number]&rdquo;
                                     </li>
                                     <li>
-                                      <span className="font-medium text-navy">Order confirmation email</span> — Add &ldquo;Questions about your order? Call us at [number]&rdquo;
+                                      <span className="font-medium text-slate-900">Order confirmation email</span> — Add &ldquo;Questions about your order? Call us at [number]&rdquo;
                                     </li>
                                   </ul>
                                 </div>
                               )}
 
                               {activeTab === "B" && (
-                                <div className="mt-4 p-4 bg-[#F0F9F8] rounded-xl border border-[#D0EDE8] space-y-4 text-sm">
-                                  <p className="text-[#4A7A6D]">
+                                <div className="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-4 text-sm">
+                                  <p className="text-slate-500">
                                     Forward your existing number to your AI line so customers call your store number and the AI answers.
                                   </p>
 
                                   <div>
-                                    <label className="block text-xs font-medium text-navy mb-1">Country</label>
+                                    <label className="block text-xs font-medium text-slate-900 mb-1">Country</label>
                                     <select
                                       value={fwdCountry}
                                       onChange={(e) => { setFwdCountry(e.target.value); setFwdCarrier(""); }}
-                                      className="w-full px-3 py-2 rounded-lg border border-[#D0EDE8] bg-white text-navy text-sm focus:outline-none focus:ring-2 focus:ring-teal/40"
+                                      className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600/20"
                                     >
                                       <option value="">Select your country</option>
                                       {Object.keys(CALL_FORWARDING_CODES).map((code) => (
@@ -1236,11 +1211,11 @@ function OnboardingContent() {
 
                                   {fwdCountry && (
                                     <div>
-                                      <label className="block text-xs font-medium text-navy mb-1">Carrier / Network</label>
+                                      <label className="block text-xs font-medium text-slate-900 mb-1">Carrier / Network</label>
                                       <select
                                         value={fwdCarrier}
                                         onChange={(e) => setFwdCarrier(e.target.value)}
-                                        className="w-full px-3 py-2 rounded-lg border border-[#D0EDE8] bg-white text-navy text-sm focus:outline-none focus:ring-2 focus:ring-teal/40"
+                                        className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600/20"
                                       >
                                         <option value="">Select your carrier</option>
                                         {getCarriersForCountry(fwdCountry).map((c) => (
@@ -1253,14 +1228,14 @@ function OnboardingContent() {
                                   {fwdCarrier && (
                                     <>
                                       <div>
-                                        <label className="block text-xs font-medium text-navy mb-2">Forwarding type</label>
+                                        <label className="block text-xs font-medium text-slate-900 mb-2">Forwarding type</label>
                                         <div className="flex gap-2">
                                           <button
                                             onClick={() => setFwdType("conditional")}
                                             className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium border transition ${
                                               fwdType === "conditional"
-                                                ? "bg-[#0d9488] text-white border-[#0d9488]"
-                                                : "bg-white text-[#4A7A6D] border-[#D0EDE8]"
+                                                ? "bg-brand-600 text-white border-[#0d9488]"
+                                                : "bg-white text-slate-500 border-slate-200"
                                             }`}
                                           >
                                             When busy / no answer
@@ -1270,8 +1245,8 @@ function OnboardingContent() {
                                             onClick={() => setFwdType("all")}
                                             className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium border transition ${
                                               fwdType === "all"
-                                                ? "bg-[#0d9488] text-white border-[#0d9488]"
-                                                : "bg-white text-[#4A7A6D] border-[#D0EDE8]"
+                                                ? "bg-brand-600 text-white border-[#0d9488]"
+                                                : "bg-white text-slate-500 border-slate-200"
                                             }`}
                                           >
                                             All calls
@@ -1280,8 +1255,8 @@ function OnboardingContent() {
                                         </div>
                                       </div>
 
-                                      <div className="bg-white rounded-xl p-4 border border-[#D0EDE8] space-y-3">
-                                        <p className="text-xs font-medium text-navy">
+                                      <div className="bg-white rounded-xl p-4 border border-slate-200 space-y-3">
+                                        <p className="text-xs font-medium text-slate-900">
                                           Dial {fwdType === "all" ? "this code" : "these codes"} on your {fwdCarrier} phone:
                                         </p>
 
@@ -1309,10 +1284,10 @@ function OnboardingContent() {
                                           </>
                                         )}
 
-                                        <div className="border-t border-[#D0EDE8] pt-2">
-                                          <p className="text-[10px] text-[#8AADA6]">
+                                        <div className="border-t border-slate-200 pt-2">
+                                          <p className="text-[10px] text-slate-400">
                                             To cancel forwarding later, dial:{" "}
-                                            <code className="bg-[#F0F9F8] px-1 rounded font-mono">
+                                            <code className="bg-slate-50 px-1 rounded font-mono">
                                               {getCancelCode(fwdCountry, fwdCarrier)}
                                             </code>
                                           </p>
@@ -1324,7 +1299,7 @@ function OnboardingContent() {
                               )}
 
                               {activeTab === "C" && (
-                                <div className="mt-4 p-4 bg-[#F0F9F8] rounded-xl border border-[#D0EDE8] space-y-3 text-sm text-[#4A7A6D]">
+                                <div className="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3 text-sm text-slate-500">
                                   <p>
                                     Enter your existing store number. We&apos;ll verify it so outbound calls (like cart recovery) show your number on customers&apos; screens.
                                   </p>
@@ -1345,7 +1320,7 @@ function OnboardingContent() {
                                           {callerIdCode}
                                         </p>
                                       </div>
-                                      <p className="text-xs text-[#8AADA6]">
+                                      <p className="text-xs text-slate-400">
                                         After you enter the code on the call, your number will be verified for outbound caller ID.
                                       </p>
                                     </div>
@@ -1356,7 +1331,7 @@ function OnboardingContent() {
                                         value={callerIdPhone}
                                         onChange={(e) => setCallerIdPhone(e.target.value)}
                                         placeholder="+234... or +1... (E.164 format)"
-                                        className="flex-1 px-3 py-2 rounded-lg border border-[#D0EDE8] bg-white text-navy text-sm focus:outline-none focus:ring-2 focus:ring-teal/40"
+                                        className="flex-1 px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600/20"
                                       />
                                       <button
                                         onClick={async () => {
@@ -1385,14 +1360,14 @@ function OnboardingContent() {
                                           }
                                         }}
                                         disabled={callerIdLoading}
-                                        className="px-3 py-2 rounded-lg bg-[#0d9488] text-white text-xs font-semibold hover:bg-[#0b8276] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="px-3 py-2 rounded-lg bg-brand-600 text-white text-xs font-semibold hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                       >
                                         {callerIdLoading ? "Calling..." : "Verify Number"}
                                       </button>
                                     </div>
                                   )}
 
-                                  <p className="text-xs text-[#8AADA6]">
+                                  <p className="text-xs text-slate-400">
                                     Optional — you can set this up later from the Integrations page.
                                   </p>
                                 </div>
@@ -1401,7 +1376,7 @@ function OnboardingContent() {
 
                             <button
                               onClick={handleGoToDashboard}
-                              className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-[#0d9488] text-white font-semibold text-sm hover:bg-[#0b8276] shadow-[0_4px_14px_0_rgba(13,148,136,0.25)] transition-colors"
+                              className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-brand-600 text-white font-semibold text-sm hover:bg-brand-700 shadow-brand transition-colors"
                             >
                               Go to My Dashboard
                               <ArrowRight className="w-4 h-4" />
@@ -1409,10 +1384,10 @@ function OnboardingContent() {
                           </>
                         ) : (
                           <>
-                            <h2 className="font-display text-2xl font-bold text-navy mb-2 text-center tracking-tight">
+                            <h2 className="font-display text-2xl font-bold text-slate-900 mb-2 text-center tracking-tight">
                               Welcome to Barpel!
                             </h2>
-                            <p className="text-sm text-[#4A7A6D] mb-6 text-center">
+                            <p className="text-sm text-slate-500 mb-6 text-center">
                               Your account is ready. Add a phone number anytime to start taking AI-powered calls.
                             </p>
 
@@ -1424,7 +1399,7 @@ function OnboardingContent() {
 
                             <button
                               onClick={handleGoToDashboard}
-                              className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-[#0d9488] text-white font-semibold text-sm hover:bg-[#0b8276] shadow-[0_4px_14px_0_rgba(13,148,136,0.25)] transition-colors mb-3"
+                              className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-brand-600 text-white font-semibold text-sm hover:bg-brand-700 shadow-brand transition-colors mb-3"
                             >
                               Go to Dashboard
                               <ArrowRight className="w-4 h-4" />
@@ -1432,7 +1407,7 @@ function OnboardingContent() {
 
                             <button
                               onClick={() => router.push("/dashboard/integrations")}
-                              className="w-full flex items-center justify-center gap-2 py-3 rounded-full border border-[#D0EDE8] text-[#4A7A6D] font-medium text-sm hover:bg-[#F0F9F8] transition-colors"
+                              className="w-full flex items-center justify-center gap-2 py-3 rounded-full border border-slate-200 text-slate-500 font-medium text-sm hover:bg-slate-50 transition-colors"
                             >
                               Set up phone line
                               <ArrowRight className="w-4 h-4" />
@@ -1447,6 +1422,7 @@ function OnboardingContent() {
               </AnimatePresence>
             </div>
           </div>
+
         </div>
       </div>
 

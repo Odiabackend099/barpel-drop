@@ -19,14 +19,14 @@ export function ComingSoonSection() {
       </h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* TikTok Shop */}
-        <div className="bg-white border border-[#D0EDE8] rounded-xl p-5 shadow-sm cursor-not-allowed pointer-events-none opacity-50">
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm cursor-not-allowed pointer-events-none opacity-50">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-black/10">
               <ShoppingBag className="w-6 h-6 text-black/60" />
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-bold text-[#1B2A4A] font-sans">TikTok Shop</h3>
+                <h3 className="font-bold text-slate-900 font-sans">TikTok Shop</h3>
                 <Badge color="#8AADA6">Coming Soon</Badge>
               </div>
               <p className="text-sm text-muted-foreground font-sans">
@@ -37,7 +37,7 @@ export function ComingSoonSection() {
         </div>
 
         {/* WooCommerce */}
-        <div className="bg-white border border-[#D0EDE8] rounded-xl p-5 shadow-sm cursor-not-allowed pointer-events-none opacity-50">
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm cursor-not-allowed pointer-events-none opacity-50">
           <div className="flex items-start gap-4">
             <div
               className="w-12 h-12 rounded-lg flex items-center justify-center"
@@ -47,7 +47,7 @@ export function ComingSoonSection() {
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-bold text-[#1B2A4A] font-sans">WooCommerce</h3>
+                <h3 className="font-bold text-slate-900 font-sans">WooCommerce</h3>
                 <Badge color="#8AADA6">Coming Soon</Badge>
               </div>
               <p className="text-sm text-muted-foreground font-sans">

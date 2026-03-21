@@ -76,7 +76,7 @@ function DodoPlanCard({ pkg, billingCycle }: { pkg: typeof CREDIT_PACKAGES[numbe
 
   return (
     <div
-      className={`bg-white border rounded-xl p-5 shadow-sm relative ${"popular" in pkg && pkg.popular ? "border-[#00A99D]" : "border-[#D0EDE8]"}`}
+      className={`bg-white border rounded-xl p-5 shadow-sm relative ${"popular" in pkg && pkg.popular ? "border-brand-600" : "border-slate-200"}`}
     >
       {"popular" in pkg && pkg.popular && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
@@ -87,10 +87,10 @@ function DodoPlanCard({ pkg, billingCycle }: { pkg: typeof CREDIT_PACKAGES[numbe
         </div>
       )}
       <div className="text-center pt-2">
-        <h3 className="text-lg font-bold text-[#1B2A4A] font-sans">{pkg.name}</h3>
-        <p className="text-3xl font-bold text-[#1B2A4A] mt-2">{priceLabel}</p>
+        <h3 className="text-lg font-bold text-slate-900 font-sans">{pkg.name}</h3>
+        <p className="text-3xl font-bold text-slate-900 mt-2">{priceLabel}</p>
         {monthlyEquiv && (
-          <p className="text-sm text-[#00A99D] font-semibold">{monthlyEquiv} · Save 10%</p>
+          <p className="text-sm text-brand-600 font-semibold">{monthlyEquiv} · Save 10%</p>
         )}
         <p className="text-sm text-muted-foreground font-sans">{pkg.credits} credits/month</p>
         <p className="text-xs text-muted-foreground mt-1 font-sans">
@@ -98,16 +98,16 @@ function DodoPlanCard({ pkg, billingCycle }: { pkg: typeof CREDIT_PACKAGES[numbe
         </p>
       </div>
       <div className="mt-4 space-y-2">
-        <div className="flex items-center gap-2 text-sm text-[#4A7A6D] font-sans">
-          <Check className="w-4 h-4 text-[#00A99D]" />
+        <div className="flex items-center gap-2 text-sm text-slate-500 font-sans">
+          <Check className="w-4 h-4 text-brand-600" />
           Order tracking calls
         </div>
-        <div className="flex items-center gap-2 text-sm text-[#4A7A6D] font-sans">
-          <Check className="w-4 h-4 text-[#00A99D]" />
+        <div className="flex items-center gap-2 text-sm text-slate-500 font-sans">
+          <Check className="w-4 h-4 text-brand-600" />
           Return triage
         </div>
-        <div className="flex items-center gap-2 text-sm text-[#4A7A6D] font-sans">
-          <Check className="w-4 h-4 text-[#00A99D]" />
+        <div className="flex items-center gap-2 text-sm text-slate-500 font-sans">
+          <Check className="w-4 h-4 text-brand-600" />
           Abandoned cart recovery
         </div>
       </div>
@@ -116,8 +116,8 @@ function DodoPlanCard({ pkg, billingCycle }: { pkg: typeof CREDIT_PACKAGES[numbe
         disabled={loading}
         className={`w-full mt-4 inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all px-4 py-2.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed ${
           "popular" in pkg && pkg.popular
-            ? "bg-gradient-to-r from-[#00A99D] to-[#7DD9C0] text-white hover:shadow-lg hover:-translate-y-0.5"
-            : "bg-white border border-[#D0EDE8] text-[#1B2A4A] hover:border-[#00A99D] hover:bg-[#F0F9F8]"
+            ? "bg-gradient-to-r from-brand-600 to-brand-400 text-white hover:shadow-lg hover:-translate-y-0.5"
+            : "bg-white border border-slate-200 text-slate-900 hover:border-brand-600 hover:bg-brand-light"
         }`}
       >
         {loading && (
@@ -204,7 +204,7 @@ function PaystackPlanCard({ pkg, billingCycle }: { pkg: typeof CREDIT_PACKAGES[n
 
   return (
     <div
-      className={`bg-white border rounded-xl p-5 shadow-sm relative ${"popular" in pkg && pkg.popular ? "border-[#00A99D]" : "border-[#D0EDE8]"}`}
+      className={`bg-white border rounded-xl p-5 shadow-sm relative ${"popular" in pkg && pkg.popular ? "border-brand-600" : "border-slate-200"}`}
     >
       {"popular" in pkg && pkg.popular && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
@@ -215,10 +215,10 @@ function PaystackPlanCard({ pkg, billingCycle }: { pkg: typeof CREDIT_PACKAGES[n
         </div>
       )}
       <div className="text-center pt-2">
-        <h3 className="text-lg font-bold text-[#1B2A4A] font-sans">{pkg.name}</h3>
-        <p className="text-3xl font-bold text-[#1B2A4A] mt-2">{priceLabel}</p>
+        <h3 className="text-lg font-bold text-slate-900 font-sans">{pkg.name}</h3>
+        <p className="text-3xl font-bold text-slate-900 mt-2">{priceLabel}</p>
         {monthlyEquiv && (
-          <p className="text-sm text-[#00A99D] font-semibold">{monthlyEquiv} · Save 10%</p>
+          <p className="text-sm text-brand-600 font-semibold">{monthlyEquiv} · Save 10%</p>
         )}
         <p className="text-sm text-muted-foreground font-sans">{pkg.credits} credits/month</p>
         <p className="text-xs text-muted-foreground mt-1 font-sans">
@@ -226,16 +226,16 @@ function PaystackPlanCard({ pkg, billingCycle }: { pkg: typeof CREDIT_PACKAGES[n
         </p>
       </div>
       <div className="mt-4 space-y-2">
-        <div className="flex items-center gap-2 text-sm text-[#4A7A6D] font-sans">
-          <Check className="w-4 h-4 text-[#00A99D]" />
+        <div className="flex items-center gap-2 text-sm text-slate-500 font-sans">
+          <Check className="w-4 h-4 text-brand-600" />
           Order tracking calls
         </div>
-        <div className="flex items-center gap-2 text-sm text-[#4A7A6D] font-sans">
-          <Check className="w-4 h-4 text-[#00A99D]" />
+        <div className="flex items-center gap-2 text-sm text-slate-500 font-sans">
+          <Check className="w-4 h-4 text-brand-600" />
           Return triage
         </div>
-        <div className="flex items-center gap-2 text-sm text-[#4A7A6D] font-sans">
-          <Check className="w-4 h-4 text-[#00A99D]" />
+        <div className="flex items-center gap-2 text-sm text-slate-500 font-sans">
+          <Check className="w-4 h-4 text-brand-600" />
           Abandoned cart recovery
         </div>
       </div>
@@ -244,8 +244,8 @@ function PaystackPlanCard({ pkg, billingCycle }: { pkg: typeof CREDIT_PACKAGES[n
         disabled={loading}
         className={`w-full mt-4 inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all px-4 py-2.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed ${
           "popular" in pkg && pkg.popular
-            ? "bg-gradient-to-r from-[#00A99D] to-[#7DD9C0] text-white hover:shadow-lg hover:-translate-y-0.5"
-            : "bg-white border border-[#D0EDE8] text-[#1B2A4A] hover:border-[#00A99D] hover:bg-[#F0F9F8]"
+            ? "bg-gradient-to-r from-brand-600 to-brand-400 text-white hover:shadow-lg hover:-translate-y-0.5"
+            : "bg-white border border-slate-200 text-slate-900 hover:border-brand-600 hover:bg-brand-light"
         }`}
       >
         {loading && (
@@ -297,7 +297,7 @@ export default function BillingPage() {
   // Color-coded progress bar — scales against current plan's allocation
   const barPercent = Math.min((balance / planCapacitySeconds) * 100, 100);
   const barColor = balance >= 600
-    ? "from-[#00A99D] to-[#7DD9C0]"     // green: 10+ minutes
+    ? "from-brand-600 to-brand-400"     // green: 10+ minutes
     : balance >= 60
     ? "from-amber-400 to-amber-300"      // amber: 1-10 minutes
     : "from-red-500 to-red-400";         // red: < 1 minute
@@ -325,14 +325,14 @@ export default function BillingPage() {
     <div className="space-y-6">
       {/* Success Toast */}
       {successMessage && (
-        <div className="fixed top-20 right-6 z-50 bg-[#C8F0E8] border border-[#7DD9C0] text-[#00A99D] px-4 py-3 rounded-lg flex items-center gap-2 animate-fade-in shadow-lg font-sans">
+        <div className="fixed top-20 right-6 z-50 bg-[#C8F0E8] border border-[#7DD9C0] text-brand-600 px-4 py-3 rounded-lg flex items-center gap-2 animate-fade-in shadow-lg font-sans">
           <Check className="w-5 h-5" />
           {successMessage}
         </div>
       )}
 
       <div>
-        <h1 className="text-2xl font-bold text-[#1B2A4A] font-display tracking-tight mb-1">Billing</h1>
+        <h1 className="text-2xl font-bold text-slate-900 font-display tracking-tight mb-1">Billing</h1>
         <p className="text-sm text-muted-foreground font-sans">Your plan and usage.</p>
       </div>
 
@@ -368,17 +368,17 @@ export default function BillingPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground mb-1 font-sans">Current Balance</p>
-                <p className="text-4xl font-bold text-[#1B2A4A]">
+                <p className="text-4xl font-bold text-slate-900">
                   {credits}
                   <span className="text-xl text-muted-foreground ml-2">credits remaining</span>
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">&asymp; {credits} minutes of AI support</p>
               </div>
               <div className="w-16 h-16 bg-[#C8F0E8] rounded-full flex items-center justify-center">
-                <CardIcon className="w-8 h-8 text-[#00A99D]" />
+                <CardIcon className="w-8 h-8 text-brand-600" />
               </div>
             </div>
-            <div className="mt-4 h-2 bg-[#F0F9F8] rounded-full overflow-hidden">
+            <div className="mt-4 h-2 bg-brand-light rounded-full overflow-hidden">
               <div
                 className={`h-full bg-gradient-to-r ${barColor} rounded-full transition-all`}
                 style={{ width: `${Math.max(barPercent, balance > 0 ? 2 : 0)}%` }}
@@ -390,15 +390,15 @@ export default function BillingPage() {
 
       {/* Current Plan Badge */}
       {!loading && activePlan && hasActiveSubscription && (
-        <div className="bg-white border border-[#D0EDE8] rounded-xl p-5 shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-[#C8F0E8] rounded-full flex items-center justify-center">
-                <Check className="w-4 h-4 text-[#00A99D]" />
+                <Check className="w-4 h-4 text-brand-600" />
               </div>
               <div>
                 <p className="text-sm text-[#8AADA6] font-sans">Current Plan</p>
-                <p className="text-lg font-bold text-[#1B2A4A] capitalize">{activePlan}</p>
+                <p className="text-lg font-bold text-slate-900 capitalize">{activePlan}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -412,9 +412,9 @@ export default function BillingPage() {
 
       {/* Re-subscribe banner after card update */}
       {showResubBanner && (
-        <div className="flex items-center gap-2 p-4 bg-[#F0F9F8] border border-[#D0EDE8] rounded-lg">
-          <RefreshCw className="w-4 h-4 text-[#00A99D] shrink-0" />
-          <p className="text-sm text-[#1B2A4A]">
+        <div className="flex items-center gap-2 p-4 bg-brand-light border border-slate-200 rounded-lg">
+          <RefreshCw className="w-4 h-4 text-brand-600 shrink-0" />
+          <p className="text-sm text-slate-900">
             Select a plan below to re-subscribe with your new card. Your remaining credits are kept.
           </p>
         </div>
@@ -424,7 +424,7 @@ export default function BillingPage() {
       <div className="flex items-center justify-center gap-3 py-2">
         <span
           className={`text-sm font-medium transition-colors ${
-            billingCycle === "monthly" ? "text-[#1B2A4A]" : "text-[#8AADA6]"
+            billingCycle === "monthly" ? "text-slate-900" : "text-[#8AADA6]"
           }`}
         >
           Monthly
@@ -442,26 +442,26 @@ export default function BillingPage() {
         </button>
         <span
           className={`text-sm font-medium transition-colors ${
-            billingCycle === "annual" ? "text-[#1B2A4A]" : "text-[#8AADA6]"
+            billingCycle === "annual" ? "text-slate-900" : "text-[#8AADA6]"
           }`}
         >
           Annual
         </span>
         {billingCycle === "annual" && (
-          <span className="px-2 py-0.5 text-xs font-bold text-[#00A99D] bg-[#C8F0E8] rounded-full">
+          <span className="px-2 py-0.5 text-xs font-bold text-brand-600 bg-[#C8F0E8] rounded-full">
             Save 10%
           </span>
         )}
       </div>
 
       {/* Payment Region Tabs */}
-      <div className="flex items-center gap-1 p-1 bg-[#F0F9F8] rounded-xl w-fit">
+      <div className="flex items-center gap-1 p-1 bg-brand-light rounded-xl w-fit">
         <button
           onClick={() => setPaymentRegion("usd")}
           className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
             paymentRegion === "usd"
-              ? "bg-white text-[#1B2A4A] shadow-sm"
-              : "text-[#8AADA6] hover:text-[#4A7A6D]"
+              ? "bg-white text-slate-900 shadow-sm"
+              : "text-[#8AADA6] hover:text-slate-500"
           }`}
         >
           <Globe className="w-3.5 h-3.5" />
@@ -471,8 +471,8 @@ export default function BillingPage() {
           onClick={() => setPaymentRegion("ngn")}
           className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
             paymentRegion === "ngn"
-              ? "bg-white text-[#1B2A4A] shadow-sm"
-              : "text-[#8AADA6] hover:text-[#4A7A6D]"
+              ? "bg-white text-slate-900 shadow-sm"
+              : "text-[#8AADA6] hover:text-slate-500"
           }`}
         >
           NGN — Nigeria
@@ -501,8 +501,8 @@ export default function BillingPage() {
 
       {/* Subscription Management — Paystack / Flutterwave */}
       {!loading && hasActivePaystackOrFlw && (
-        <div className="bg-white border border-[#D0EDE8] rounded-xl p-5 shadow-sm">
-          <h3 className="text-sm font-bold text-[#1B2A4A] mb-3 font-sans">Manage NGN Subscription</h3>
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <h3 className="text-sm font-bold text-slate-900 mb-3 font-sans">Manage NGN Subscription</h3>
           <div className="flex flex-wrap gap-3">
             <button
               disabled={cancelLoading}
@@ -533,7 +533,7 @@ export default function BillingPage() {
                   setCancelLoading(false);
                 }
               }}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#1B2A4A] bg-white border border-[#D0EDE8] rounded-lg hover:border-[#00A99D] hover:bg-[#F0F9F8] transition-all disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-900 bg-white border border-slate-200 rounded-lg hover:border-brand-600 hover:bg-brand-light transition-all disabled:opacity-50"
             >
               <RefreshCw className={`w-4 h-4 ${cancelLoading ? "animate-spin" : ""}`} />
               Update Payment Method
@@ -578,8 +578,8 @@ export default function BillingPage() {
 
       {/* Subscription Management — Dodo Payments (USD) */}
       {!loading && hasActiveDodo && (
-        <div className="bg-white border border-[#D0EDE8] rounded-xl p-5 shadow-sm">
-          <h3 className="text-sm font-bold text-[#1B2A4A] mb-1 font-sans">Manage USD Subscription</h3>
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <h3 className="text-sm font-bold text-slate-900 mb-1 font-sans">Manage USD Subscription</h3>
           {planStatus === "past_due" && (
             <div className="flex items-center gap-2 mb-3 p-2.5 bg-red-50 border border-red-200 rounded-lg">
               <Zap className="w-3.5 h-3.5 text-red-600 shrink-0" />
@@ -600,7 +600,7 @@ export default function BillingPage() {
             {dodoCustomerId && (
               <a
                 href={`/api/billing/dodo/customer-portal?customer_id=${dodoCustomerId}`}
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#1B2A4A] bg-white border border-[#D0EDE8] rounded-lg hover:border-[#00A99D] hover:bg-[#F0F9F8] transition-all"
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-900 bg-white border border-slate-200 rounded-lg hover:border-brand-600 hover:bg-brand-light transition-all"
               >
                 <RefreshCw className="w-4 h-4" />
                 Update Payment Method
@@ -646,10 +646,10 @@ export default function BillingPage() {
       )}
 
       {/* Usage Chart */}
-      <div className="bg-white border border-[#D0EDE8] rounded-xl p-5 shadow-sm">
+      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
         <div className="flex items-center gap-2 mb-4">
-          <TrendingUp className="w-4 h-4 text-[#00A99D]" />
-          <h3 className="text-sm font-bold text-[#1B2A4A] font-sans">Credit Usage (Last 30 Days)</h3>
+          <TrendingUp className="w-4 h-4 text-brand-600" />
+          <h3 className="text-sm font-bold text-slate-900 font-sans">Credit Usage (Last 30 Days)</h3>
         </div>
         <div className="h-48">
           <ResponsiveContainer width="100%" height="100%">
@@ -688,12 +688,12 @@ export default function BillingPage() {
         <Skeleton className="h-48 w-full rounded-xl" />
       ) : (
         transactions.length > 0 && (
-          <div className="bg-white border border-[#D0EDE8] rounded-xl p-5 shadow-sm">
-            <h3 className="text-sm font-bold text-[#1B2A4A] mb-4 font-sans">Transaction History</h3>
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+            <h3 className="text-sm font-bold text-slate-900 mb-4 font-sans">Transaction History</h3>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-[#D0EDE8]">
+                  <tr className="border-b border-slate-200">
                     <th className="text-left py-2 px-2 text-xs font-medium text-muted-foreground font-sans">Date</th>
                     <th className="text-left py-2 px-2 text-xs font-medium text-muted-foreground font-sans">Description</th>
                     <th className="text-right py-2 px-2 text-xs font-medium text-muted-foreground font-sans">Amount</th>
@@ -701,14 +701,14 @@ export default function BillingPage() {
                 </thead>
                 <tbody>
                   {transactions.map((txn) => (
-                    <tr key={txn.id} className="border-b border-[#D0EDE8]/50">
-                      <td className="py-2.5 px-2 text-sm text-[#4A7A6D] font-sans">
+                    <tr key={txn.id} className="border-b border-slate-200/50">
+                      <td className="py-2.5 px-2 text-sm text-slate-500 font-sans">
                         {format(new Date(txn.date), "MMM dd, yyyy")}
                       </td>
-                      <td className="py-2.5 px-2 text-sm text-[#1B2A4A] font-sans">{txn.description}</td>
+                      <td className="py-2.5 px-2 text-sm text-slate-900 font-sans">{txn.description}</td>
                       <td
                         className={`py-2.5 px-2 text-sm text-right font-mono ${
-                          (txn.type === "purchase" || txn.type === "credit") ? "text-[#00A99D]" : "text-[#E74C3C]"
+                          (txn.type === "purchase" || txn.type === "credit") ? "text-brand-600" : "text-[#E74C3C]"
                         }`}
                       >
                         {(txn.type === "purchase" || txn.type === "credit") ? "+" : ""}

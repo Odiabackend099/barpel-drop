@@ -69,7 +69,7 @@ export function ShopifySection({
 
   return (
     <>
-      <div className="bg-white border border-[#D0EDE8] rounded-xl p-5 shadow-sm">
+      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div className="flex items-start gap-4 flex-1 min-w-0">
             <div
@@ -80,7 +80,7 @@ export function ShopifySection({
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-bold text-[#1B2A4A] font-sans">Shopify Store</h3>
+                <h3 className="font-bold text-slate-900 font-sans">Shopify Store</h3>
                 {isShopifyConnected ? (
                   <Badge color="#00A99D">Connected: {shopName}</Badge>
                 ) : (
@@ -91,7 +91,7 @@ export function ShopifySection({
                 Connect your Shopify store so your AI can look up orders and track deliveries for your customers
               </p>
               {isShopifyConnected && shopifyIntegration && (
-                <div className="flex items-center gap-4 text-xs text-[#4A7A6D] font-sans">
+                <div className="flex items-center gap-4 text-xs text-slate-500 font-sans">
                   <span className="font-mono">{shopifyIntegration.shop_domain}</span>
                   <span className="flex items-center gap-1">
                     <Clock className="w-3 h-3" />
@@ -107,7 +107,7 @@ export function ShopifySection({
                     size="sm"
                     disabled={connecting}
                     onClick={handleConnectShopify}
-                    className="bg-gradient-to-r from-[#00A99D] to-[#7DD9C0] text-white whitespace-nowrap"
+                    className="bg-gradient-to-r from-brand-600 to-brand-400 text-white whitespace-nowrap"
                   >
                     {connecting ? (
                       <><Loader2 className="w-3 h-3 mr-1 animate-spin" /> Connecting…</>

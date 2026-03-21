@@ -140,7 +140,7 @@ export default function IntegrationsPage() {
       </Suspense>
 
       <div>
-        <h1 className="text-2xl font-bold text-[#1B2A4A] font-display tracking-tight mb-1">
+        <h1 className="text-2xl font-bold text-slate-900 font-display tracking-tight mb-1">
           Integrations
         </h1>
         <p className="text-sm text-muted-foreground font-sans">

@@ -106,23 +106,23 @@ export function AbandonedCartSection({
 
   return (
     <>
-      <div className={`bg-white border border-[#D0EDE8] rounded-xl p-5 shadow-sm relative ${!isShopifyConnected ? "opacity-60" : ""}`}>
+      <div className={`bg-white border border-slate-200 rounded-xl p-5 shadow-sm relative ${!isShopifyConnected ? "opacity-60" : ""}`}>
         {!isShopifyConnected && (
           <div className="absolute inset-0 rounded-xl bg-white/50 flex items-center justify-center z-10">
-            <p className="text-sm text-[#8AADA6] font-sans font-medium px-4 text-center">
+            <p className="text-sm text-slate-400 font-sans font-medium px-4 text-center">
               Connect your Shopify store first to enable cart recovery
             </p>
           </div>
         )}
 
         <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-[#F0F9F8]">
-            <ShoppingCart className="w-6 h-6 text-[#00A99D]" />
+          <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-brand-light">
+            <ShoppingCart className="w-6 h-6 text-brand-600" />
           </div>
           <div className="flex-1">
             <div className="flex items-center justify-between gap-2 mb-1 flex-wrap">
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-[#1B2A4A] font-sans">Recover Abandoned Carts</h3>
+                <h3 className="font-bold text-slate-900 font-sans">Recover Abandoned Carts</h3>
                 {displayEnabled ? (
                   <Badge color="#00A99D">Enabled</Badge>
                 ) : (
@@ -150,14 +150,14 @@ export function AbandonedCartSection({
 
             {/* Caller ID section — shown when enabled */}
             {displayEnabled && phoneNumber && (
-              <div className="border-t border-[#D0EDE8] pt-3 mt-3">
-                <p className="text-xs text-[#4A7A6D] font-sans mb-2">
+              <div className="border-t border-slate-200 pt-3 mt-3">
+                <p className="text-xs text-slate-500 font-sans mb-2">
                   Which number will customers see when your AI calls them?
                 </p>
                 <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-2 px-3 py-2 bg-[#F0F9F8] rounded-lg border border-[#D0EDE8]">
-                    <Phone className="w-3.5 h-3.5 text-[#00A99D]" />
-                    <span className="text-sm font-mono text-[#1B2A4A]">{phoneNumber}</span>
+                  <div className="flex items-center gap-2 px-3 py-2 bg-brand-light rounded-lg border border-slate-200">
+                    <Phone className="w-3.5 h-3.5 text-brand-600" />
+                    <span className="text-sm font-mono text-slate-900">{phoneNumber}</span>
                     <Badge color="#00A99D">Active</Badge>
                   </div>
                 </div>
@@ -166,20 +166,20 @@ export function AbandonedCartSection({
 
             {/* Stats section — shown when enabled */}
             {displayEnabled && stats && (
-              <div className="border-t border-[#D0EDE8] pt-3 mt-3">
-                <p className="text-xs text-[#8AADA6] font-sans mb-2">Last 30 days</p>
+              <div className="border-t border-slate-200 pt-3 mt-3">
+                <p className="text-xs text-slate-400 font-sans mb-2">Last 30 days</p>
                 <div className="flex flex-wrap gap-4">
                   <div>
-                    <span className="text-xs text-[#8AADA6] font-sans">Carts detected</span>
-                    <p className="text-sm font-bold text-[#1B2A4A]">{stats.detected}</p>
+                    <span className="text-xs text-slate-400 font-sans">Carts detected</span>
+                    <p className="text-sm font-bold text-slate-900">{stats.detected}</p>
                   </div>
                   <div>
-                    <span className="text-xs text-[#8AADA6] font-sans">Calls made</span>
-                    <p className="text-sm font-bold text-[#1B2A4A]">{stats.called}</p>
+                    <span className="text-xs text-slate-400 font-sans">Calls made</span>
+                    <p className="text-sm font-bold text-slate-900">{stats.called}</p>
                   </div>
                   <div>
-                    <span className="text-xs text-[#8AADA6] font-sans">Recovered</span>
-                    <p className="text-sm font-bold text-[#1B2A4A]">{stats.recovered}</p>
+                    <span className="text-xs text-slate-400 font-sans">Recovered</span>
+                    <p className="text-sm font-bold text-slate-900">{stats.recovered}</p>
                   </div>
                 </div>
               </div>
@@ -204,7 +204,7 @@ export function AbandonedCartSection({
             </Button>
             <Button
               onClick={handleConfirmConsent}
-              className="bg-gradient-to-r from-[#00A99D] to-[#7DD9C0] text-white"
+              className="bg-gradient-to-r from-brand-600 to-brand-400 text-white"
             >
               Yes, I confirm — Enable
             </Button>

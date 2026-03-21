@@ -37,7 +37,7 @@ function SaveButton({
     <button
       onClick={onClick}
       disabled={isSaving}
-      className="inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all px-4 py-2.5 text-sm bg-gradient-to-r from-[#00A99D] to-[#7DD9C0] text-white hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+      className="inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all px-4 py-2.5 text-sm bg-gradient-to-r from-brand-600 to-brand-400 text-white hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {isSaving && (
         <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
@@ -268,7 +268,7 @@ export default function VoicePage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-[#1B2A4A] font-display tracking-tight mb-1">
+          <h1 className="text-2xl font-bold text-slate-900 font-display tracking-tight mb-1">
             Customize Your AI
           </h1>
           <p className="text-sm text-muted-foreground font-sans">
@@ -288,10 +288,10 @@ export default function VoicePage() {
               <AlertTriangle className="w-4 h-4" style={{ color: "#F5A623" }} />
             </div>
             <div>
-              <p className="text-sm font-bold text-[#1B2A4A] font-sans mb-1">
+              <p className="text-sm font-bold text-slate-900 font-sans mb-1">
                 Your AI phone line is being set up
               </p>
-              <p className="text-sm text-[#4A7A6D] font-sans">
+              <p className="text-sm text-slate-500 font-sans">
                 Voice customization will be available once provisioning completes. This
                 usually takes under a minute. The page will update automatically.
               </p>
@@ -305,7 +305,7 @@ export default function VoicePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#1B2A4A] font-display tracking-tight mb-1">
+        <h1 className="text-2xl font-bold text-slate-900 font-display tracking-tight mb-1">
           Customize Your AI
         </h1>
         <p className="text-sm text-muted-foreground font-sans">
@@ -335,10 +335,10 @@ export default function VoicePage() {
       {/* ------------------------------------------------------------------ */}
       {/* Section 1: Greeting                                                 */}
       {/* ------------------------------------------------------------------ */}
-      <div className="bg-white border border-[#D0EDE8] rounded-xl p-5 shadow-sm">
+      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
         <div className="flex items-center gap-2 mb-1">
-          <Mic className="w-4 h-4 text-[#00A99D]" />
-          <h3 className="text-sm font-bold text-[#1B2A4A] font-sans">
+          <Mic className="w-4 h-4 text-brand-600" />
+          <h3 className="text-sm font-bold text-slate-900 font-sans">
             Your AI&apos;s Greeting
           </h3>
         </div>
@@ -357,27 +357,27 @@ export default function VoicePage() {
                 setSuggestedGreeting(null);
               }}
               placeholder={`Thank you for calling ${brandName} support. How can I help you today?`}
-              className="w-full h-20 px-4 py-3 bg-white border border-[#D0EDE8] rounded-lg text-[#1B2A4A] placeholder:text-[#8AADA6] resize-none focus:outline-none focus:border-[#00A99D] focus:ring-2 focus:ring-[#00A99D]/10 font-sans text-sm"
+              className="w-full h-20 px-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 resize-none focus:outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/10 font-sans text-sm"
             />
 
             {/* Greeting suggestion banner */}
             {suggestedGreeting && (
               <div className="mt-2 p-3 rounded-lg border border-[#00A99D]/20 bg-[#00A99D]/5 backdrop-blur-sm">
-                <p className="text-xs text-[#1B2A4A] font-sans mb-1.5">
+                <p className="text-xs text-slate-900 font-sans mb-1.5">
                   <span className="font-semibold">Suggested greeting:</span>{" "}
                   &ldquo;{suggestedGreeting}&rdquo;
                 </p>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={applyGreetingSuggestion}
-                    className="text-xs font-semibold text-[#00A99D] hover:text-[#008F85] transition-colors"
+                    className="text-xs font-semibold text-brand-600 hover:text-[#008F85] transition-colors"
                   >
                     Apply
                   </button>
                   <span className="text-[#D0EDE8]">|</span>
                   <button
                     onClick={() => setSuggestedGreeting(null)}
-                    className="text-xs text-[#8AADA6] hover:text-[#4A7A6D] transition-colors"
+                    className="text-xs text-slate-400 hover:text-slate-500 transition-colors"
                   >
                     Dismiss
                   </button>
@@ -409,10 +409,10 @@ export default function VoicePage() {
       {/* ------------------------------------------------------------------ */}
       {/* Section 2: Personality                                              */}
       {/* ------------------------------------------------------------------ */}
-      <div className="bg-white border border-[#D0EDE8] rounded-xl p-5 shadow-sm">
+      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
         <div className="flex items-center gap-2 mb-4">
-          <Sparkles className="w-4 h-4 text-[#00A99D]" />
-          <h3 className="text-sm font-bold text-[#1B2A4A] font-sans">
+          <Sparkles className="w-4 h-4 text-brand-600" />
+          <h3 className="text-sm font-bold text-slate-900 font-sans">
             Your AI&apos;s Personality
           </h3>
         </div>
@@ -442,8 +442,8 @@ export default function VoicePage() {
                       borderWidth: isSelected ? "2px" : "1px",
                     }}
                   >
-                    <p className="font-medium text-[#1B2A4A] text-sm font-sans">{t.label}</p>
-                    <p className="text-xs text-[#8AADA6] font-sans mt-0.5">{t.description}</p>
+                    <p className="font-medium text-slate-900 text-sm font-sans">{t.label}</p>
+                    <p className="text-xs text-slate-400 font-sans mt-0.5">{t.description}</p>
                   </button>
                 );
               })}
@@ -456,9 +456,9 @@ export default function VoicePage() {
                 setActiveTemplateId(null);
               }}
               placeholder={`Example: Be a friendly support agent for ${brandName}. Always greet customers warmly and resolve issues quickly.`}
-              className="w-full h-40 px-4 py-3 bg-white border border-[#D0EDE8] rounded-lg text-[#1B2A4A] placeholder:text-[#8AADA6] resize-none focus:outline-none focus:border-[#00A99D] focus:ring-2 focus:ring-[#00A99D]/10 font-sans text-sm"
+              className="w-full h-40 px-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 resize-none focus:outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/10 font-sans text-sm"
             />
-            <p className="text-xs text-[#8AADA6] font-sans mt-1.5 mb-3">
+            <p className="text-xs text-slate-400 font-sans mt-1.5 mb-3">
               Describe your brand voice. Pick a template above or write your own.
             </p>
             <div className="flex justify-between mb-4">
@@ -490,10 +490,10 @@ export default function VoicePage() {
         style={{ borderColor: "#7DD9C040", boxShadow: "0 0 20px #7DD9C015" }}
       >
         <div className="flex items-center justify-between mb-1">
-          <h3 className="text-sm font-bold text-[#1B2A4A] font-sans">AI Voice</h3>
+          <h3 className="text-sm font-bold text-slate-900 font-sans">AI Voice</h3>
           {voiceSaved && <Badge color="#00A99D">Voice updated</Badge>}
           {savingVoice && (
-            <span className="text-xs text-[#8AADA6] font-sans">Saving...</span>
+            <span className="text-xs text-slate-400 font-sans">Saving...</span>
           )}
         </div>
         <p className="text-xs text-muted-foreground font-sans mb-4">
@@ -506,7 +506,7 @@ export default function VoicePage() {
         {/* Legacy voice migration banner */}
         {isLegacyVoice && (
           <div className="mb-4 p-3 rounded-lg border border-[#F5A623]/30 bg-[#F5A623]/5">
-            <p className="text-xs text-[#1B2A4A] font-sans">
+            <p className="text-xs text-slate-900 font-sans">
               <span className="font-semibold">Your current voice is no longer available.</span>{" "}
               We&apos;ve upgraded to higher-quality Vapi native voices. Please select a new voice below.
             </p>
@@ -520,7 +520,7 @@ export default function VoicePage() {
             {/* ── Trigger button ── */}
             <PopoverTrigger asChild>
               <button
-                className="w-full p-3 rounded-lg border text-left transition-all hover:bg-[#F0F9F8] focus:outline-none focus:ring-2 focus:ring-[#00A99D]/20 disabled:opacity-60"
+                className="w-full p-3 rounded-lg border text-left transition-all hover:bg-brand-light focus:outline-none focus:ring-2 focus:ring-brand-600/20 disabled:opacity-60"
                 style={{
                   borderColor: voiceDropdownOpen ? "#00A99D" : "#D0EDE8",
                   borderWidth: voiceDropdownOpen ? "2px" : "1px",
@@ -534,25 +534,25 @@ export default function VoicePage() {
                       className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
                       style={{ background: "linear-gradient(135deg, #00A99D22, #7DD9C033)" }}
                     >
-                      <Volume2 className="w-3.5 h-3.5 text-[#00A99D]" />
+                      <Volume2 className="w-3.5 h-3.5 text-brand-600" />
                     </div>
                     <div className="min-w-0">
                       {selectedVoiceId ? (
                         <>
-                          <p className="font-semibold text-[#1B2A4A] text-sm font-sans leading-tight">
+                          <p className="font-semibold text-slate-900 text-sm font-sans leading-tight">
                             {VAPI_VOICES.find((v) => v.id === selectedVoiceId)?.label ?? selectedVoiceId}
                           </p>
-                          <p className="text-xs text-[#8AADA6] font-sans mt-0.5 truncate">
+                          <p className="text-xs text-slate-400 font-sans mt-0.5 truncate">
                             {VAPI_VOICES.find((v) => v.id === selectedVoiceId)?.description}
                           </p>
                         </>
                       ) : (
-                        <p className="text-sm text-[#8AADA6] font-sans">Select a voice</p>
+                        <p className="text-sm text-slate-400 font-sans">Select a voice</p>
                       )}
                     </div>
                   </div>
                   <ChevronDown
-                    className="w-4 h-4 text-[#8AADA6] flex-shrink-0 transition-transform duration-200"
+                    className="w-4 h-4 text-slate-400 flex-shrink-0 transition-transform duration-200"
                     style={{ transform: voiceDropdownOpen ? "rotate(180deg)" : "rotate(0deg)" }}
                   />
                 </div>
@@ -562,7 +562,7 @@ export default function VoicePage() {
             {/* ── Dropdown list ── */}
             <PopoverContent
               align="start"
-              className="p-2 border border-[#D0EDE8] rounded-xl shadow-lg"
+              className="p-2 border border-slate-200 rounded-xl shadow-lg"
               style={{
                 width: "var(--radix-popover-trigger-width)",
                 maxHeight: "420px",
@@ -572,7 +572,7 @@ export default function VoicePage() {
               onOpenAutoFocus={(e) => e.preventDefault()}
             >
               {/* Female section */}
-              <p className="text-[10px] font-semibold text-[#8AADA6] uppercase tracking-widest px-2 pt-1 pb-2">
+              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest px-2 pt-1 pb-2">
                 Female Voices
               </p>
               <div className="space-y-1 mb-3">
@@ -583,7 +583,7 @@ export default function VoicePage() {
                     <button
                       key={voice.id}
                       onClick={() => handleSelectVoice(voice.id)}
-                      className="w-full p-2.5 rounded-lg border text-left transition-all hover:bg-[#F0F9F8]"
+                      className="w-full p-2.5 rounded-lg border text-left transition-all hover:bg-brand-light"
                       style={{
                         backgroundColor: isSelected ? "#F0F9F8" : "transparent",
                         borderColor: isSelected ? "#00A99D" : "transparent",
@@ -593,7 +593,7 @@ export default function VoicePage() {
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5">
-                            <span className="font-semibold text-[#1B2A4A] text-sm font-sans">
+                            <span className="font-semibold text-slate-900 text-sm font-sans">
                               {voice.label}
                             </span>
                             {isPlaying && (
@@ -603,7 +603,7 @@ export default function VoicePage() {
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-[#8AADA6] font-sans mt-0.5 leading-tight">
+                          <p className="text-xs text-slate-400 font-sans mt-0.5 leading-tight">
                             {voice.description}
                           </p>
                         </div>
@@ -621,7 +621,7 @@ export default function VoicePage() {
                             {isPlaying ? (
                               <PauseIcon className="w-3 h-3 text-white" />
                             ) : (
-                              <Play className="w-3 h-3 text-[#00A99D] ml-0.5" />
+                              <Play className="w-3 h-3 text-brand-600 ml-0.5" />
                             )}
                           </div>
                           {/* Selected checkmark */}
@@ -641,10 +641,10 @@ export default function VoicePage() {
               </div>
 
               {/* Divider */}
-              <div className="border-t border-[#D0EDE8] mx-2 mb-3" />
+              <div className="border-t border-slate-200 mx-2 mb-3" />
 
               {/* Male section */}
-              <p className="text-[10px] font-semibold text-[#8AADA6] uppercase tracking-widest px-2 pb-2">
+              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest px-2 pb-2">
                 Male Voices
               </p>
               <div className="space-y-1">
@@ -655,7 +655,7 @@ export default function VoicePage() {
                     <button
                       key={voice.id}
                       onClick={() => handleSelectVoice(voice.id)}
-                      className="w-full p-2.5 rounded-lg border text-left transition-all hover:bg-[#F0F9F8]"
+                      className="w-full p-2.5 rounded-lg border text-left transition-all hover:bg-brand-light"
                       style={{
                         backgroundColor: isSelected ? "#F0F9F8" : "transparent",
                         borderColor: isSelected ? "#00A99D" : "transparent",
@@ -665,7 +665,7 @@ export default function VoicePage() {
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5">
-                            <span className="font-semibold text-[#1B2A4A] text-sm font-sans">
+                            <span className="font-semibold text-slate-900 text-sm font-sans">
                               {voice.label}
                             </span>
                             {isPlaying && (
@@ -675,7 +675,7 @@ export default function VoicePage() {
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-[#8AADA6] font-sans mt-0.5 leading-tight">
+                          <p className="text-xs text-slate-400 font-sans mt-0.5 leading-tight">
                             {voice.description}
                           </p>
                         </div>
@@ -692,7 +692,7 @@ export default function VoicePage() {
                             {isPlaying ? (
                               <PauseIcon className="w-3 h-3 text-white" />
                             ) : (
-                              <Play className="w-3 h-3 text-[#00A99D] ml-0.5" />
+                              <Play className="w-3 h-3 text-brand-600 ml-0.5" />
                             )}
                           </div>
                           {isSelected && (
@@ -715,10 +715,10 @@ export default function VoicePage() {
       </div>
 
       {/* Phone number management has moved to Integrations */}
-      <div className="bg-white border border-[#D0EDE8] rounded-xl p-5 shadow-sm">
-        <p className="text-sm text-[#4A7A6D] font-sans">
+      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+        <p className="text-sm text-slate-500 font-sans">
           To pause or release your phone number, go to{" "}
-          <a href="/dashboard/integrations" className="text-[#00A99D] underline underline-offset-2 font-medium hover:text-[#008f85]">
+          <a href="/dashboard/integrations" className="text-brand-600 underline underline-offset-2 font-medium hover:text-[#008f85]">
             Integrations
           </a>
         </p>

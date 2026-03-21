@@ -125,13 +125,13 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#1B2A4A] font-display tracking-tight mb-1">Dashboard</h1>
+        <h1 className="text-2xl font-bold text-slate-900 font-display tracking-tight mb-1">Dashboard</h1>
         <p className="text-sm text-muted-foreground font-sans">Overview of your AI support performance</p>
       </div>
 
       {/* Empty state for zero calls */}
       {!loading && (stats?.total_calls ?? 0) === 0 && (
-        <div className="text-center py-12 bg-white border border-[#D0EDE8] rounded-xl">
+        <div className="text-center py-12 bg-white border border-slate-200 rounded-xl">
           <p className="text-muted-foreground mb-3">Your AI hasn&apos;t handled any calls yet.</p>
           <p className="text-sm text-muted-foreground mb-4">Make sure your number is live on your store.</p>
           <Link href="/dashboard/integrations">
@@ -188,9 +188,9 @@ export default function DashboardPage() {
 
           {/* Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="bg-white border border-[#D0EDE8] rounded-xl p-5 shadow-sm lg:col-span-2">
+            <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm lg:col-span-2">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold text-[#1B2A4A] font-sans">Call Volume — Last 14 Days</h3>
+                <h3 className="text-sm font-bold text-slate-900 font-sans">Call Volume — Last 14 Days</h3>
               </div>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
@@ -224,15 +224,15 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="bg-white border border-[#D0EDE8] rounded-xl p-5 shadow-sm">
-              <h3 className="text-sm font-bold text-[#1B2A4A] mb-4 font-sans">Call Type Breakdown</h3>
+            <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+              <h3 className="text-sm font-bold text-slate-900 mb-4 font-sans">Call Type Breakdown</h3>
               <div className="space-y-3">
                 {Object.entries(callsByType).map(([type, count]) => {
                   const percentage = total > 0 ? (count / total) * 100 : 0;
                   return (
                     <div key={type} className="flex items-center gap-3">
                       <Badge color={breakdownColors[type] || "#8AADA6"}>{CALL_TYPE_LABELS[type] || type}</Badge>
-                      <div className="flex-1 h-2 bg-[#F0F9F8] rounded-full overflow-hidden">
+                      <div className="flex-1 h-2 bg-slate-50 rounded-full overflow-hidden">
                         <div
                           className="h-full rounded-full transition-all"
                           style={{
@@ -250,8 +250,8 @@ export default function DashboardPage() {
           </div>
 
           {/* Recent Calls */}
-          <div className="bg-white border border-[#D0EDE8] rounded-xl p-5 shadow-sm">
-            <h3 className="text-sm font-bold text-[#1B2A4A] mb-4 font-sans">Recent Calls</h3>
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+            <h3 className="text-sm font-bold text-slate-900 mb-4 font-sans">Recent Calls</h3>
             <CallLogTable calls={emptyRecentCalls.slice(0, 5)} expandedId={expandedId} onToggle={() => {}} />
           </div>
         </>

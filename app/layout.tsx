@@ -1,8 +1,23 @@
 import type { Metadata, Viewport } from "next";
+import { Instrument_Serif, Plus_Jakarta_Sans } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { AnalyticsProvider } from "@/components/providers/AnalyticsProvider";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
+
+const displayFont = Instrument_Serif({
+  weight: ["400"],
+  style: ["normal", "italic"],
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+});
+
+const bodyFont = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Barpel AI \u2014 AI Voice Support for E-Commerce",
@@ -37,7 +52,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${displayFont.variable} ${bodyFont.variable}`}>
       <body>
         <AnalyticsProvider>{children}</AnalyticsProvider>
         <Toaster richColors position="top-right" />

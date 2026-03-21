@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendAccountDeletedEmail } from "@/lib/email/client";
 import { getAuthUser, unauthorizedResponse } from "@/lib/supabase/auth-guard";
+import DodoPayments from "dodopayments";
+import { getSubscription, disableSubscription } from "@/lib/paystack/client";
 
 /**
  * DELETE /api/account/delete
@@ -13,16 +15,18 @@ import { getAuthUser, unauthorizedResponse } from "@/lib/supabase/auth-guard";
  * Call logs are anonymised (PII removed, credits_charged retained for audit).
  *
  * Deletion order matters:
- *  1. Cancel Flutterwave subscription (stop billing first)
- *  2. Release Vapi phone number (holds reference to assistant)
- *  3. Delete Vapi assistant
- *  4. Delete Vault secrets (Shopify tokens, BYOC Twilio creds)
- *  5. Anonymise call logs (keep for audit, remove PII)
- *  6. Delete personal data tables
- *  7. Anonymise billing transactions (financial law: 7-year retention)
- *  8. Delete merchant row
- *  9. Delete Supabase auth user (last — invalidates session)
- * 10. Send confirmation email (fire-and-forget)
+ *   1. Cancel Flutterwave subscription (stop billing first)
+ *  1b. Cancel Dodo subscription
+ *  1c. Cancel Paystack subscription
+ *   2. Release Vapi phone number (holds reference to assistant)
+ *   3. Delete Vapi assistant
+ *   4. Delete Vault secrets (Shopify tokens, BYOC Twilio creds)
+ *   5. Anonymise call logs (keep for audit, remove PII)
+ *   6. Delete personal data tables
+ *   7. Anonymise billing transactions (financial law: 7-year retention)
+ *   8. Delete merchant row
+ *   9. Delete Supabase auth user (last — invalidates session)
+ *  10. Send confirmation email (fire-and-forget)
  */
 export async function DELETE(request: Request) {
   const supabase = createClient();
@@ -48,7 +52,7 @@ export async function DELETE(request: Request) {
   const { data: merchant, error: merchantError } = await supabase
     .from("merchants")
     .select(
-      "id, user_id, business_name, flw_subscription_id, vapi_agent_id, vapi_phone_id, provisioning_mode"
+      "id, user_id, business_name, flw_subscription_id, dodo_subscription_id, paystack_subscription_id, vapi_agent_id, vapi_phone_id, provisioning_mode"
     )
     .eq("user_id", user.id)
     .is("deleted_at", null)
@@ -77,6 +81,36 @@ export async function DELETE(request: Request) {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       errors.push(`FLW cancel: ${msg}`);
+    }
+  }
+
+  // Step 1b: Cancel Dodo subscription
+  if (merchant.dodo_subscription_id) {
+    try {
+      const dodo = new DodoPayments({
+        bearerToken: process.env.DODO_PAYMENTS_API_KEY!,
+        environment: (process.env.DODO_PAYMENTS_ENVIRONMENT ?? "test_mode") as
+          | "test_mode"
+          | "live_mode",
+      });
+      await dodo.subscriptions.update(merchant.dodo_subscription_id, {
+        cancel_at_next_billing_date: true,
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      errors.push(`Dodo cancel: ${msg}`);
+    }
+  }
+
+  // Step 1c: Cancel Paystack subscription
+  if (merchant.paystack_subscription_id) {
+    try {
+      const sub = await getSubscription(merchant.paystack_subscription_id);
+      const emailToken: string = sub.data.email_token;
+      await disableSubscription({ code: merchant.paystack_subscription_id, token: emailToken });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      errors.push(`Paystack cancel: ${msg}`);
     }
   }
 

@@ -61,6 +61,24 @@ const config: Config = {
           ring: "hsl(var(--sidebar-ring))",
         },
 
+        // Brand palette — single source of truth for all UI
+        brand: {
+          DEFAULT: "#0d9488",
+          dark: "#0a7a70",
+          light: "#f0fdfa",
+          muted: "#ccfbf1",
+          50:  "#f0fdfa",
+          100: "#ccfbf1",
+          200: "#99f6e4",
+          300: "#5eead4",
+          400: "#2dd4bf",
+          500: "#14b8a6",
+          600: "#0d9488",
+          700: "#0f766e",
+          800: "#115e59",
+          900: "#134e4a",
+        },
+
         // Barpel brand colors (direct hex values for utility classes)
         navy: "#1B2A4A",
         teal: {
@@ -101,14 +119,17 @@ const config: Config = {
         danger: "#E74C3C",
       },
       fontFamily: {
-        sans: ["DM Sans", "system-ui", "sans-serif"],
-        display: ["Syne", "system-ui", "sans-serif"],
-        mono: ["JetBrains Mono", "Fira Code", "Courier New", "monospace"],
+        sans:    ["Plus Jakarta Sans", "DM Sans", "system-ui", "sans-serif"],
+        display: ["Instrument Serif", "Syne", "Georgia", "serif"],
+        mono:    ["Geist Mono", "JetBrains Mono", "Fira Code", "Courier New", "monospace"],
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        lg:   "var(--radius)",
+        md:   "calc(var(--radius) - 2px)",
+        sm:   "calc(var(--radius) - 4px)",
+        card:  "16px",
+        input: "10px",
+        pill:  "999px",
       },
       animation: {
         "fade-in": "fadeIn 0.3s ease-out",
@@ -150,11 +171,14 @@ const config: Config = {
         },
       },
       boxShadow: {
-        sm: "0 2px 8px rgba(0,169,157,0.08)",
-        md: "0 8px 32px rgba(0,169,157,0.12)",
-        lg: "0 24px 64px rgba(0,169,157,0.16)",
-        teal: "0 4px 20px rgba(0,169,157,0.3)",
-        "teal-lg": "0 8px 30px rgba(0,169,157,0.4)",
+        sm:       "0 2px 8px rgba(0,169,157,0.08)",
+        md:       "0 8px 32px rgba(0,169,157,0.12)",
+        lg:       "0 24px 64px rgba(0,169,157,0.16)",
+        teal:     "0 4px 20px rgba(0,169,157,0.3)",
+        "teal-lg":"0 8px 30px rgba(0,169,157,0.4)",
+        card:     "0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)",
+        "card-md":"0 4px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.04)",
+        brand:    "0 4px 14px rgba(13,148,136,0.25)",
       },
     },
   },

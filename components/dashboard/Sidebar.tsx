@@ -53,10 +53,10 @@ export function Sidebar({ open, onClose, collapsed, onToggleCollapse }: SidebarP
   // Progress bar color based on balance thresholds
   const barColor =
     balance >= 600
-      ? "bg-[#00A99D]" // teal: 10+ min
+      ? "bg-brand-600"
       : balance >= 60
-      ? "bg-amber-400" // amber: 1-10 min
-      : "bg-red-500"; // red: < 1 min
+      ? "bg-amber-400"
+      : "bg-red-500";
 
   const barPercent = Math.min((balance / 15000) * 100, 100);
   const isLow = balance < 60;
@@ -75,29 +75,29 @@ export function Sidebar({ open, onClose, collapsed, onToggleCollapse }: SidebarP
 
       <aside
         className={`
-          fixed top-0 left-0 z-50 h-screen bg-[#F0F9F8] border-r border-[#D0EDE8] flex flex-col
+          fixed top-0 left-0 z-50 h-screen bg-[#0f172a] border-r border-white/10 flex flex-col
           transition-all duration-200
           lg:relative lg:translate-x-0
           ${collapsed ? "w-16" : "w-60"}
           ${open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
       >
-        {/* Header — logo + brand + collapse toggle (always at top) */}
-        <div className="p-3 border-b border-[#D0EDE8]">
+        {/* Header — logo + brand + collapse toggle */}
+        <div className="p-3 border-b border-white/10">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2.5 min-w-0">
               <BarpelLogo size={collapsed ? 26 : 32} />
               {!collapsed && (
                 <div className="min-w-0">
-                  <div className="text-sm font-bold text-[#1B2A4A] font-display truncate">BARPEL DROP AI</div>
-                  <div className="text-[10px] text-[#8AADA6] tracking-wide font-sans">MERCHANT DASHBOARD</div>
+                  <div className="text-sm font-bold text-white font-display truncate">Barpel<span className="text-brand-400"> AI</span></div>
+                  <div className="text-[10px] text-slate-500 tracking-wide font-sans">MERCHANT DASHBOARD</div>
                 </div>
               )}
             </div>
             <button
               onClick={onToggleCollapse}
               title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-              className="shrink-0 p-1.5 rounded-md text-[#8AADA6] hover:text-[#1B2A4A] hover:bg-[#D0EDE8]/50 transition-colors"
+              className="shrink-0 p-1.5 rounded-md text-slate-500 hover:text-white hover:bg-white/10 transition-colors"
             >
               {collapsed
                 ? <PanelLeftOpen className="w-4 h-4" />
@@ -120,8 +120,8 @@ export function Sidebar({ open, onClose, collapsed, onToggleCollapse }: SidebarP
                 title={collapsed ? item.label : undefined}
                 className={`w-full flex items-center ${collapsed ? "justify-center" : ""} gap-3 ${collapsed ? "px-2" : "px-3"} py-2.5 rounded-lg text-sm font-medium transition-all text-left ${
                   active
-                    ? "bg-white text-[#00A99D] border-l-2 border-[#00A99D] shadow-sm"
-                    : "text-[#4A7A6D] hover:text-[#1B2A4A] hover:bg-white"
+                    ? "bg-white/5 text-white border-l-2 border-brand-600"
+                    : "text-slate-400 hover:text-white hover:bg-white/5"
                 }`}
               >
                 <Icon className="w-4 h-4 shrink-0" />
@@ -136,7 +136,7 @@ export function Sidebar({ open, onClose, collapsed, onToggleCollapse }: SidebarP
           <button
             onClick={() => setSupportOpen(true)}
             title="Help & Support"
-            className={`w-full flex items-center ${collapsed ? "justify-center" : "gap-3"} ${collapsed ? "px-2" : "px-3"} py-2 rounded-lg text-sm transition-colors text-[#8AADA6] hover:text-[#4A7A6D] hover:bg-[#D0EDE8]/40`}
+            className={`w-full flex items-center ${collapsed ? "justify-center" : "gap-3"} ${collapsed ? "px-2" : "px-3"} py-2 rounded-lg text-sm transition-colors text-slate-500 hover:text-white hover:bg-white/5`}
           >
             <LifeBuoy className="w-4 h-4 shrink-0" />
             {!collapsed && <span>Help &amp; Support</span>}
@@ -151,31 +151,32 @@ export function Sidebar({ open, onClose, collapsed, onToggleCollapse }: SidebarP
               title={creditsLoading ? "Loading..." : `${balanceMinutes} credits`}
               className={`flex items-center justify-center p-2 rounded-lg ${isLow ? "animate-pulse" : ""}`}
             >
-              <Zap className={`w-4 h-4 ${isLow ? "text-red-500" : "text-[#00A99D]"}`} />
+              <Zap className={`w-4 h-4 ${isLow ? "text-red-400" : "text-brand-400"}`} />
             </Link>
           ) : (
-            <div className="bg-white rounded-lg border border-[#D0EDE8] p-3">
+            <div className="bg-brand-600/15 rounded-lg border border-brand-600/25 p-3">
               {creditsLoading ? (
-                <div className="h-8 bg-[#F0F9F8] rounded animate-pulse" />
+                <div className="h-8 bg-white/5 rounded animate-pulse" />
               ) : (
                 <>
-                  <div className="h-1.5 bg-[#F0F9F8] rounded-full overflow-hidden mb-2">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wide">Credits</span>
+                    <span className={`text-sm font-bold ${isLow ? "text-red-400" : "text-brand-400"}`}>
+                      {balanceMinutes}
+                    </span>
+                  </div>
+                  <div className="h-1 bg-white/10 rounded-full overflow-hidden mb-2">
                     <div
                       className={`h-full ${barColor} rounded-full transition-all ${isLow ? "animate-pulse" : ""}`}
                       style={{ width: `${Math.max(barPercent, balance > 0 ? 2 : 0)}%` }}
                     />
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className={`text-xs font-medium ${isLow ? "text-red-600" : "text-[#4A7A6D]"} font-sans`}>
-                      {balanceMinutes} credits
-                    </span>
-                    <Link
-                      href="/dashboard/billing"
-                      className="text-[10px] text-[#00A99D] hover:underline font-sans"
-                    >
-                      Top up &rarr;
-                    </Link>
-                  </div>
+                  <Link
+                    href="/dashboard/billing"
+                    className="text-[10px] text-brand-400 hover:underline font-sans"
+                  >
+                    Top up &rarr;
+                  </Link>
                 </>
               )}
             </div>
@@ -184,7 +185,7 @@ export function Sidebar({ open, onClose, collapsed, onToggleCollapse }: SidebarP
 
         {/* Footer */}
         {!collapsed && (
-          <p className="text-[10px] text-[#8AADA6] text-center py-3 font-sans border-t border-[#D0EDE8]">
+          <p className="text-[10px] text-slate-600 text-center py-3 font-sans border-t border-white/10">
             Powered by Vapi + Twilio
           </p>
         )}

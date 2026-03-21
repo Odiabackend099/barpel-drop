@@ -51,13 +51,13 @@ export default function CallsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#1B2A4A] font-display tracking-tight mb-1">Call Logs</h1>
+          <h1 className="text-2xl font-bold text-slate-900 font-display tracking-tight mb-1">Call Logs</h1>
           <p className="text-sm text-muted-foreground font-sans">View and analyze all your AI calls</p>
         </div>
         <button
           onClick={handleExportCsv}
           disabled={exporting || loading}
-          className="inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all px-4 py-2.5 text-sm bg-white border border-[#D0EDE8] text-[#1B2A4A] hover:border-[#00A99D] hover:bg-[#F0F9F8] disabled:opacity-40 disabled:cursor-not-allowed"
+          className="inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all px-4 py-2.5 text-sm bg-white border border-slate-200 text-slate-900 hover:border-brand-600 hover:bg-brand-light disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <Download className="w-4 h-4" />
           {exporting ? "Exporting..." : "Export CSV"}
@@ -73,36 +73,36 @@ export default function CallsPage() {
         </div>
       ) : (
         <div className="flex flex-wrap gap-3">
-          <div className="px-4 py-2 bg-[#F0F9F8] rounded-lg border border-[#D0EDE8]">
-            <span className="text-xs text-[#8AADA6] font-sans">Total</span>
-            <p className="text-lg font-bold text-[#1B2A4A]">{stats.total}</p>
+          <div className="px-4 py-2 bg-brand-light rounded-lg border border-slate-200">
+            <span className="text-xs text-slate-400 font-sans">Total</span>
+            <p className="text-lg font-bold text-slate-900">{stats.total}</p>
           </div>
-          <div className="px-4 py-2 bg-[#F0F9F8] rounded-lg border border-[#D0EDE8]">
-            <span className="text-xs text-[#8AADA6] font-sans">Negative</span>
+          <div className="px-4 py-2 bg-brand-light rounded-lg border border-slate-200">
+            <span className="text-xs text-slate-400 font-sans">Negative</span>
             <p className="text-lg font-bold text-[#E74C3C]">{stats.negative}</p>
           </div>
-          <div className="px-4 py-2 bg-[#F0F9F8] rounded-lg border border-[#D0EDE8]">
-            <span className="text-xs text-[#8AADA6] font-sans">Avg Duration</span>
-            <p className="text-lg font-bold text-[#1B2A4A]">
+          <div className="px-4 py-2 bg-brand-light rounded-lg border border-slate-200">
+            <span className="text-xs text-slate-400 font-sans">Avg Duration</span>
+            <p className="text-lg font-bold text-slate-900">
               {Math.floor(stats.avgDuration / 60)}m {stats.avgDuration % 60}s
             </p>
           </div>
-          <div className="px-4 py-2 bg-[#F0F9F8] rounded-lg border border-[#D0EDE8]">
-            <span className="text-xs text-[#8AADA6] font-sans">Credits Used</span>
-            <p className="text-lg font-bold text-[#1B2A4A]">{stats.totalCredits}s</p>
+          <div className="px-4 py-2 bg-brand-light rounded-lg border border-slate-200">
+            <span className="text-xs text-slate-400 font-sans">Credits Used</span>
+            <p className="text-lg font-bold text-slate-900">{stats.totalCredits}s</p>
           </div>
         </div>
       )}
 
       {/* Filters */}
-      <div className="bg-white border border-[#D0EDE8] rounded-xl p-5 shadow-sm">
+      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
         <div className="flex flex-wrap gap-4 items-end">
           <div>
-            <label className="text-xs text-[#8AADA6] mb-1 block font-sans">Call Type</label>
+            <label className="text-xs text-slate-400 mb-1 block font-sans">Call Type</label>
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="px-3 py-2 bg-white border border-[#D0EDE8] rounded-lg text-sm text-[#1B2A4A] focus:border-[#00A99D] focus:outline-none"
+              className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 focus:border-brand-600 focus:outline-none"
             >
               <option value="all">All Types</option>
               <option value="order_lookup">Order Lookup</option>
@@ -112,11 +112,11 @@ export default function CallsPage() {
             </select>
           </div>
           <div>
-            <label className="text-xs text-[#8AADA6] mb-1 block font-sans">Sentiment</label>
+            <label className="text-xs text-slate-400 mb-1 block font-sans">Sentiment</label>
             <select
               value={filterSentiment}
               onChange={(e) => setFilterSentiment(e.target.value)}
-              className="px-3 py-2 bg-white border border-[#D0EDE8] rounded-lg text-sm text-[#1B2A4A] focus:border-[#00A99D] focus:outline-none"
+              className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 focus:border-brand-600 focus:outline-none"
             >
               <option value="all">All</option>
               <option value="negative">Negative</option>
@@ -125,23 +125,23 @@ export default function CallsPage() {
             </select>
           </div>
           <div className="flex-1 min-w-[200px]">
-            <label className="text-xs text-[#8AADA6] mb-1 block font-sans">Search</label>
+            <label className="text-xs text-slate-400 mb-1 block font-sans">Search</label>
             <input
               type="text"
               placeholder="Search summary or phone..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-3 py-2 bg-white border border-[#D0EDE8] rounded-lg text-sm text-[#1B2A4A] placeholder:text-[#8AADA6] focus:border-[#00A99D] focus:outline-none"
+              className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:border-brand-600 focus:outline-none"
             />
           </div>
         </div>
       </div>
 
       {/* Calls Table */}
-      <div className="bg-white border border-[#D0EDE8] rounded-xl p-5 shadow-sm">
+      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
         <div className="flex items-center gap-2 mb-4">
-          <Phone className="w-4 h-4 text-[#00A99D]" />
-          <h3 className="text-sm font-bold text-[#1B2A4A] font-sans">All Calls</h3>
+          <Phone className="w-4 h-4 text-brand-600" />
+          <h3 className="text-sm font-bold text-slate-900 font-sans">All Calls</h3>
         </div>
 
         {loading ? (
@@ -187,7 +187,7 @@ export default function CallsPage() {
 
         {/* Pagination */}
         {!loading && totalPages > 1 && (
-          <div className="flex items-center justify-between mt-4 pt-4 border-t border-[#D0EDE8]">
+          <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-200">
             <span className="text-xs text-muted-foreground font-sans">
               Page {page} of {totalPages}
             </span>
@@ -196,7 +196,7 @@ export default function CallsPage() {
                 onClick={() => setPage(Math.max(1, page - 1))}
                 disabled={page === 1}
                 aria-label="Previous page"
-                className="p-1.5 rounded-lg border border-[#D0EDE8] hover:border-[#00A99D] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="p-1.5 rounded-lg border border-slate-200 hover:border-brand-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronLeft className="w-4 h-4 text-[#4A7A6D]" />
               </button>
@@ -204,7 +204,7 @@ export default function CallsPage() {
                 onClick={() => setPage(Math.min(totalPages, page + 1))}
                 disabled={page === totalPages}
                 aria-label="Next page"
-                className="p-1.5 rounded-lg border border-[#D0EDE8] hover:border-[#00A99D] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="p-1.5 rounded-lg border border-slate-200 hover:border-brand-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronRight className="w-4 h-4 text-[#4A7A6D]" />
               </button>

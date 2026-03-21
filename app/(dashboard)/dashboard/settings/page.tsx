@@ -259,11 +259,11 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className="max-w-2xl mx-auto p-6 space-y-6">
-        <h1 className="text-2xl font-bold text-[#1B2A4A]">Settings</h1>
+        <h1 className="text-2xl font-bold text-slate-900">Settings</h1>
         {[1, 2, 3, 4].map((i) => (
           <div
             key={i}
-            className="h-40 bg-[#F0F9F8] rounded-xl animate-pulse"
+            className="h-40 bg-brand-light rounded-xl animate-pulse"
           />
         ))}
       </div>
@@ -272,12 +272,12 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-2xl mx-auto p-6 space-y-6">
-      <h1 className="text-2xl font-bold text-[#1B2A4A]">Settings</h1>
+      <h1 className="text-2xl font-bold text-slate-900">Settings</h1>
 
       {/* Section 1: Profile */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-[#1B2A4A] text-base">
+          <CardTitle className="flex items-center gap-2 text-slate-900 text-base">
             <User className="w-4 h-4 text-[#00A99D]" />
             Profile
           </CardTitle>
@@ -286,7 +286,7 @@ export default function SettingsPage() {
           <div>
             <label
               htmlFor="business-name"
-              className="text-sm font-medium text-[#1B2A4A]"
+              className="text-sm font-medium text-slate-900"
             >
               Business name
             </label>
@@ -301,7 +301,7 @@ export default function SettingsPage() {
               <Button
                 onClick={handleSaveProfile}
                 disabled={!hasNameChanged || savingProfile}
-                className="bg-[#00A99D] hover:bg-[#008F85] text-white shrink-0"
+                className="bg-brand-600 hover:bg-brand-700 text-white shrink-0"
               >
                 {savingProfile ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -317,7 +317,7 @@ export default function SettingsPage() {
           <div>
             <label
               htmlFor="email-address"
-              className="text-sm font-medium text-[#1B2A4A]"
+              className="text-sm font-medium text-slate-900"
             >
               Email address
             </label>
@@ -332,7 +332,7 @@ export default function SettingsPage() {
               <Button
                 onClick={handleUpdateEmail}
                 disabled={!hasEmailChanged || savingEmail}
-                className="bg-[#00A99D] hover:bg-[#008F85] text-white shrink-0"
+                className="bg-brand-600 hover:bg-brand-700 text-white shrink-0"
               >
                 {savingEmail ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -349,7 +349,7 @@ export default function SettingsPage() {
           <Separator />
 
           <div>
-            <label className="text-sm font-medium text-[#1B2A4A]">
+            <label className="text-sm font-medium text-slate-900">
               Change password
             </label>
             <div className="space-y-2 mt-1.5">
@@ -372,7 +372,7 @@ export default function SettingsPage() {
                   newPassword.length < 8 ||
                   confirmPassword.length === 0
                 }
-                className="bg-[#00A99D] hover:bg-[#008F85] text-white"
+                className="bg-brand-600 hover:bg-brand-700 text-white"
               >
                 {changingPassword ? (
                   <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
@@ -383,7 +383,7 @@ export default function SettingsPage() {
               </Button>
             </div>
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-dashed">
-              <p className="text-xs text-[#8AADA6]">
+              <p className="text-xs text-slate-400">
                 Or send a password reset link to your email
               </p>
               <Button
@@ -407,7 +407,7 @@ export default function SettingsPage() {
       {/* Section 2: Notifications */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-[#1B2A4A] text-base">
+          <CardTitle className="flex items-center gap-2 text-slate-900 text-base">
             <Bell className="w-4 h-4 text-[#00A99D]" />
             Notifications
           </CardTitle>
@@ -415,10 +415,10 @@ export default function SettingsPage() {
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-[#1B2A4A]">
+              <p className="text-sm font-medium text-slate-900">
                 Low balance warning
               </p>
-              <p className="text-xs text-[#8AADA6]">
+              <p className="text-xs text-slate-400">
                 SMS when you have less than 10 minutes remaining
               </p>
             </div>
@@ -433,10 +433,10 @@ export default function SettingsPage() {
 
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-[#1B2A4A]">
+              <p className="text-sm font-medium text-slate-900">
                 Monthly usage summary
               </p>
-              <p className="text-xs text-[#8AADA6]">
+              <p className="text-xs text-slate-400">
                 Email summary on the 1st of each month
               </p>
             </div>
@@ -453,10 +453,10 @@ export default function SettingsPage() {
 
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-[#1B2A4A]">
+              <p className="text-sm font-medium text-slate-900">
                 Payment receipts
               </p>
-              <p className="text-xs text-[#8AADA6]">
+              <p className="text-xs text-slate-400">
                 Email after each payment
               </p>
             </div>
@@ -473,10 +473,10 @@ export default function SettingsPage() {
 
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-[#1B2A4A]">
+              <p className="text-sm font-medium text-slate-900">
                 Failed order lookup alerts
               </p>
-              <p className="text-xs text-[#8AADA6]">
+              <p className="text-xs text-slate-400">
                 SMS when a customer calls about an order that can&apos;t be found
               </p>
             </div>
@@ -494,7 +494,7 @@ export default function SettingsPage() {
       {/* Section 3: Data & Privacy */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-[#1B2A4A] text-base">
+          <CardTitle className="flex items-center gap-2 text-slate-900 text-base">
             <Shield className="w-4 h-4 text-[#00A99D]" />
             Data &amp; Privacy
           </CardTitle>
@@ -502,10 +502,10 @@ export default function SettingsPage() {
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-[#1B2A4A]">
+              <p className="text-sm font-medium text-slate-900">
                 Download my data
               </p>
-              <p className="text-xs text-[#8AADA6]">
+              <p className="text-xs text-slate-400">
                 Export your account, calls, and billing data as a ZIP file
               </p>
             </div>
@@ -529,10 +529,10 @@ export default function SettingsPage() {
 
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-[#1B2A4A]">
+              <p className="text-sm font-medium text-slate-900">
                 Privacy policy
               </p>
-              <p className="text-xs text-[#8AADA6]">
+              <p className="text-xs text-slate-400">
                 How we handle your data
               </p>
             </div>
@@ -557,10 +557,10 @@ export default function SettingsPage() {
         <CardContent>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-[#1B2A4A]">
+              <p className="text-sm font-medium text-slate-900">
                 Delete account
               </p>
-              <p className="text-xs text-[#8AADA6] max-w-sm">
+              <p className="text-xs text-slate-400 max-w-sm">
                 Permanently deletes your account, releases your phone number,
                 disconnects your Shopify store, and removes all personal data.
                 Billing history is retained for 7 years as required by law.
