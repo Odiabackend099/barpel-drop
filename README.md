@@ -1,3 +1,26 @@
+# TECH STACK — READ BEFORE TOUCHING ANYTHING
+
+This is a **Next.js 14 App Router** project deployed on **Vercel**.
+
+| What this is | What this is NOT |
+|---|---|
+| Next.js 14 App Router | Vite |
+| TypeScript | Create React App |
+| Tailwind CSS | Plain React SPA |
+| Supabase | Any other DB |
+| Deployed on Vercel | Any other host |
+
+**DO NOT:**
+- Add `vite.config.ts`
+- Add `index.html` to root
+- Add a `src/` directory
+- Run `npm create vite`
+- Force push to `main`
+
+All changes go through pull requests. Branch protection is enabled.
+
+---
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
