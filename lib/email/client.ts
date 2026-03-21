@@ -373,7 +373,7 @@ export async function sendNewUserAlertEmail(email: string, name?: string | null)
 
   await getResend().emails.send({
     from: `Barpel AI <hello@barpel.ai>`,
-    to: ["rephael@barpel.ai", "austyn@barpel.ai"],
+    to: ["raphael@barpel.ai", "austyn@barpel.ai"],
     subject: `New signup — ${displayName}`,
     html: `
       <div style="${EMAIL_STYLES}">
@@ -536,7 +536,7 @@ export async function sendSupportTeamNotificationEmail(ticket: SupportTicket) {
   await getResend().emails.send({
     from: `Barpel AI <hello@barpel.ai>`,
     to: "support@barpel.ai",
-    cc: "rephael@barpel.ai",
+    cc: "raphael@barpel.ai",
     replyTo: ticket.userEmail,
     subject: `[${ticket.ticketRef}] ${ticket.category} — ${ticket.subject}`,
     html: `
