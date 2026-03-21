@@ -42,3 +42,13 @@ scripts/testsprite-setup.mjs
 scripts/voice-browser-test.ts
 tests/e2e-journey.mjs
 scripts/launch-verification.ts
+
+# ============================================================
+# Vite — this is a Next.js project. Vite has no place here.
+# ============================================================
+vite.config.ts
+vite.config.js
+/index.html
+/src/main.tsx
+/src/App.tsx
+/dist/
