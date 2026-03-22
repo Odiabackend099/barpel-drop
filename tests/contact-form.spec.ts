@@ -376,7 +376,7 @@ test.describe('Contact Form - Full Feature Test Suite', () => {
     await submitButton.click();
 
     // Should show error message
-    const errorText = page.locator(':has-text("error|failed|try again")', { ignoreCase: true });
+    const errorText = page.locator(':has-text("error"), :has-text("failed"), :has-text("try again")');
     const isVisible = await errorText.isVisible().catch(() => false);
 
     // Either show error or stay on form

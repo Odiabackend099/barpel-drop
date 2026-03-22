@@ -95,7 +95,7 @@ export async function sendPaymentFailedEmail(to: string, businessName: string) {
   const billingUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/billing`;
 
   await getResend().emails.send({
-    from: EMAIL_FROM(),
+    from: `Barpel AI Support <support@barpel.ai>`,
     to,
     subject: "Action needed — your Barpel AI payment didn't go through",
     html: `
@@ -123,7 +123,7 @@ export async function sendPaymentReminderEmail(to: string, businessName: string)
   const billingUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/billing`;
 
   await getResend().emails.send({
-    from: EMAIL_FROM(),
+    from: `Barpel AI Support <support@barpel.ai>`,
     to,
     subject: "Reminder — please update your payment method for Barpel AI",
     html: `
@@ -147,7 +147,7 @@ export async function sendFinalWarningEmail(to: string, businessName: string) {
   const billingUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/billing`;
 
   await getResend().emails.send({
-    from: EMAIL_FROM(),
+    from: `Barpel AI Support <support@barpel.ai>`,
     to,
     subject: "Urgent — your Barpel AI line will pause in 48 hours",
     html: `
@@ -177,7 +177,7 @@ export async function sendFinalWarningEmail(to: string, businessName: string) {
 /** Sent after account deletion (GDPR Article 17 — right to erasure). */
 export async function sendAccountDeletedEmail(to: string) {
   await getResend().emails.send({
-    from: EMAIL_FROM(),
+    from: `Barpel AI Support <support@barpel.ai>`,
     to,
     subject: "Your Barpel AI account has been deleted",
     html: `
