@@ -485,45 +485,6 @@ function OnboardingContent() {
     goToStep(3);
   }
 
-  async function handleBuyCredits(packageId: string) {
-    setBillingLoading(true);
-    setError("");
-    try {
-      const res = await fetch("/api/billing/paystack/initiate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: packageId, billing_cycle: "monthly" }),
-      });
-      const config = await res.json();
-      if (!res.ok) {
-        setError(config.error ?? "Something went wrong. Please try again.");
-        setBillingLoading(false);
-        return;
-      }
-      const PaystackPop = (await import("@paystack/inline-js")).default;
-      track("onboarding_step", { step: 3, action: "completed" });
-      PaystackPop.newTransaction({
-        key:        config.public_key,
-        accessCode: config.access_code,
-        onSuccess: async () => {
-          await saveToDb({ onboarding_step: 4 });
-          goToStep(4);
-          setBillingLoading(false);
-        },
-        onCancel: () => {
-          setBillingLoading(false);
-        },
-        onError: (err: { message?: string }) => {
-          setError(`Payment error: ${err.message ?? "Please try again."}`);
-          setBillingLoading(false);
-        },
-      });
-    } catch {
-      setError("Network error — please check your connection and try again.");
-      setBillingLoading(false);
-    }
-  }
-
   async function handleDodoBuyCredits(packageId: string) {
     setBillingLoading(true);
     setError("");
@@ -594,7 +555,6 @@ function OnboardingContent() {
     setTimeout(() => setCopied(false), 2000);
   }
 
-  const isAfrica = ["NG", "GH", "KE"].includes(country);
   const freeMinutes = Math.floor(creditBalance / 60);
 
   if (loadingStep) {
@@ -980,34 +940,6 @@ function OnboardingContent() {
                           ))}
                         </div>
 
-                        {/* NGN (Nigeria) — Paystack */}
-                        {isAfrica && (
-                          <>
-                            <div className="flex items-center gap-3 my-4">
-                              <div className="flex-1 h-px bg-[#D0EDE8]" />
-                              <span className="text-xs text-slate-400">or pay in NGN</span>
-                              <div className="flex-1 h-px bg-[#D0EDE8]" />
-                            </div>
-                            <div className="space-y-3">
-                              {CREDIT_PACKAGES.map((pkg) => (
-                                <button
-                                  key={`pstk-${pkg.id}`}
-                                  onClick={() => handleBuyCredits(pkg.id)}
-                                  disabled={billingLoading}
-                                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-slate-200 text-left transition-colors hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                  <div>
-                                    <span className="font-semibold text-slate-900 text-sm">{pkg.name}</span>
-                                    <span className="text-xs text-slate-400 ml-2">via Paystack</span>
-                                  </div>
-                                  <span className="font-bold text-slate-900">
-                                    ${(pkg.priceUsdCents / 100).toFixed(0)}/mo
-                                  </span>
-                                </button>
-                              ))}
-                            </div>
-                          </>
-                        )}
 
 
                         {error && <p className="mt-2 text-xs text-red-500">{error}</p>}
@@ -1230,15 +1162,6 @@ function OnboardingContent() {
                               </button>
                             </div>
 
-                            {isAfrica && phoneNumber && (
-                              <div className="mb-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
-                                <p className="text-xs text-blue-700">
-                                  {phoneNumber.startsWith("+1")
-                                    ? "This is your US support number. Your customers can reach you internationally. We recommend setting up call forwarding below."
-                                    : "This is your international support number. We recommend setting up call forwarding below."}
-                                </p>
-                              </div>
-                            )}
 
                             <div className="mb-6">
                               <div className="flex border border-slate-200 rounded-xl overflow-hidden">

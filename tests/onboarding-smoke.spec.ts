@@ -63,9 +63,11 @@ test("Onboarding page has NO website field", () => {
   expect(source).not.toMatch(/placeholder=["'][^"']*https:\/\//i);
 });
 
-test("Paystack handler has onError callback", () => {
+test("Onboarding page has NO Nigeria in country dropdown", () => {
   const source = readFileSync(resolve(ROOT, "app/onboarding/page.tsx"), "utf-8");
-  expect(source, "Paystack onError handler is missing").toContain("onError:");
+  expect(source, "Nigeria / NG found in onboarding page UI — must be removed").not.toMatch(/Nigeria|🇳🇬/);
+  // NG as a country code in UI arrays must not appear (ussdCodes.ts backend data is exempt)
+  expect(source, "isAfrica variable still present in onboarding page").not.toContain("isAfrica");
 });
 
 test("USSD code definitions exist for NG/MTN and US/Verizon", () => {
