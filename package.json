@@ -26,7 +26,8 @@
     "test:onboarding:headed": "playwright test tests/onboarding-smoke.spec.ts --project=chromium --headed",
     "prepare": "husky",
     "push": "tsx --env-file=.env.local scripts/push-and-watch.ts",
-    "verify:deletion": "tsx --env-file=.env.local scripts/verify-account-deletion.ts"
+    "verify:deletion": "tsx --env-file=.env.local scripts/verify-account-deletion.ts",
+    "demo:record": "tsx scripts/record-demo.mts"
   },
   "dependencies": {
     "@dodopayments/nextjs": "^0.3.4",
