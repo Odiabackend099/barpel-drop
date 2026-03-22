@@ -4,7 +4,6 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { sendAccountDeletedEmail } from "@/lib/email/client";
 import { getAuthUser, unauthorizedResponse } from "@/lib/supabase/auth-guard";
 import DodoPayments from "dodopayments";
-import { getSubscription, disableSubscription } from "@/lib/paystack/client";
 
 /**
  * DELETE /api/account/delete
@@ -102,12 +101,25 @@ export async function DELETE(request: Request) {
     }
   }
 
-  // Step 1c: Cancel Paystack subscription
-  if (merchant.paystack_subscription_id) {
+  // Step 1c: Cancel Paystack subscription (legacy subscribers)
+  if (merchant.paystack_subscription_id && process.env.PAYSTACK_SECRET_KEY) {
     try {
-      const sub = await getSubscription(merchant.paystack_subscription_id);
-      const emailToken: string = sub.data.email_token;
-      await disableSubscription({ code: merchant.paystack_subscription_id, token: emailToken });
+      const subRes = await fetch(
+        `https://api.paystack.co/subscription/${merchant.paystack_subscription_id}`,
+        { headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}` } }
+      );
+      if (subRes.ok) {
+        const subData = await subRes.json();
+        const emailToken: string = subData.data.email_token;
+        await fetch("https://api.paystack.co/subscription/disable", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ code: merchant.paystack_subscription_id, token: emailToken }),
+        });
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       errors.push(`Paystack cancel: ${msg}`);

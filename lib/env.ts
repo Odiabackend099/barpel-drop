@@ -27,33 +27,12 @@ const serverSchema = z.object({
   SHOPIFY_API_KEY: z.string().min(1),
   SHOPIFY_API_SECRET: z.string().min(1),
 
-  // Stripe
-  STRIPE_SECRET_KEY: z.string().startsWith("sk_"),
-  STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_"),
+  // Stripe — legacy, kept optional for zero-downtime env cleanup
+  STRIPE_SECRET_KEY: z.string().startsWith("sk_").optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_").optional(),
 
-  // Flutterwave — payment processor
-  FLW_PUBLIC_KEY: z.string().min(1).optional(),
+  // Flutterwave — legacy, kept optional for dunning-check cancellation of existing FLW subscribers
   FLW_SECRET_KEY: z.string().min(1).optional(),
-  FLW_SECRET_HASH: z.string().min(1).optional(),
-  FLW_ENCRYPTION_KEY: z.string().min(1).optional(),
-  FLW_PLAN_ID_STARTER: z.string().min(1).optional(),
-  FLW_PLAN_ID_GROWTH: z.string().min(1).optional(),
-  FLW_PLAN_ID_SCALE: z.string().min(1).optional(),
-  // Annual plan IDs (created separately for yearly billing interval)
-  FLW_PLAN_ID_STARTER_ANNUAL: z.string().min(1).optional(),
-  FLW_PLAN_ID_GROWTH_ANNUAL: z.string().min(1).optional(),
-  FLW_PLAN_ID_SCALE_ANNUAL: z.string().min(1).optional(),
-
-  // Paystack — primary subscription payment processor
-  PAYSTACK_SECRET_KEY: z.string().startsWith("sk_").optional(),
-  PAYSTACK_WEBHOOK_SECRET: z.string().min(1).optional(),
-  // Paystack plan codes (PLN_xxx) — created once in Paystack dashboard
-  PAYSTACK_PLAN_CODE_STARTER:         z.string().min(1).optional(),
-  PAYSTACK_PLAN_CODE_GROWTH:          z.string().min(1).optional(),
-  PAYSTACK_PLAN_CODE_SCALE:           z.string().min(1).optional(),
-  PAYSTACK_PLAN_CODE_STARTER_ANNUAL:  z.string().min(1).optional(),
-  PAYSTACK_PLAN_CODE_GROWTH_ANNUAL:   z.string().min(1).optional(),
-  PAYSTACK_PLAN_CODE_SCALE_ANNUAL:    z.string().min(1).optional(),
 
   // AfterShip (optional for now per spec)
   AFTERSHIP_API_KEY: z.string().min(1).optional(),
@@ -84,8 +63,6 @@ const clientSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
   NEXT_PUBLIC_BASE_URL: z.string().url(),
-  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().min(1),
-  NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY: z.string().startsWith("pk_").optional(),
   NEXT_PUBLIC_VAPI_PUBLIC_KEY: z.string().min(1),
   // Optional — controls mock API in local dev only
   NEXT_PUBLIC_USE_MOCK_API: z.string().optional().default("false"),
@@ -117,7 +94,6 @@ export function validateClientEnv() {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
-    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
     NEXT_PUBLIC_VAPI_PUBLIC_KEY: process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY,
     NEXT_PUBLIC_USE_MOCK_API: process.env.NEXT_PUBLIC_USE_MOCK_API,
     NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,

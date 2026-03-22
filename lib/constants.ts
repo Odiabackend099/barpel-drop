@@ -84,26 +84,6 @@ export const DODO_PRODUCT_MAP = {
   },
 } as const;
 
-/**
- * Paystack plan codes — set via env vars after creating plans in the Paystack dashboard.
- * Plan codes are in the format PLN_xxxx.
- * Plans must be created with currency=USD and the amounts matching CREDIT_PACKAGES.
- */
-export const PAYSTACK_PLAN_CODES = {
-  starter: {
-    monthly: process.env.PAYSTACK_PLAN_CODE_STARTER ?? "",
-    annual:  process.env.PAYSTACK_PLAN_CODE_STARTER_ANNUAL ?? "",
-  },
-  growth: {
-    monthly: process.env.PAYSTACK_PLAN_CODE_GROWTH ?? "",
-    annual:  process.env.PAYSTACK_PLAN_CODE_GROWTH_ANNUAL ?? "",
-  },
-  scale: {
-    monthly: process.env.PAYSTACK_PLAN_CODE_SCALE ?? "",
-    annual:  process.env.PAYSTACK_PLAN_CODE_SCALE_ANNUAL ?? "",
-  },
-} as const;
-
 /** Credit packages — subscription model (1 credit = 1 minute of call time) */
 export const CREDIT_PACKAGES = [
   { id: "starter", name: "Starter", credits: 30, priceUsdCents: 2900, annualPriceUsdCents: 31300, perMin: 0.97, overage: 0.99 },

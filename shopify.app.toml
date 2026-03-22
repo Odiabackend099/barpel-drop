@@ -2,7 +2,7 @@
 
 client_id = "29902727b12017553fdd0920962430a5"
 name = "Barpel Drop AI"
-application_url = "https://barpel-drop-ai.vercel.app"
+application_url = "https://dropship.barpel.ai"
 embedded = false
 
 [webhooks]
@@ -10,6 +10,7 @@ api_version = "2026-01"
 
 [auth]
 redirect_urls = [
+  "https://dropship.barpel.ai/api/shopify/oauth/callback",
   "https://barpel-drop-ai.vercel.app/api/shopify/oauth/callback",
   "http://localhost:5050/api/shopify/oauth/callback"
 ]

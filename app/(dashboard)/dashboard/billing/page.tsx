@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Star, Check, TrendingUp, CreditCard as CardIcon, Zap, XCircle, RefreshCw, Globe } from "lucide-react";
+import { Star, Check, TrendingUp, CreditCard as CardIcon, Zap, XCircle, RefreshCw } from "lucide-react";
 import {
   AreaChart,
   Area,
@@ -142,148 +142,15 @@ function DodoPlanCard({ pkg, billingCycle }: { pkg: typeof CREDIT_PACKAGES[numbe
   );
 }
 
-/**
- * Paystack plan card.
- * Calls /api/billing/paystack/initiate server-side to get an access_code,
- * then opens the Paystack inline popup. On success, the webhook is the
- * authoritative credit path — the popup callback is UI feedback only.
- */
-function PaystackPlanCard({ pkg, billingCycle }: { pkg: typeof CREDIT_PACKAGES[number]; billingCycle: BillingCycle }) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleBuyNow = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/billing/paystack/initiate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: pkg.id, billing_cycle: billingCycle }),
-      });
-      const config = await res.json();
-      if (!res.ok) {
-        setError(config.error ?? "Something went wrong. Please try again.");
-        setLoading(false);
-        return;
-      }
-
-      // Dynamically import Paystack inline.js — browser-only, avoids SSR issues
-      const PaystackPop = (await import("@paystack/inline-js")).default;
-
-      // newTransaction opens the popup immediately — no need to call openIframe().
-      // Do NOT trust this callback to grant credits — webhook is authoritative.
-      // onSuccess/onCancel handle UI state only.
-      PaystackPop.newTransaction({
-        key:        config.public_key,
-        accessCode: config.access_code,
-        onSuccess: () => {
-          // Supabase Realtime updates balance automatically within ~2s
-          setLoading(false);
-        },
-        onCancel: () => {
-          setLoading(false);
-        },
-      });
-    } catch {
-      setError("Network error — please check your connection and try again.");
-      setLoading(false);
-    }
-  };
-
-  const displayPrice = billingCycle === "annual"
-    ? (pkg.annualPriceUsdCents / 100).toFixed(0)
-    : (pkg.priceUsdCents / 100).toFixed(2);
-
-  const priceLabel = billingCycle === "annual"
-    ? `$${displayPrice}/year`
-    : `$${displayPrice}/month`;
-
-  const monthlyEquiv = billingCycle === "annual"
-    ? `$${Math.round(pkg.annualPriceUsdCents / 12 / 100)}/mo`
-    : null;
-
-  return (
-    <div
-      className={`bg-white border rounded-xl p-5 shadow-sm relative ${"popular" in pkg && pkg.popular ? "border-brand-600" : "border-slate-200"}`}
-    >
-      {"popular" in pkg && pkg.popular && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <Badge color="#00A99D">
-            <Star className="w-3 h-3 mr-1" />
-            BEST VALUE
-          </Badge>
-        </div>
-      )}
-      <div className="text-center pt-2">
-        <h3 className="text-lg font-bold text-slate-900 font-sans">{pkg.name}</h3>
-        <p className="text-3xl font-bold text-slate-900 mt-2">{priceLabel}</p>
-        {monthlyEquiv && (
-          <p className="text-sm text-brand-600 font-semibold">{monthlyEquiv} · Save 10%</p>
-        )}
-        <p className="text-sm text-muted-foreground font-sans">{pkg.credits} credits/month</p>
-        <p className="text-xs text-muted-foreground mt-1 font-sans">
-          ${pkg.perMin.toFixed(2)}/credit · Overage: +${"overage" in pkg ? (pkg as { overage: number }).overage.toFixed(2) : "0.99"}/credit
-        </p>
-      </div>
-      <div className="mt-4 space-y-2">
-        <div className="flex items-center gap-2 text-sm text-slate-500 font-sans">
-          <Check className="w-4 h-4 text-brand-600" />
-          Order tracking calls
-        </div>
-        <div className="flex items-center gap-2 text-sm text-slate-500 font-sans">
-          <Check className="w-4 h-4 text-brand-600" />
-          Return triage
-        </div>
-        <div className="flex items-center gap-2 text-sm text-slate-500 font-sans">
-          <Check className="w-4 h-4 text-brand-600" />
-          Abandoned cart recovery
-        </div>
-      </div>
-      <button
-        onClick={handleBuyNow}
-        disabled={loading}
-        className={`w-full mt-4 inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all px-4 py-2.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed ${
-          "popular" in pkg && pkg.popular
-            ? "bg-gradient-to-r from-brand-600 to-brand-400 text-white hover:shadow-lg hover:-translate-y-0.5"
-            : "bg-white border border-slate-200 text-slate-900 hover:border-brand-600 hover:bg-brand-light"
-        }`}
-      >
-        {loading && (
-          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-          </svg>
-        )}
-        {loading ? "Opening payment..." : "Buy Now"}
-      </button>
-      {/* Trust signal */}
-      <p className="text-center text-[10px] text-muted-foreground mt-2 font-sans">
-        Secured by Paystack · Cancel anytime
-      </p>
-      {error && (
-        <div className="flex items-center gap-2 mt-3 p-2.5 bg-red-50 border border-red-200 rounded-lg">
-          <Zap className="w-3.5 h-3.5 text-red-600 shrink-0" />
-          <p className="text-xs text-red-700">{error}</p>
-        </div>
-      )}
-    </div>
-  );
-}
-
 export default function BillingPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const [cancelLoading, setCancelLoading] = useState(false);
-  const [showResubBanner, setShowResubBanner] = useState(false);
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
-  const [paymentRegion, setPaymentRegion] = useState<"usd" | "ngn">("usd");
-  const { balance, credits, transactions, usageData, loading, refreshBalance, flwPlan, flwSubscriptionId, paystackPlan, paystackSubscriptionId, planStatus, dodoPlan, dodoSubscriptionId, dodoCustomerId } = useCredits();
+  const { balance, credits, transactions, usageData, loading, refreshBalance, planStatus, dodoPlan, dodoSubscriptionId, dodoCustomerId } = useCredits();
 
-  // The active plan is whichever provider has an active subscription
-  const activePlan = paystackPlan ?? flwPlan ?? dodoPlan;
-  const hasActivePaystackOrFlw = !!(paystackSubscriptionId ?? flwSubscriptionId);
+  const activePlan = dodoPlan;
   const hasActiveDodo = !!dodoSubscriptionId;
-  const hasActiveSubscription = hasActivePaystackOrFlw || hasActiveDodo;
+  const hasActiveSubscription = hasActiveDodo;
 
   // Format usage data for chart — convert ISO dates to "MMM dd"
   const chartData = usageData.map((d) => ({
@@ -416,16 +283,6 @@ export default function BillingPage() {
         </div>
       )}
 
-      {/* Re-subscribe banner after card update */}
-      {showResubBanner && (
-        <div className="flex items-center gap-2 p-4 bg-brand-light border border-slate-200 rounded-lg">
-          <RefreshCw className="w-4 h-4 text-brand-600 shrink-0" />
-          <p className="text-sm text-slate-900">
-            Select a plan below to re-subscribe with your new card. Your remaining credits are kept.
-          </p>
-        </div>
-      )}
-
       {/* Billing Cycle Toggle */}
       <div className="flex items-center justify-center gap-3 py-2">
         <span
@@ -460,129 +317,14 @@ export default function BillingPage() {
         )}
       </div>
 
-      {/* Payment Region Tabs */}
-      <div className="flex items-center gap-1 p-1 bg-brand-light rounded-xl w-fit">
-        <button
-          onClick={() => setPaymentRegion("usd")}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-            paymentRegion === "usd"
-              ? "bg-white text-slate-900 shadow-sm"
-              : "text-muted-foreground hover:text-slate-500"
-          }`}
-        >
-          <Globe className="w-3.5 h-3.5" />
-          USD — International
-        </button>
-        <button
-          onClick={() => setPaymentRegion("ngn")}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-            paymentRegion === "ngn"
-              ? "bg-white text-slate-900 shadow-sm"
-              : "text-muted-foreground hover:text-slate-500"
-          }`}
-        >
-          NGN — Nigeria
-        </button>
-      </div>
-
-      {/* Paystack NGN switching notice */}
-      {paymentRegion === "usd" && hasActivePaystackOrFlw && (
-        <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-700">
-          <Zap className="w-3.5 h-3.5 shrink-0" />
-          You have an active NGN subscription. Cancel it first before switching to USD billing.
-        </div>
-      )}
-
       {/* Credit Packages */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {paymentRegion === "usd"
-          ? CREDIT_PACKAGES.map((pkg) => (
-              <DodoPlanCard key={`dodo-${pkg.id}-${billingCycle}`} pkg={pkg} billingCycle={billingCycle} />
-            ))
-          : CREDIT_PACKAGES.map((pkg) => (
-              <PaystackPlanCard key={`pstk-${pkg.id}-${billingCycle}`} pkg={pkg} billingCycle={billingCycle} />
-            ))
-        }
+        {CREDIT_PACKAGES.map((pkg) => (
+          <DodoPlanCard key={`dodo-${pkg.id}-${billingCycle}`} pkg={pkg} billingCycle={billingCycle} />
+        ))}
       </div>
 
-      {/* Subscription Management — Paystack / Flutterwave */}
-      {!loading && hasActivePaystackOrFlw && (
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-          <h3 className="text-sm font-bold text-slate-900 mb-3 font-sans">Manage NGN Subscription</h3>
-          <div className="flex flex-wrap gap-3">
-            <button
-              disabled={cancelLoading}
-              onClick={async () => {
-                const ok = window.confirm(
-                  "To update your card, we'll cancel your current subscription. " +
-                  "Then you can re-subscribe with your new card.\n\n" +
-                  "Your remaining credits are kept."
-                );
-                if (!ok) return;
-                setCancelLoading(true);
-                try {
-                  const endpoint = paystackSubscriptionId
-                    ? "/api/billing/paystack/cancel"
-                    : "/api/billing/flutterwave/cancel";
-                  const res = await fetch(endpoint, { method: "POST" });
-                  if (res.ok) {
-                    setSuccessMessage("Subscription cancelled — select a plan to re-subscribe with your new card.");
-                    setShowResubBanner(true);
-                    setTimeout(() => setSuccessMessage(""), 8000);
-                  } else {
-                    const data = await res.json().catch(() => ({}));
-                    alert(data.error ?? "Failed to cancel. Please try again.");
-                  }
-                } catch {
-                  alert("Network error — please try again.");
-                } finally {
-                  setCancelLoading(false);
-                }
-              }}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-900 bg-white border border-slate-200 rounded-lg hover:border-brand-600 hover:bg-brand-light transition-all disabled:opacity-50"
-            >
-              <RefreshCw className={`w-4 h-4 ${cancelLoading ? "animate-spin" : ""}`} />
-              Update Payment Method
-            </button>
-
-            <button
-              disabled={cancelLoading}
-              onClick={async () => {
-                const ok = window.confirm(
-                  "Cancel your subscription?\n\n" +
-                  "You'll keep your remaining credits but won't be charged again.\n" +
-                  "Note: Annual plans are non-refundable."
-                );
-                if (!ok) return;
-                setCancelLoading(true);
-                try {
-                  const endpoint = paystackSubscriptionId
-                    ? "/api/billing/paystack/cancel"
-                    : "/api/billing/flutterwave/cancel";
-                  const res = await fetch(endpoint, { method: "POST" });
-                  if (res.ok) {
-                    setSuccessMessage("Subscription cancelled. You can re-subscribe anytime.");
-                    setTimeout(() => setSuccessMessage(""), 8000);
-                  } else {
-                    const data = await res.json().catch(() => ({}));
-                    alert(data.error ?? "Failed to cancel. Please try again.");
-                  }
-                } catch {
-                  alert("Network error — please try again.");
-                } finally {
-                  setCancelLoading(false);
-                }
-              }}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#E74C3C] bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-all disabled:opacity-50"
-            >
-              <XCircle className={`w-4 h-4 ${cancelLoading ? "animate-spin" : ""}`} />
-              Cancel Subscription
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Subscription Management — Dodo Payments (USD) */}
+      {/* Subscription Management — Dodo Payments */}
       {!loading && hasActiveDodo && (
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
           <h3 className="text-sm font-bold text-slate-900 mb-1 font-sans">Manage USD Subscription</h3>

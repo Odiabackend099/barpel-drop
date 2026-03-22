@@ -27,7 +27,7 @@ test("ONBOARDING.md exists and contains lock warning", () => {
   expect(content).toContain("[onboarding-approved]");
 });
 
-test("All 14 protected onboarding files exist", () => {
+test("All 13 protected onboarding files exist", () => {
   const protectedFiles = [
     "app/onboarding/page.tsx",
     "app/api/shopify/oauth/start/route.ts",
@@ -36,7 +36,6 @@ test("All 14 protected onboarding files exist", () => {
     "app/api/provisioning/byoc/route.ts",
     "app/api/provisioning/retry/route.ts",
     "app/api/billing/dodo/initiate/route.ts",
-    "app/api/billing/paystack/initiate/route.ts",
     "app/api/caller-id/start/route.ts",
     "app/api/caller-id/verify/route.ts",
     "lib/provisioning/phoneService.ts",
@@ -47,6 +46,44 @@ test("All 14 protected onboarding files exist", () => {
   for (const file of protectedFiles) {
     expect(existsSync(resolve(ROOT, file)), `Missing protected file: ${file}`).toBe(true);
   }
+});
+
+test("Onboarding Step 2 has a shop domain input field", () => {
+  const source = readFileSync(resolve(ROOT, "app/onboarding/page.tsx"), "utf-8");
+  // The shop domain input must exist — required for the direct OAuth URL fix
+  expect(source, "Shop domain input missing from Step 2").toContain('placeholder="your-store.myshopify.com"');
+  // handleConnectShopify must pass the shop param to the start route
+  expect(source, "shop param not passed to OAuth start route").toContain("?returnTo=onboarding&shop=");
+});
+
+test("Onboarding Step 2 does NOT use buildInstallUrl (managed install)", () => {
+  const source = readFileSync(resolve(ROOT, "app/onboarding/page.tsx"), "utf-8");
+  // Must not call the managed install URL path (no-shop fallback should not be triggered from UI)
+  expect(source, "buildInstallUrl still referenced directly in onboarding UI").not.toContain("oauth/start?returnTo=onboarding'");
+});
+
+test("OAuth start route uses buildDirectInstallUrl when shop param is valid", () => {
+  const source = readFileSync(resolve(ROOT, "app/api/shopify/oauth/start/route.ts"), "utf-8");
+  // Must validate the shop param and call buildDirectInstallUrl
+  expect(source, "shop param validation regex missing").toContain("myshopify\\.com");
+  expect(source, "buildDirectInstallUrl not used in start route").toContain("buildDirectInstallUrl");
+  // shop_domain must be stored in oauth_states when known (for callback verification)
+  expect(source, "shop_domain not stored in oauth_states").toContain("shop_domain: isValidShop");
+});
+
+test("Dead payment providers are removed — no Paystack or Stripe routes", () => {
+  expect(
+    existsSync(resolve(ROOT, "app/api/billing/paystack")),
+    "Dead Paystack routes still exist"
+  ).toBe(false);
+  expect(
+    existsSync(resolve(ROOT, "app/api/billing/checkout/route.ts")),
+    "Dead Stripe checkout route still exists"
+  ).toBe(false);
+  expect(
+    existsSync(resolve(ROOT, "lib/stripe")),
+    "Dead lib/stripe directory still exists"
+  ).toBe(false);
 });
 
 test("Onboarding page has NO TWILIO_SUBACCOUNT reference", () => {

@@ -158,7 +158,7 @@ export default function Pricing() {
               <div className="flex items-center justify-center gap-1.5 mt-3">
                 <Lock className="w-3 h-3 text-slate-300" />
                 <span className="text-[12px] text-slate-400">
-                  Secured by Paystack · Cancel anytime
+                  Secured by Dodo Payments · Cancel anytime
                 </span>
               </div>
             </motion.div>

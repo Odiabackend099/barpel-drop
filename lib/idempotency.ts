@@ -6,13 +6,13 @@ import type { SupabaseClient } from "@supabase/supabase-js";
  * If it already exists (unique constraint violation), returns false.
  *
  * @param eventId - The external event identifier (Stripe event ID, Vapi call ID, etc.)
- * @param source - The webhook source ('stripe' | 'vapi' | 'shopify' | 'twilio')
+ * @param source - The webhook source ('vapi' | 'shopify' | 'twilio' | 'dodo')
  * @param adminClient - Supabase client with service role (bypasses RLS)
  * @returns true if this is a new event to process, false if duplicate
  */
 export async function ensureIdempotent(
   eventId: string,
-  source: "stripe" | "vapi" | "shopify" | "twilio",
+  source: "vapi" | "shopify" | "twilio" | "dodo",
   adminClient: SupabaseClient
 ): Promise<boolean> {
   const { error } = await adminClient

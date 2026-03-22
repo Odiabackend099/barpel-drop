@@ -65,7 +65,7 @@ export async function GET(request: Request) {
     .insert({
       state: nonce,
       merchant_id: merchant.id,
-      shop_domain: null,
+      shop_domain: isValidShop ? knownShop : null,
       return_to: returnTo,
     });
 
