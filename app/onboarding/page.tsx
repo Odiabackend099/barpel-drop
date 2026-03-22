@@ -21,7 +21,6 @@ import { BYOCModal } from "@/components/integrations/BYOCModal";
 import confetti from "canvas-confetti";
 import { track } from "@/lib/analytics";
 import {
-  CALL_FORWARDING_CODES,
   COUNTRY_NAMES,
   getCarriersForCountry,
   getUssdCode,
@@ -51,12 +50,9 @@ const springTransition = {
 
 
 const COUNTRIES = [
-  { value: "NG", label: "Nigeria", flag: "\u{1F1F3}\u{1F1EC}" },
-  { value: "GB", label: "United Kingdom", flag: "\u{1F1EC}\u{1F1E7}" },
   { value: "US", label: "United States", flag: "\u{1F1FA}\u{1F1F8}" },
+  { value: "GB", label: "United Kingdom", flag: "\u{1F1EC}\u{1F1E7}" },
   { value: "CA", label: "Canada", flag: "\u{1F1E8}\u{1F1E6}" },
-  { value: "GH", label: "Ghana", flag: "\u{1F1EC}\u{1F1ED}" },
-  { value: "KE", label: "Kenya", flag: "\u{1F1F0}\u{1F1EA}" },
 ];
 
 // Old FORWARDING_CODES removed — now using lib/callForwarding/ussdCodes.ts
@@ -115,7 +111,7 @@ function OnboardingContent() {
   const [currentStep, setCurrentStep] = useState(1);
 
   const [businessName, setBusinessName] = useState("");
-  const [country, setCountry] = useState("");
+  const [country, setCountry] = useState("US");
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -133,6 +129,12 @@ function OnboardingContent() {
   const [provisioningStatus, setProvisioningStatus] = useState("pending");
   const [provisioningError, setProvisioningError] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
+  const [provStep, setProvStep] = useState(0);
+  const PROV_MESSAGES = [
+    "Provisioning your AI phone number…",
+    "Training your assistant on your store…",
+    "Linking everything together…",
+  ];
 
   // Step 5 tab state
   const [activeTab, setActiveTab] = useState<"A" | "B" | "C">("A");
@@ -289,6 +291,15 @@ function OnboardingContent() {
       });
     }
   }, [currentStep, provisioningStatus, phoneNumber]);
+
+  // Cycle provisioning status messages every 8 seconds
+  useEffect(() => {
+    if (provisioningStatus !== "provisioning") return;
+    const interval = setInterval(() => {
+      setProvStep((s) => (s + 1) % PROV_MESSAGES.length);
+    }, 8000);
+    return () => clearInterval(interval);
+  }, [provisioningStatus, PROV_MESSAGES.length]);
 
   // Shopify connection polling
   useEffect(() => {
@@ -830,7 +841,7 @@ function OnboardingContent() {
                               onClick={handleSkipShopify}
                               className="mt-4 text-sm text-slate-400 hover:text-slate-900 transition-colors mx-auto block"
                             >
-                              Skip for now — AI will answer calls but can&apos;t look up orders yet
+                              I&apos;ll connect Shopify later →
                             </button>
                             <p className="text-xs text-slate-400 mt-1 text-center">
                               You can connect Shopify anytime from your dashboard
@@ -858,7 +869,7 @@ function OnboardingContent() {
                       whileHover={{ y: -2 }}
                       transition={{ type: "spring", stiffness: 400, damping: 25 }}
                     >
-                      <div className="h-1 bg-gradient-to-r from-purple-400 to-pink-400" />
+                      <div className="h-1 bg-gradient-to-r from-brand-600 to-brand-400" />
                       <motion.div
                         className="p-8"
                         initial={{ opacity: 0, y: 6 }}
@@ -878,12 +889,18 @@ function OnboardingContent() {
                         </p>
 
                         {freeMinutes > 0 && (
-                          <button
-                            onClick={handleSkipBilling}
-                            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full bg-brand-600 text-white font-semibold text-sm hover:bg-brand-700 shadow-brand transition-colors mb-2"
-                          >
-                            Start with {freeMinutes} free credits — no card required
-                          </button>
+                          <div className="mb-6">
+                            <button
+                              onClick={handleSkipBilling}
+                              className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-brand-600 text-white font-semibold shadow-brand hover:bg-brand-700 hover:scale-[1.02] hover:-translate-y-0.5 transition-all duration-200 ring-2 ring-brand-400 ring-offset-2 text-base"
+                            >
+                              <Sparkles className="w-4 h-4" />
+                              Start free — {freeMinutes} min included, no card needed
+                            </button>
+                            <p className="text-center text-xs text-slate-400 mt-2">
+                              Upgrade anytime. Cancel anytime.
+                            </p>
+                          </div>
                         )}
 
                         {freeMinutes > 0 && (
@@ -1063,11 +1080,11 @@ function OnboardingContent() {
                             </h2>
                             <div className="flex flex-col items-center gap-3 py-6">
                               <div className="w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
-                              <p className="text-sm text-slate-500">
-                                Creating your AI assistant and phone line&hellip;
+                              <p className="text-slate-600 text-sm transition-opacity duration-500">
+                                {PROV_MESSAGES[provStep]}
                               </p>
                               <p className="text-xs text-slate-400">
-                                This usually takes about 30 seconds.
+                                Usually ready in about 30 seconds.
                               </p>
                             </div>
                           </>
@@ -1148,14 +1165,14 @@ function OnboardingContent() {
                               Share this number with your customers to start taking AI-powered calls.
                             </p>
 
-                            <div className="bg-slate-50 rounded-xl border border-slate-200 p-4 flex items-center justify-between mb-6">
+                            <div className="bg-gradient-to-br from-brand-50 to-white rounded-xl border border-brand-200 ring-1 ring-brand-400/30 p-4 flex items-center justify-between mb-6 shadow-sm">
                               <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-brand-600/10 flex items-center justify-center">
                                   <Phone className="w-5 h-5 text-brand-600" />
                                 </div>
                                 <div className="text-left">
                                   <p className="text-xs text-slate-400">Your AI phone number</p>
-                                  <p className="font-mono font-bold text-xl text-slate-900">{phoneNumber}</p>
+                                  <p className="font-mono font-bold text-2xl text-slate-900">{phoneNumber}</p>
                                 </div>
                               </div>
                               <button
@@ -1229,7 +1246,7 @@ function OnboardingContent() {
                                       className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600/20"
                                     >
                                       <option value="">Select your country</option>
-                                      {Object.keys(CALL_FORWARDING_CODES).map((code) => (
+                                      {["US", "GB", "CA"].map((code) => (
                                         <option key={code} value={code}>
                                           {COUNTRY_NAMES[code] ?? code}
                                         </option>

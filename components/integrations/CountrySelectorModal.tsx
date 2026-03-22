@@ -42,13 +42,6 @@ const COUNTRY_OPTIONS = [
     description: "Canadian customers",
     recommended: false,
   },
-  {
-    code: "NG",
-    flag: "\u{1F30D}",
-    label: "Nigeria / Ghana / Kenya",
-    description: "You\u2019ll get a US number (+1) for international reach",
-    recommended: false,
-  },
 ] as const;
 
 export function CountrySelectorModal({
