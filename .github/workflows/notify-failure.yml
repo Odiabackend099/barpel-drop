@@ -1,0 +1,20 @@
+name: Notify on Failure
+
+on:
+  workflow_run:
+    workflows: ["Barpel CI/CD Pipeline"]
+    types: [completed]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+
+    steps:
+      - name: Log failure details
+        run: |
+          echo "Pipeline failed"
+          echo "Branch: ${{ github.event.workflow_run.head_branch }}"
+          echo "Commit: ${{ github.event.workflow_run.head_sha }}"
+          echo "Logs: ${{ github.event.workflow_run.html_url }}"
+          # Add Slack/email notification here when ready

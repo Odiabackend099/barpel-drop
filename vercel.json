@@ -1,5 +1,9 @@
 {
   "framework": "nextjs",
+  "github": {
+    "enabled": false,
+    "silent": true
+  },
   "regions": ["iad1"],
   "crons": [
     {
