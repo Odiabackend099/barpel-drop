@@ -65,6 +65,16 @@ export async function GET(request: NextRequest) {
     .delete()
     .lt("processed_at", webhookCutoff);
 
+  // Dodo idempotency events — delete after 7 days (renewal retries won't span >7 days)
+  const dodoWebhookCutoff = new Date(
+    now.getTime() - 7 * 24 * 60 * 60 * 1000
+  ).toISOString();
+
+  const { count: dodoWebhookCount } = await supabase
+    .from("dodo_webhook_events")
+    .delete()
+    .lt("created_at", dodoWebhookCutoff);
+
   // GDPR: Delete abandoned cart data older than 90 days
   const { count: cartCount } = await supabase
     .from("pending_outbound_calls")
@@ -77,6 +87,7 @@ export async function GET(request: NextRequest) {
     caller_numbers_redacted: callerNumberCount ?? 0,
     recordings_removed: recordingCount ?? 0,
     webhooks_deleted: webhookCount ?? 0,
+    dodo_webhooks_deleted: dodoWebhookCount ?? 0,
     cart_data_deleted: cartCount ?? 0,
   };
 
