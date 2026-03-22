@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { BarpelLogo } from "@/components/brand/BarpelLogo";
 import { ShopifyIcon } from "@/components/brand/ShopifyIcon";
+import { ShopifyStoreInput } from "@/components/ShopifyStoreInput";
 import { createClient } from "@/lib/supabase/client";
 import { CREDIT_PACKAGES } from "@/lib/constants";
 import { BYOCModal } from "@/components/integrations/BYOCModal";
@@ -122,7 +123,6 @@ function OnboardingContent() {
   const [shopifyConnected, setShopifyConnected] = useState(false);
   const [connectedShopName, setConnectedShopName] = useState("");
   const [connectingShopify, setConnectingShopify] = useState(false);
-  const [shopDomain, setShopDomain] = useState("");
 
   // Step 3: credit balance from DB
   const [creditBalance, setCreditBalance] = useState(0);
@@ -474,12 +474,11 @@ function OnboardingContent() {
     }
   }
 
-  function handleConnectShopify() {
+  function handleConnectShopify(shopDomain: string) {
     setConnectingShopify(true);
     setError("");
     track("onboarding_step", { step: 2, action: "completed" });
-    const shop = shopDomain.trim().toLowerCase();
-    window.location.href = `/api/shopify/oauth/start?returnTo=onboarding&shop=${encodeURIComponent(shop)}`;
+    window.location.href = `/api/shopify/oauth/start?returnTo=onboarding&shop=${encodeURIComponent(shopDomain)}`;
   }
 
   async function handleSkipShopify() {
@@ -829,30 +828,11 @@ function OnboardingContent() {
                               </div>
                             )}
 
-                            <div className="mb-4">
-                              <label className="block text-xs font-medium text-slate-600 mb-1.5">
-                                Your Shopify store domain
-                              </label>
-                              <input
-                                type="text"
-                                placeholder="your-store.myshopify.com"
-                                value={shopDomain}
-                                onChange={(e) => setShopDomain(e.target.value.trim().toLowerCase())}
-                                className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent text-slate-900 placeholder:text-slate-400"
-                              />
-                              <p className="text-xs text-slate-400 mt-1.5">
-                                Example: <span className="font-mono">my-store.myshopify.com</span>
-                              </p>
-                            </div>
-
-                            <button
-                              onClick={handleConnectShopify}
-                              disabled={connectingShopify || !/^[a-zA-Z0-9-]+\.myshopify\.com$/.test(shopDomain.trim())}
-                              className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-brand-600 text-white font-semibold text-sm hover:bg-brand-700 shadow-brand hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:translate-y-0"
-                            >
-                              {connectingShopify ? "Connecting..." : "Connect My Shopify Store"}
-                              <ArrowRight className="w-4 h-4" />
-                            </button>
+                            <ShopifyStoreInput
+                              onConnect={handleConnectShopify}
+                              loading={connectingShopify}
+                              autoFocus
+                            />
 
                             <button
                               onClick={handleSkipShopify}

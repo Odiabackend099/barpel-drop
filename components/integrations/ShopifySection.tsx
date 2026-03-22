@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Clock, Loader2 } from "lucide-react";
+import { Clock } from "lucide-react";
 import { ShopifyIcon } from "@/components/brand/ShopifyIcon";
+import { ShopifyStoreInput } from "@/components/ShopifyStoreInput";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,7 +42,6 @@ export function ShopifySection({
   const [disconnectOpen, setDisconnectOpen] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
   const [connecting, setConnecting] = useState(false);
-  const [shopDomain, setShopDomain] = useState("");
 
   const shopName = shopifyIntegration?.shop_name || shopifyIntegration?.shop_domain || "Shopify";
 
@@ -58,12 +58,6 @@ export function ShopifySection({
       setDisconnecting(false);
       setDisconnectOpen(false);
     }
-  };
-
-  const handleConnectShopify = () => {
-    setConnecting(true);
-    const shop = shopDomain.trim().toLowerCase();
-    window.location.href = `/api/shopify/oauth/start?returnTo=integrations&shop=${encodeURIComponent(shop)}`;
   };
 
   const lastSyncText = shopifyIntegration?.last_synced_at
@@ -105,31 +99,14 @@ export function ShopifySection({
               )}
 
               {!isShopifyConnected && (
-                <div className="mt-3 space-y-2">
-                  <div>
-                    <input
-                      type="text"
-                      placeholder="your-store.myshopify.com"
-                      value={shopDomain}
-                      onChange={(e) => setShopDomain(e.target.value.trim().toLowerCase())}
-                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent text-slate-900 placeholder:text-slate-400"
-                    />
-                    <p className="text-xs text-slate-400 mt-1">
-                      Example: <span className="font-mono">my-store.myshopify.com</span>
-                    </p>
-                  </div>
-                  <Button
-                    size="sm"
-                    disabled={connecting || !/^[a-zA-Z0-9-]+\.myshopify\.com$/.test(shopDomain.trim())}
-                    onClick={handleConnectShopify}
-                    className="bg-gradient-to-r from-brand-600 to-brand-400 text-white whitespace-nowrap"
-                  >
-                    {connecting ? (
-                      <><Loader2 className="w-3 h-3 mr-1 animate-spin" /> Connecting…</>
-                    ) : (
-                      "Connect My Store"
-                    )}
-                  </Button>
+                <div className="mt-3">
+                  <ShopifyStoreInput
+                    onConnect={(shop) => {
+                      setConnecting(true);
+                      window.location.href = `/api/shopify/oauth/start?returnTo=integrations&shop=${encodeURIComponent(shop)}`;
+                    }}
+                    loading={connecting}
+                  />
                 </div>
               )}
             </div>

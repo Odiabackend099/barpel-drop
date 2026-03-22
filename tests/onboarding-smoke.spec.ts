@@ -49,11 +49,14 @@ test("All 13 protected onboarding files exist", () => {
 });
 
 test("Onboarding Step 2 has a shop domain input field", () => {
-  const source = readFileSync(resolve(ROOT, "app/onboarding/page.tsx"), "utf-8");
-  // The shop domain input must exist — required for the direct OAuth URL fix
-  expect(source, "Shop domain input missing from Step 2").toContain('placeholder="your-store.myshopify.com"');
+  const onboardingSource = readFileSync(resolve(ROOT, "app/onboarding/page.tsx"), "utf-8");
+  const inputSource = readFileSync(resolve(ROOT, "components/ShopifyStoreInput.tsx"), "utf-8");
+  // ShopifyStoreInput component must be wired into onboarding
+  expect(onboardingSource, "ShopifyStoreInput not imported in onboarding page").toContain("ShopifyStoreInput");
   // handleConnectShopify must pass the shop param to the start route
-  expect(source, "shop param not passed to OAuth start route").toContain("?returnTo=onboarding&shop=");
+  expect(onboardingSource, "shop param not passed to OAuth start route").toContain("?returnTo=onboarding&shop=");
+  // New UX: placeholder is store name only (not full domain)
+  expect(inputSource, "Store name placeholder missing from ShopifyStoreInput").toContain('placeholder="powerfit-gadgets"');
 });
 
 test("Onboarding Step 2 does NOT use buildInstallUrl (managed install)", () => {
