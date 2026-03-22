@@ -104,7 +104,10 @@ async function main() {
       `/repos/${REPO_OWNER}/${REPO_NAME}/actions/runs?branch=${BRANCH}&per_page=10`
     )
     const match = (runs.workflow_runs ?? []).find(
-      (r: { head_sha: string; id: number }) => r.head_sha === commitSha
+      (r: { head_sha: string; id: number; name: string; event: string }) =>
+        r.head_sha === commitSha &&
+        r.name === 'Barpel CI/CD Pipeline' &&
+        r.event === 'push'
     )
     if (match) {
       runId = match.id
