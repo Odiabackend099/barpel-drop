@@ -1,12 +1,10 @@
 "use client";
 
-import { LogOut, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import { motion } from "framer-motion";
 import { CreditBadge } from "@/components/dashboard/CreditBadge";
 import { useMerchant } from "@/hooks/useMerchant";
 import { useCredits } from "@/hooks/useCredits";
-import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -22,13 +20,6 @@ interface NavbarProps {
 export function Navbar({ onMenuToggle }: NavbarProps) {
   const { merchant } = useMerchant();
   const { balance, loading: creditsLoading } = useCredits();
-  const router = useRouter();
-
-  const handleSignOut = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push("/login");
-  };
 
   return (
     <motion.nav
@@ -54,12 +45,6 @@ export function Navbar({ onMenuToggle }: NavbarProps) {
           <span className="hidden sm:inline lg:hidden text-sm text-muted-foreground font-sans">
             {merchant?.business_name || "Loading..."}
           </span>
-          <button
-            onClick={handleSignOut}
-            className="p-2 rounded-lg hover:bg-brand-50 text-muted-foreground hover:text-slate-900 transition-all duration-200"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
         </div>
       </div>
     </motion.nav>

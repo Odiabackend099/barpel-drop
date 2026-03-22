@@ -15,6 +15,7 @@ import {
   Zap,
   Settings,
   LifeBuoy,
+  LogOut,
 } from "lucide-react";
 import { BarpelLogo } from "@/components/brand/BarpelLogo";
 import { useCredits } from "@/hooks/useCredits";
@@ -144,8 +145,8 @@ export function Sidebar({ open, onClose, collapsed, onToggleCollapse }: SidebarP
           })}
         </nav>
 
-        {/* Help & Support */}
-        <div className={`${collapsed ? "px-2" : "px-4"} pb-1`}>
+        {/* Help & Support + Sign Out */}
+        <div className={`${collapsed ? "px-2" : "px-4"} pb-1 space-y-0.5`}>
           <button
             onClick={() => setSupportOpen(true)}
             title="Help & Support"
@@ -153,6 +154,14 @@ export function Sidebar({ open, onClose, collapsed, onToggleCollapse }: SidebarP
           >
             <LifeBuoy className="w-4 h-4 shrink-0" />
             {!collapsed && <span>Help &amp; Support</span>}
+          </button>
+          <button
+            onClick={() => { createClient().auth.signOut().then(() => { window.location.href = "/login"; }); }}
+            title="Sign out"
+            className={`w-full flex items-center ${collapsed ? "justify-center" : "gap-3"} ${collapsed ? "px-2" : "px-3"} py-2 rounded-lg text-sm transition-colors text-slate-500 hover:text-red-400 hover:bg-red-400/10`}
+          >
+            <LogOut className="w-4 h-4 shrink-0" />
+            {!collapsed && <span>Sign out</span>}
           </button>
         </div>
 
