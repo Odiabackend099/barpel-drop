@@ -140,6 +140,9 @@ export async function DELETE(request: Request) {
       );
       if (!res.ok && res.status !== 404) {
         errors.push(`Vapi phone delete: ${res.status}`);
+      } else {
+        // Wait for Vapi to release the phone → assistant reference before deleting assistant
+        await new Promise((r) => setTimeout(r, 1500));
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -170,36 +173,67 @@ export async function DELETE(request: Request) {
 
   // Step 4: Delete Vault secrets
   try {
-    // BYOC Twilio credentials
+    // BYOC Twilio credentials — stored by name, not UUID
     if (merchant.provisioning_mode === "byoc") {
       await adminSupabase
-        .rpc("vault_delete_secret_by_id", {
-          secret_id: `twilio_byoc_sid_${merchant.id}`,
+        .rpc("vault_delete_secret_by_name", {
+          p_name: `twilio_byoc_sid_${merchant.id}`,
         })
         .throwOnError();
       await adminSupabase
-        .rpc("vault_delete_secret_by_id", {
-          secret_id: `twilio_byoc_token_${merchant.id}`,
+        .rpc("vault_delete_secret_by_name", {
+          p_name: `twilio_byoc_token_${merchant.id}`,
         })
         .throwOnError();
     }
 
-    // Shopify access token from vault
+    // Shopify: delete webhooks then vault token
     const { data: integration } = await adminSupabase
       .from("integrations")
-      .select("access_token_secret_id, webhook_secret_vault_id")
+      .select("access_token_secret_id, webhook_secret_vault_id, shop_domain")
       .eq("merchant_id", merchant.id)
       .eq("platform", "shopify")
       .single();
 
+    if (integration?.access_token_secret_id && integration?.shop_domain) {
+      // Read token from vault before deleting it
+      const { data: shopifyToken } = await adminSupabase.rpc("vault_read_secret_by_id", {
+        p_id: integration.access_token_secret_id,
+      });
+
+      if (shopifyToken) {
+        try {
+          // Fetch all webhooks and delete the ones pointing at Barpel
+          const whRes = await fetch(
+            `https://${integration.shop_domain}/admin/api/2026-01/webhooks.json`,
+            { headers: { "X-Shopify-Access-Token": shopifyToken } }
+          );
+          if (whRes.ok) {
+            const whData = await whRes.json();
+            for (const wh of whData?.webhooks ?? []) {
+              if (wh.address?.includes("barpel") || wh.address?.includes("dropship")) {
+                await fetch(
+                  `https://${integration.shop_domain}/admin/api/2026-01/webhooks/${wh.id}.json`,
+                  { method: "DELETE", headers: { "X-Shopify-Access-Token": shopifyToken } }
+                );
+              }
+            }
+          }
+        } catch (whErr: unknown) {
+          const msg = whErr instanceof Error ? whErr.message : String(whErr);
+          errors.push(`Shopify webhook delete: ${msg}`);
+        }
+      }
+    }
+
     if (integration?.access_token_secret_id) {
       await adminSupabase.rpc("vault_delete_secret_by_id", {
-        secret_id: integration.access_token_secret_id,
+        p_id: integration.access_token_secret_id,
       });
     }
     if (integration?.webhook_secret_vault_id) {
       await adminSupabase.rpc("vault_delete_secret_by_id", {
-        secret_id: integration.webhook_secret_vault_id,
+        p_id: integration.webhook_secret_vault_id,
       });
     }
   } catch (err: unknown) {
@@ -213,7 +247,7 @@ export async function DELETE(request: Request) {
       .from("call_logs")
       .update({
         caller_number: "deleted",
-        transcript: "deleted",
+        transcript: null,
         tool_results: null,
         ai_summary: null,
         recording_url: null,
@@ -303,5 +337,5 @@ export async function DELETE(request: Request) {
     console.error("[account/delete] Cleanup errors:", errors);
   }
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, cleanup: errors.length > 0 ? errors : undefined });
 }

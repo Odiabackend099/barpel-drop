@@ -20,6 +20,7 @@ const VALID_CATEGORIES = [
 
 // ─── Handler ─────────────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
+  try {
   // 1. Authenticate
   const supabase = createClient();
   const {
@@ -138,4 +139,9 @@ export async function POST(req: NextRequest) {
   // Ticket is persisted in DB, so return success. Users will see the ticketRef
   // and support team can look it up. Email failures are logged for admin alerts.
   return NextResponse.json({ success: true, ticketRef });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("[support] Unhandled error:", msg);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }
