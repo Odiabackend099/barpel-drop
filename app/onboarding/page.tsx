@@ -129,6 +129,7 @@ function OnboardingContent() {
   const [provisioningStatus, setProvisioningStatus] = useState("pending");
   const [provisioningError, setProvisioningError] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
+  const [merchantId, setMerchantId] = useState<string | null>(null);
   const [provStep, setProvStep] = useState(0);
   const PROV_MESSAGES = [
     "Provisioning your AI phone number…",
@@ -195,6 +196,8 @@ function OnboardingContent() {
         .single();
 
       if (data) {
+        setMerchantId(data.id);
+
         if (data.provisioning_status === "active" && data.onboarded_at) {
           router.replace("/dashboard");
           return;
@@ -270,6 +273,45 @@ function OnboardingContent() {
       sub.removeChannel(channel);
     };
   }, [userId]);
+
+  // Supabase Realtime subscription for Shopify connection updates
+  useEffect(() => {
+    if (!merchantId) return;
+    const sub = createClient();
+    const channel = sub
+      .channel("onboarding-integrations")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "integrations" },
+        (payload) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const n = payload.new as any;
+          if (n?.merchant_id !== merchantId || n?.platform !== "shopify") return;
+          if (n?.connection_active) {
+            setShopifyConnected(true);
+            setConnectedShopName(n.shop_name ?? "");
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "integrations" },
+        (payload) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const n = payload.new as any;
+          if (n?.merchant_id !== merchantId || n?.platform !== "shopify") return;
+          if (n?.connection_active) {
+            setShopifyConnected(true);
+            setConnectedShopName(n.shop_name ?? "");
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      sub.removeChannel(channel);
+    };
+  }, [merchantId]);
 
   // Auto-advance from step 4 to step 5 when provisioning completes
   useEffect(() => {
