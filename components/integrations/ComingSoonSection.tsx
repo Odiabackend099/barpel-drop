@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { ShoppingBag } from "lucide-react";
+import { TikTokIcon } from "@/components/brand/TikTokIcon";
+import { WooCommerceIcon } from "@/components/brand/WooCommerceIcon";
 
 function Badge({ color, children }: { color: string; children: React.ReactNode }) {
   return (
@@ -16,18 +17,14 @@ const cards = [
   {
     name: "TikTok Shop",
     description: "Sync with TikTok Shop for order management",
-    iconBg: "bg-black/10",
-    iconColor: "text-black/60",
-    iconStyle: undefined as React.CSSProperties | undefined,
-    bgStyle: undefined as React.CSSProperties | undefined,
+    Icon: TikTokIcon,
+    iconBg: "bg-black/5",
   },
   {
     name: "WooCommerce",
     description: "Connect your WooCommerce store",
-    iconBg: "",
-    iconColor: "",
-    iconStyle: { color: "#96588A80" } as React.CSSProperties,
-    bgStyle: { backgroundColor: "#96588A20" } as React.CSSProperties,
+    Icon: WooCommerceIcon,
+    iconBg: "bg-[#7F54B3]/10",
   },
 ];
 
@@ -52,11 +49,10 @@ export function ComingSoonSection() {
             <div className="flex items-start gap-4">
               <motion.div
                 className={`w-12 h-12 rounded-lg flex items-center justify-center ${card.iconBg}`}
-                style={card.bgStyle}
                 animate={{ y: [0, -3, 0] }}
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: i * 0.5 }}
               >
-                <ShoppingBag className={`w-6 h-6 ${card.iconColor}`} style={card.iconStyle} />
+                <card.Icon size={24} />
               </motion.div>
               <div>
                 <div className="flex items-center gap-2 mb-1">

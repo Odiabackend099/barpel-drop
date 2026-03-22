@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ShoppingBag, Clock, Loader2 } from "lucide-react";
+import { Clock, Loader2 } from "lucide-react";
+import { ShopifyIcon } from "@/components/brand/ShopifyIcon";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
 import {
@@ -77,11 +78,8 @@ export function ShopifySection({
       >
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div className="flex items-start gap-4 flex-1 min-w-0">
-            <div
-              className="w-12 h-12 rounded-lg flex-shrink-0 flex items-center justify-center"
-              style={{ backgroundColor: "#96BF4820" }}
-            >
-              <ShoppingBag className="w-6 h-6" style={{ color: "#96BF48" }} />
+            <div className="w-12 h-12 rounded-lg flex-shrink-0 flex items-center justify-center bg-slate-50">
+              <ShopifyIcon size={24} />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">

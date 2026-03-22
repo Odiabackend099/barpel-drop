@@ -15,6 +15,7 @@ import {
   Phone,
 } from "lucide-react";
 import { BarpelLogo } from "@/components/brand/BarpelLogo";
+import { ShopifyIcon } from "@/components/brand/ShopifyIcon";
 import { createClient } from "@/lib/supabase/client";
 import { CREDIT_PACKAGES } from "@/lib/constants";
 import { BYOCModal } from "@/components/integrations/BYOCModal";
@@ -780,7 +781,7 @@ function OnboardingContent() {
                         transition={{ delay: 0.12, duration: 0.4, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
                       >
                         <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center mb-6">
-                          <Sparkles className="w-6 h-6 text-brand-600" />
+                          <ShopifyIcon size={28} />
                         </div>
                         <h2 className="font-display text-2xl font-bold text-slate-900 mb-2 tracking-tight">
                           Connect Your Shopify Store
@@ -971,8 +972,8 @@ function OnboardingContent() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.12, duration: 0.4, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
                       >
-                        <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center mx-auto mb-6">
-                          <Phone className="w-6 h-6 text-brand-600" />
+                        <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center mx-auto mb-6">
+                          <BarpelLogo size={36} />
                         </div>
 
                         {(provisioningStatus === "pending" || provisioningStatus === "failed") && (
@@ -1211,7 +1212,7 @@ function OnboardingContent() {
                                       className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600/20"
                                     >
                                       <option value="">Select your country</option>
-                                      {["US", "GB", "CA"].map((code) => (
+                                      {["US", "GB", "CA", "NG"].map((code) => (
                                         <option key={code} value={code}>
                                           {COUNTRY_NAMES[code] ?? code}
                                         </option>
