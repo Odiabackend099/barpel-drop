@@ -21,12 +21,15 @@ export default defineConfig({
     headless: false, // 👈 HEADED MODE - see everything!
   },
 
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: process.env.CI ? false : true, // Reuse server in local testing
-    timeout: 120 * 1000,
-  },
+  // Skip dev server when running against an external BASE_URL (CI smoke tests hit production directly)
+  ...(process.env.BASE_URL ? {} : {
+    webServer: {
+      command: 'npm run dev',
+      url: 'http://localhost:3000',
+      reuseExistingServer: !process.env.CI,
+      timeout: 120 * 1000,
+    },
+  }),
 
   projects: [
     {
