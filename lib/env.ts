@@ -57,6 +57,12 @@ const serverSchema = z.object({
 
   // Cron — must be non-empty to prevent the undefined === undefined bypass
   CRON_SECRET: z.string().min(1),
+
+  // Dodo Payments — USD billing (critical vars required at startup)
+  DODO_PAYMENTS_API_KEY: z.string().min(1),
+  DODO_PAYMENTS_WEBHOOK_KEY: z.string().min(1),
+  DODO_PAYMENTS_ENVIRONMENT: z.enum(["test_mode", "live_mode"]).default("test_mode"),
+  DODO_PAYMENTS_RETURN_URL: z.string().url(),
 });
 
 const clientSchema = z.object({

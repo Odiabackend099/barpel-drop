@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAuthUser, unauthorizedResponse } from "@/lib/supabase/auth-guard";
-import { DODO_PRODUCT_MAP } from "@/lib/constants";
+import { DODO_PRODUCT_MAP, CREDIT_PACKAGES } from "@/lib/constants";
 
 /**
  * POST /api/billing/dodo/initiate
@@ -17,13 +17,6 @@ import { DODO_PRODUCT_MAP } from "@/lib/constants";
  */
 
 type BillingCycle = "monthly" | "annual";
-
-// Amount map in USD cents — must match Dodo product prices exactly
-const AMOUNT_MAP: Record<string, Record<BillingCycle, number>> = {
-  starter: { monthly: 2900, annual: 31300 },
-  growth:  { monthly: 7900, annual: 85300 },
-  scale:   { monthly: 17900, annual: 193300 },
-};
 
 export async function POST(request: Request) {
   const supabase = createClient();
@@ -75,7 +68,14 @@ export async function POST(request: Request) {
 
   // tx_ref is the security anchor — stored in DB, verified in webhook
   const txRef = crypto.randomUUID();
-  const amount = AMOUNT_MAP[planId][billingCycle];
+  const creditPkg = CREDIT_PACKAGES.find((p) => p.id === planId);
+  if (!creditPkg) {
+    return NextResponse.json(
+      { error: "Invalid plan. Must be starter, growth, or scale." },
+      { status: 400 }
+    );
+  }
+  const amount = billingCycle === "annual" ? creditPkg.annualPriceUsdCents : creditPkg.priceUsdCents;
 
   const adminSupabase = createAdminClient();
 
