@@ -52,3 +52,5 @@ vite.config.js
 /src/main.tsx
 /src/App.tsx
 /dist/
+.env.prod
+videos/
