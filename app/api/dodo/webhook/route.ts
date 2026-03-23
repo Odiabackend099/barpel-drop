@@ -80,7 +80,7 @@ function getWebhookHandler() {
     const { data: pkg } = await adminSupabase
       .from("credit_packages")
       .select("credits_seconds")
-      .eq("name", tx.plan)
+      .ilike("name", tx.plan)
       .eq("is_active", true)
       .single();
 
@@ -207,7 +207,7 @@ function getWebhookHandler() {
     const { data: pkg } = await adminSupabase
       .from("credit_packages")
       .select("credits_seconds")
-      .eq("name", merchant.dodo_plan)
+      .ilike("name", merchant.dodo_plan)
       .eq("is_active", true)
       .single();
 
