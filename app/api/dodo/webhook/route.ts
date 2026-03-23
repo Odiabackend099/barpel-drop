@@ -80,7 +80,7 @@ function getWebhookHandler() {
     const { data: pkg } = await adminSupabase
       .from("credit_packages")
       .select("credits_seconds")
-      .ilike("name", tx.plan)
+      .eq("name", tx.plan)
       .eq("is_active", true)
       .single();
 
@@ -94,31 +94,43 @@ function getWebhookHandler() {
       return;
     }
 
-    const nextBillingDate = data.next_billing_date;   // trust Dodo, not hardcoded math
+    // Normalize next_billing_date — Dodo SDK may return Date object or ISO string
+    const rawNextBillingDate = data.next_billing_date;
+    const nextBillingDateStr = rawNextBillingDate instanceof Date
+      ? rawNextBillingDate.toISOString()
+      : (rawNextBillingDate as string | null | undefined) ?? null;
 
-    // Grant credits atomically
-    await addCredits(adminSupabase, tx.merchant_id, pkg.credits_seconds, `dodo_sub_${subId}`);
+    // Grant credits + activate plan — wrapped so tx reverts to 'pending' on failure
+    try {
+      await addCredits(adminSupabase, tx.merchant_id, pkg.credits_seconds, `dodo_sub_${subId}`);
 
-    // Store Dodo subscription + customer IDs on merchant, activate plan
-    await adminSupabase
-      .from("merchants")
-      .update({
-        dodo_subscription_id: subId,
-        dodo_customer_id:     customerId,
-        dodo_plan:            tx.plan,
-        billing_cycle:        billingCycle,
-        plan_status:          "active",
-        plan_renewal_due_at:  nextBillingDate?.toISOString() ?? null,
-        dunning_started_at:   null,
-        dunning_email_count:  0,
-      })
-      .eq("id", tx.merchant_id);
+      await adminSupabase
+        .from("merchants")
+        .update({
+          dodo_subscription_id: subId,
+          dodo_customer_id:     customerId,
+          dodo_plan:            tx.plan,
+          billing_cycle:        billingCycle,
+          plan_status:          "active",
+          plan_renewal_due_at:  nextBillingDateStr,
+          dunning_started_at:   null,
+          dunning_email_count:  0,
+        })
+        .eq("id", tx.merchant_id);
 
-    // Mark transaction completed
-    await adminSupabase
-      .from("billing_transactions")
-      .update({ status: "completed", updated_at: new Date().toISOString() })
-      .eq("tx_ref", txRef);
+      await adminSupabase
+        .from("billing_transactions")
+        .update({ status: "completed", updated_at: new Date().toISOString() })
+        .eq("tx_ref", txRef);
+    } catch (err) {
+      // Revert to 'pending' so Dodo webhook retry can re-attempt
+      console.error("[dodo/webhook] onSubscriptionActive credit grant failed — reverting tx to pending:", (err as Error).message);
+      await adminSupabase
+        .from("billing_transactions")
+        .update({ status: "pending" })
+        .eq("tx_ref", txRef);
+      return;
+    }
 
     // Best-effort receipt email
     try {
@@ -135,8 +147,8 @@ function getWebhookHandler() {
           ? planInfo?.annualAmount ?? tx.amount
           : planInfo?.monthlyAmount ?? tx.amount;
         const planLabel = `${tx.plan.charAt(0).toUpperCase() + tx.plan.slice(1)} (${billingCycle})`;
-        const renewalLabel = nextBillingDate
-          ? nextBillingDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
+        const renewalLabel = nextBillingDateStr
+          ? new Date(nextBillingDateStr).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
           : "Next billing period";
 
         if (authData?.user?.email) {
@@ -159,12 +171,17 @@ function getWebhookHandler() {
   // Credits RESET to plan allocation — they do NOT roll over.
   onSubscriptionRenewed: async (payload) => {
     const { data } = payload;
-    const subId         = data.subscription_id;
-    const nextBillingDate = data.next_billing_date;
+    const subId = data.subscription_id;
+    // Normalize next_billing_date — may be Date object or ISO string from Dodo SDK
+    const rawNextBillingDate = data.next_billing_date;
+    const nextBillingDateStr = rawNextBillingDate instanceof Date
+      ? rawNextBillingDate.toISOString()
+      : (rawNextBillingDate as string | null | undefined) ?? null;
 
     // Idempotency: key = subscription_id + next_billing_date prevents double-processing
-    // in the same billing cycle (retries get the same next_billing_date)
-    const idempotencyKey = `${subId}_renewed_${nextBillingDate?.toISOString() ?? payload.timestamp.toISOString()}`;
+    const rawTimestamp = payload.timestamp;
+    const timestampStr = rawTimestamp instanceof Date ? rawTimestamp.toISOString() : (rawTimestamp as string);
+    const idempotencyKey = `${subId}_renewed_${nextBillingDateStr ?? timestampStr}`;
     const adminSupabase = createAdminClient();
 
     const { error: idempotencyError } = await adminSupabase
@@ -190,7 +207,7 @@ function getWebhookHandler() {
     const { data: pkg } = await adminSupabase
       .from("credit_packages")
       .select("credits_seconds")
-      .ilike("name", merchant.dodo_plan)
+      .eq("name", merchant.dodo_plan)
       .eq("is_active", true)
       .single();
 
@@ -207,7 +224,7 @@ function getWebhookHandler() {
       .update({
         credit_balance:      pkg.credits_seconds,
         plan_status:         "active",
-        plan_renewal_due_at: nextBillingDate?.toISOString() ?? null,
+        plan_renewal_due_at: nextBillingDateStr,
         dunning_started_at:  null,
         dunning_email_count: 0,
       })
@@ -244,8 +261,8 @@ function getWebhookHandler() {
       const amount = billingCycle === "annual"
         ? planInfo?.annualAmount ?? 0
         : planInfo?.monthlyAmount ?? 0;
-      const renewalLabel = nextBillingDate
-        ? nextBillingDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
+      const renewalLabel = nextBillingDateStr
+        ? new Date(nextBillingDateStr).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
         : "Next billing period";
 
       if (authData?.user?.email) {

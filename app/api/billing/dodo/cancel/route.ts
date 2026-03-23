@@ -51,9 +51,9 @@ export async function POST(request: Request) {
     );
   }
 
-  if (merchant.plan_status === "cancelled") {
+  if (merchant.plan_status === "cancelled" || merchant.plan_status === "expired") {
     return NextResponse.json(
-      { error: "Subscription is already cancelled" },
+      { error: "Subscription is already cancelled or expired" },
       { status: 409 }
     );
   }
