@@ -126,13 +126,13 @@ textarea:focus-visible {
 @layer components {
   /* Premium Heading Styles */
   .heading-hero {
-    @apply text-4xl md:text-5xl lg:text-6xl font-semibold leading-[1.1];
-    letter-spacing: -0.03em;
+    @apply text-5xl md:text-6xl lg:text-7xl font-semibold leading-[1.05];
+    letter-spacing: -0.035em;
   }
 
   .heading-section {
-    @apply text-2xl md:text-3xl lg:text-4xl font-semibold leading-[1.15];
-    letter-spacing: -0.025em;
+    @apply text-3xl md:text-4xl lg:text-5xl font-semibold leading-[1.1];
+    letter-spacing: -0.03em;
   }
 
   .heading-subsection {
@@ -223,7 +223,7 @@ textarea:focus-visible {
 
   /* Section Spacing */
   .section-padding {
-    @apply py-16 md:py-20 lg:py-24;
+    @apply py-20 md:py-28 lg:py-32;
   }
 
   .container-default {

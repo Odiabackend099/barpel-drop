@@ -111,7 +111,7 @@ export default function SignupContent() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
       <header className="bg-white border-b border-slate-200">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -136,7 +136,7 @@ export default function SignupContent() {
           transition={{ duration: 0.5 }}
         >
           {/* Form Card */}
-          <div className="bg-white rounded-2xl p-8 shadow-lg border border-slate-200/50">
+          <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-200/60">
             <motion.div
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
@@ -282,7 +282,7 @@ export default function SignupContent() {
               <motion.button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-3 px-4 bg-slate-900 text-white text-sm font-medium rounded-lg hover:bg-slate-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full py-3 px-4 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
                 initial={{ opacity: 0, y: 10 }}

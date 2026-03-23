@@ -9,42 +9,42 @@ const features = [
     icon: Package,
     title: 'Instant Order Tracking',
     description: 'Customers call and get real-time order status, tracking numbers, and delivery estimates — no waiting, no human agents.',
-    iconBg: 'bg-teal-500',
+    iconBg: 'bg-brand-600',
     iconColor: 'text-white',
   },
   {
     icon: RefreshCw,
     title: 'Hassle-Free Returns',
     description: 'AI explains your return policy, collects photos via SMS, and initiates the return process automatically.',
-    iconBg: 'bg-amber-500',
+    iconBg: 'bg-brand-700',
     iconColor: 'text-white',
   },
   {
     icon: ShoppingCart,
     title: 'Smart Cart Recovery',
     description: 'AI calls customers 15 minutes after cart abandonment, answers questions, and helps complete the purchase.',
-    iconBg: 'bg-green-500',
+    iconBg: 'bg-brand-500',
     iconColor: 'text-white',
   },
   {
     icon: Search,
     title: 'Live Product Lookup',
     description: 'Customers ask about products, stock levels, and pricing. AI searches your catalog in real-time.',
-    iconBg: 'bg-blue-500',
+    iconBg: 'bg-brand-600',
     iconColor: 'text-white',
   },
   {
     icon: Globe,
     title: 'Speak Any Language',
     description: 'Natural conversations in 30+ languages. Your AI assistant sounds human, not robotic.',
-    iconBg: 'bg-indigo-500',
+    iconBg: 'bg-brand-700',
     iconColor: 'text-white',
   },
   {
     icon: Clock,
     title: 'Always On',
     description: 'Never miss a customer call. Handle peak seasons, holidays, and timezone differences effortlessly.',
-    iconBg: 'bg-purple-500',
+    iconBg: 'bg-brand-500',
     iconColor: 'text-white',
   },
 ];
@@ -138,7 +138,7 @@ export default function Features() {
         style={{ y, opacity }}
       />
       <motion.div
-        className="absolute bottom-0 left-0 w-96 h-96 bg-blue-100/30 rounded-full blur-3xl pointer-events-none"
+        className="absolute bottom-0 left-0 w-96 h-96 bg-teal-100/20 rounded-full blur-3xl pointer-events-none"
         style={{ y: useTransform(scrollYProgress, [0, 1], [-50, 50]), opacity }}
       />
 

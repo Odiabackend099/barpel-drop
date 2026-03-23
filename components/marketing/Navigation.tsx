@@ -79,11 +79,7 @@ export default function Navigation() {
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        isScrolled
-          ? 'bg-white/80 backdrop-blur-xl shadow-sm border-b border-slate-200/50'
-          : 'bg-transparent'
-      }`}
+      className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-200/80 transition-all duration-300"
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14">
@@ -108,10 +104,8 @@ export default function Navigation() {
                   <button
                     className={`flex items-center gap-1 px-3 py-2 text-sm font-medium transition-all duration-200 rounded-lg ${
                       activeDropdown === item.label || isActive(item.href)
-                        ? 'text-teal-500'
-                        : isScrolled
-                        ? 'text-slate-600 hover:text-slate-900'
-                        : 'text-white/80 hover:text-white'
+                        ? 'text-teal-600'
+                        : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
                     {item.label}
@@ -127,10 +121,8 @@ export default function Navigation() {
                     href={item.href}
                     className={`px-3 py-2 text-sm font-medium transition-all duration-200 rounded-lg ${
                       isActive(item.href)
-                        ? 'text-teal-500'
-                        : isScrolled
-                        ? 'text-slate-600 hover:text-slate-900'
-                        : 'text-white/80 hover:text-white'
+                        ? 'text-teal-600'
+                        : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
                     {item.label}
@@ -188,20 +180,14 @@ export default function Navigation() {
           >
             <Link
               href="/login"
-              className={`px-3 py-2 text-sm font-medium transition-colors duration-150 ${
-                isScrolled ? 'text-slate-600 hover:text-slate-900' : 'text-white/70 hover:text-white'
-              }`}
+              className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors duration-150"
             >
               Log In
             </Link>
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <Link
                 href="/signup"
-                className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                  isScrolled
-                    ? 'text-white bg-slate-900 hover:bg-slate-800 shadow-lg shadow-slate-900/20'
-                    : 'text-brand-navy bg-white hover:bg-white/90 shadow-lg shadow-black/20'
-                }`}
+                className="px-4 py-2 text-sm font-medium rounded-lg text-white bg-brand-600 hover:bg-brand-700 shadow-sm shadow-brand-600/20 transition-all duration-200"
               >
                 Get started
               </Link>
@@ -210,9 +196,7 @@ export default function Navigation() {
 
           {/* Mobile Menu Button */}
           <motion.button
-            className={`lg:hidden p-2 rounded-lg transition-colors duration-150 ${
-              isScrolled ? 'hover:bg-slate-100' : 'hover:bg-white/10'
-            }`}
+            className="lg:hidden p-2 rounded-lg hover:bg-slate-100 transition-colors duration-150"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             whileTap={{ scale: 0.95 }}
             aria-label="Toggle menu"
@@ -226,7 +210,7 @@ export default function Navigation() {
                   exit={{ rotate: 90, opacity: 0 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <X className={`w-5 h-5 ${isScrolled ? 'text-slate-900' : 'text-white'}`} />
+                  <X className="w-5 h-5 text-slate-900" />
                 </motion.div>
               ) : (
                 <motion.div
@@ -236,7 +220,7 @@ export default function Navigation() {
                   exit={{ rotate: -90, opacity: 0 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <Menu className={`w-5 h-5 ${isScrolled ? 'text-slate-900' : 'text-white'}`} />
+                  <Menu className="w-5 h-5 text-slate-900" />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -309,7 +293,7 @@ export default function Navigation() {
                 </Link>
                 <Link
                   href="/signup"
-                  className="block w-full px-3 py-2 text-center text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors duration-150"
+                  className="block w-full px-3 py-2 text-center text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-brand-700 transition-colors duration-150"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Get started

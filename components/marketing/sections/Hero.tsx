@@ -15,7 +15,7 @@ const cards = [
     bottomIcon: CheckCircle2,
     bottomText: 'Arriving tomorrow',
     visual: 'order-tracking',
-    accent: 'from-blue-500 to-cyan-400',
+    accent: 'from-teal-600 to-teal-400',
   },
   {
     icon: ShoppingCart,
@@ -25,7 +25,7 @@ const cards = [
     bottomIcon: TrendingUp,
     bottomText: '$127.50 saved',
     visual: 'cart-recovery',
-    accent: 'from-purple-500 to-pink-400',
+    accent: 'from-brand-700 to-brand-500',
   },
   {
     icon: BarChart3,
@@ -269,27 +269,6 @@ export default function Hero() {
           }}
         />
 
-        {/* Floating Particles */}
-        {[...Array(8)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1.5 h-1.5 bg-teal-400/20 rounded-full"
-            style={{
-              left: `${10 + i * 12}%`,
-              top: `${15 + (i % 4) * 20}%`,
-            }}
-            animate={{
-              y: [0, -40, 0],
-              opacity: [0.2, 0.6, 0.2],
-            }}
-            transition={{
-              duration: 4 + i * 0.7,
-              repeat: Infinity,
-              delay: i * 0.4,
-              ease: "easeInOut",
-            }}
-          />
-        ))}
       </div>
 
       <motion.div
