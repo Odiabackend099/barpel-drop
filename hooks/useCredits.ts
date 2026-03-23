@@ -53,12 +53,13 @@ export function useCredits() {
     async function fetchBalance() {
       try {
         const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (!session?.user) {
           setLoading(false);
           return;
         }
+        const user = session.user;
         userIdRef.current = user.id;
 
         const { data, error: dbError } = await supabase
