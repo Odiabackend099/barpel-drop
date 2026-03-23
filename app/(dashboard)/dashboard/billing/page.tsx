@@ -35,7 +35,7 @@ function Badge({ color, children }: { color: string; children: React.ReactNode }
  * On completion, user is redirected to /dashboard/billing/success.
  * The webhook is the authoritative credit path.
  */
-function DodoPlanCard({ pkg, billingCycle }: { pkg: typeof CREDIT_PACKAGES[number]; billingCycle: BillingCycle }) {
+function DodoPlanCard({ pkg, billingCycle, currentBalance }: { pkg: typeof CREDIT_PACKAGES[number]; billingCycle: BillingCycle; currentBalance: number }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -54,8 +54,8 @@ function DodoPlanCard({ pkg, billingCycle }: { pkg: typeof CREDIT_PACKAGES[numbe
         setLoading(false);
         return;
       }
-      // Store current balance so success page can detect the change
-      sessionStorage.setItem("pre_checkout_balance", String(0));
+      // Store current balance so success page can detect the credit was actually granted
+      sessionStorage.setItem("pre_checkout_balance", String(currentBalance));
       window.location.href = data.checkout_url;
     } catch {
       setError("Network error — please check your connection and try again.");
@@ -320,7 +320,7 @@ export default function BillingPage() {
       {/* Credit Packages */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {CREDIT_PACKAGES.map((pkg) => (
-          <DodoPlanCard key={`dodo-${pkg.id}-${billingCycle}`} pkg={pkg} billingCycle={billingCycle} />
+          <DodoPlanCard key={`dodo-${pkg.id}-${billingCycle}`} pkg={pkg} billingCycle={billingCycle} currentBalance={balance} />
         ))}
       </div>
 
