@@ -1,7 +1,7 @@
 import { generateNonce } from "@/lib/security";
 
 const SHOPIFY_SCOPES =
-  "read_orders,read_fulfillments,read_customers,read_checkouts,read_products";
+  "read_orders,read_products";
 
 /**
  * Builds a Shopify managed install URL — NO shop domain required from the merchant.
@@ -22,9 +22,10 @@ export function buildInstallUrl(redirectUri: string): {
 
   const nonce = generateNonce(16);
 
+  // Managed install: scopes come from the Dev Dashboard app config, NOT from URL params.
+  // Passing scope here causes failed_grant_with_invalid_scopes for new users.
   const params = new URLSearchParams({
     client_id: apiKey,
-    scope: SHOPIFY_SCOPES,
     redirect_uri: redirectUri,
     state: nonce,
   });

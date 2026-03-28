@@ -15,7 +15,7 @@ const OAUTH_STATE_TTL_MS = 10 * 60 * 1000; // 10 minutes
  */
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL ?? "").trim();
+  const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL ?? "").trim().replace(/\/+$/, "");
 
   // Track where the OAuth flow originated so errors redirect to the right page.
   // Updated after oauth_states is read (defaults to onboarding for early errors).
@@ -33,9 +33,29 @@ export async function GET(request: Request) {
     return NextResponse.redirect(dest.toString());
   }
 
-  // B-15: Handle OAuth denial FIRST — before any other logic
+  // B-15: Handle OAuth denial FIRST — before any other logic.
+  // Try to look up return_to from oauth_states so denial redirects to the correct page.
   const shopifyDenied = searchParams.get("error");
   if (shopifyDenied) {
+    console.log("[shopify oauth callback] denied", { error: shopifyDenied });
+    const state = searchParams.get("state");
+    if (state) {
+      const adminSupabase = createAdminClient();
+      const { data: oauthState } = await adminSupabase
+        .from("oauth_states")
+        .select("return_to")
+        .eq("state", state)
+        .single();
+      if (oauthState?.return_to === "integrations") {
+        returnTo = "integrations";
+      }
+      await adminSupabase.from("oauth_states").delete().eq("state", state);
+    }
+    if (returnTo === "integrations") {
+      const dest = new URL(`${baseUrl}/dashboard/integrations`);
+      dest.searchParams.set("shopify_denied", "1");
+      return NextResponse.redirect(dest.toString());
+    }
     const returnUrl = new URL("/onboarding", baseUrl);
     returnUrl.searchParams.set("step", "2");
     returnUrl.searchParams.set("shopify_denied", "1");
@@ -46,6 +66,13 @@ export async function GET(request: Request) {
   const state = searchParams.get("state");
   const shop = searchParams.get("shop");
   const hmac = searchParams.get("hmac");
+
+  console.log("[shopify oauth callback] received", {
+    hasCode: !!code,
+    hasState: !!state,
+    hasShop: !!shop,
+    hasHmac: !!hmac,
+  });
 
   // Validate required params — all four must be present
   if (!code || !state || !shop || !hmac) {
@@ -76,6 +103,13 @@ export async function GET(request: Request) {
     await adminSupabase.from("oauth_states").delete().eq("state", state);
     return redirectError("csrf_mismatch");
   }
+
+  console.log("[shopify oauth callback] state verified", {
+    returnTo: oauthState.return_to,
+    storedShop: oauthState.shop_domain ?? "(managed)",
+    callbackShop: shop,
+    stateAgeMs: stateAge,
+  });
 
   // Verify shop matches what was originally requested.
   // When shop_domain is null (one-button flow), skip this check — the HMAC
@@ -112,10 +146,12 @@ export async function GET(request: Request) {
     return redirectError("token_exchange_failed");
   }
 
+  console.log("[shopify oauth callback] token exchanged", { shop });
+
   // Fetch shop display name from Shopify (non-fatal — falls back to domain)
   let shopName = shop;
   try {
-    const shopRes = await fetch(`https://${shop}/admin/api/2025-01/shop.json`, {
+    const shopRes = await fetch(`https://${shop}/admin/api/2026-01/shop.json`, {
       headers: { "X-Shopify-Access-Token": accessToken },
     });
     if (shopRes.ok) {
@@ -242,7 +278,7 @@ export async function GET(request: Request) {
 
   // B-14: Register Shopify abandoned cart webhook
   try {
-    await fetch(`https://${shop}/admin/api/2025-01/webhooks.json`, {
+    await fetch(`https://${shop}/admin/api/2026-01/webhooks.json`, {
       method: "POST",
       headers: {
         "X-Shopify-Access-Token": accessToken,
@@ -264,7 +300,7 @@ export async function GET(request: Request) {
   // Register orders/create webhook — cancels pending abandoned cart calls
   // when customer completes purchase (prevents calling buyers)
   try {
-    await fetch(`https://${shop}/admin/api/2025-01/webhooks.json`, {
+    await fetch(`https://${shop}/admin/api/2026-01/webhooks.json`, {
       method: "POST",
       headers: {
         "X-Shopify-Access-Token": accessToken,
@@ -283,9 +319,11 @@ export async function GET(request: Request) {
     // Non-fatal
   }
 
+  console.log("[shopify oauth callback] success", { returnTo, shop, merchantId });
+
   // Redirect based on where the OAuth flow started
   if (returnTo === "onboarding") {
-    return NextResponse.redirect(`${baseUrl}/onboarding?step=3&shopify_connected=1`);
+    return NextResponse.redirect(`${baseUrl}/onboarding`);
   }
   return NextResponse.redirect(`${baseUrl}/dashboard/integrations?connected=shopify`);
 }

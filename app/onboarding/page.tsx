@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { BarpelLogo } from "@/components/brand/BarpelLogo";
 import { ShopifyIcon } from "@/components/brand/ShopifyIcon";
-import { ShopifyStoreInput } from "@/components/ShopifyStoreInput";
+import { ShopifyOneClickInstall } from "@/components/ShopifyOneClickInstall";
 import { createClient } from "@/lib/supabase/client";
 import { CREDIT_PACKAGES } from "@/lib/constants";
 import { BYOCModal } from "@/components/integrations/BYOCModal";
@@ -814,24 +814,12 @@ function OnboardingContent() {
                           </div>
                         ) : (
                           <>
-                            {shopifyDenied && (
-                              <div className="mb-4 p-3 bg-amber-50 border border-amber-100 rounded-lg">
-                                <p className="text-xs text-amber-700">
-                                  You declined Shopify access. Connect now or skip and connect later from your dashboard.
-                                </p>
-                              </div>
-                            )}
-
-                            {error && (
-                              <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg">
-                                <p className="text-xs text-red-600">{error}</p>
-                              </div>
-                            )}
-
-                            <ShopifyStoreInput
-                              onConnect={handleConnectShopify}
+                            <ShopifyOneClickInstall
+                              returnTo="onboarding"
                               loading={connectingShopify}
-                              autoFocus
+                              errorMessage={error || undefined}
+                              deniedWarning={shopifyDenied}
+                              onFallbackConnect={handleConnectShopify}
                             />
 
                             <button

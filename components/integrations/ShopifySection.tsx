@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Clock } from "lucide-react";
 import { ShopifyIcon } from "@/components/brand/ShopifyIcon";
-import { ShopifyStoreInput } from "@/components/ShopifyStoreInput";
+import { ShopifyOneClickInstall } from "@/components/ShopifyOneClickInstall";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
 import {
@@ -100,12 +100,13 @@ export function ShopifySection({
 
               {!isShopifyConnected && (
                 <div className="mt-3">
-                  <ShopifyStoreInput
-                    onConnect={(shop) => {
+                  <ShopifyOneClickInstall
+                    returnTo="integrations"
+                    loading={connecting}
+                    onFallbackConnect={(shop) => {
                       setConnecting(true);
                       window.location.href = `/api/shopify/oauth/start?returnTo=integrations&shop=${encodeURIComponent(shop)}`;
                     }}
-                    loading={connecting}
                   />
                 </div>
               )}

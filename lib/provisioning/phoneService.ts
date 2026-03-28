@@ -498,8 +498,22 @@ export async function provisionMerchantLine(
     // Step B: Create Vapi assistant (skip if already done)
     // -----------------------------------------------------------------------
     if (!vapiAgentId) {
+      const businessName = merchant.business_name ?? "Support";
+
+      // Compute the actual values that will be used (mirrors createVapiAssistant defaults)
+      // so we can write them back to the DB and show them in the AI Voice settings page.
+      const actualFirstMessage =
+        merchant.ai_first_message ||
+        DEFAULT_FIRST_MESSAGE.replace("{BUSINESS_NAME}", businessName);
+      const actualVoiceId =
+        merchant.ai_voice_id && VALID_VOICE_IDS.includes(merchant.ai_voice_id)
+          ? merchant.ai_voice_id
+          : "Clara";
+      const actualVoiceProvider = merchant.ai_voice_provider ?? "vapi";
+      const actualModel = merchant.ai_model ?? "gpt-4o";
+
       vapiAgentId = await createVapiAssistant(
-        merchant.business_name ?? "Support",
+        businessName,
         merchant.custom_prompt ?? null,
         merchantId,
         {
@@ -510,9 +524,18 @@ export async function provisionMerchantLine(
         }
       );
 
+      // Write back both the agent ID and all the resolved config values.
+      // This ensures the AI Voice page shows the greeting/voice that are actually
+      // set on the Vapi assistant — not empty fields that confuse merchants.
       await supabase
         .from("merchants")
-        .update({ vapi_agent_id: vapiAgentId })
+        .update({
+          vapi_agent_id: vapiAgentId,
+          ai_first_message: actualFirstMessage,
+          ai_voice_id: actualVoiceId,
+          ai_voice_provider: actualVoiceProvider,
+          ai_model: actualModel,
+        })
         .eq("id", merchantId);
     }
 

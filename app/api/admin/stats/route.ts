@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getAuthUser, unauthorizedResponse } from "@/lib/supabase/auth-guard";
+import { requireAdmin } from "@/lib/admin-guard";
 
 /**
  * Admin revenue metrics endpoint.
@@ -10,19 +9,8 @@ import { getAuthUser, unauthorizedResponse } from "@/lib/supabase/auth-guard";
  * and payment success rate. Protected by ADMIN_EMAILS env var.
  */
 export async function GET(request: Request) {
-  const supabase = createClient();
-
-  const { user } = await getAuthUser(supabase, request);
-  if (!user?.email) return unauthorizedResponse();
-
-  const adminEmails = (process.env.ADMIN_EMAILS ?? "")
-    .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
-
-  if (!adminEmails.includes(user.email.toLowerCase())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-  }
+  const { response } = await requireAdmin(request);
+  if (response) return response;
 
   const adminSupabase = createAdminClient();
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();

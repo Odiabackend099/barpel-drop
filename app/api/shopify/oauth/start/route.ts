@@ -5,21 +5,20 @@ import { buildInstallUrl, buildDirectInstallUrl } from "@/lib/shopify/oauth";
 import { getAuthUser } from "@/lib/supabase/auth-guard";
 
 /**
- * Initiates the Shopify OAuth flow — ONE button, NO shop domain input.
+ * Initiates the Shopify OAuth flow.
  *
- * The merchant clicks "Connect with Shopify" and is redirected to Shopify's
- * login page. Shopify provides the shop domain in the callback — the merchant
- * never types it.
+ * Primary path (no ?shop param): Managed install URL at admin.shopify.com/oauth/install.
+ * Fallback path (?shop=x.myshopify.com): Direct shop OAuth URL for re-authorization.
  *
- * GET /api/shopify/oauth/start?returnTo=onboarding|integrations
+ * GET /api/shopify/oauth/start?returnTo=onboarding|integrations[&shop=x.myshopify.com]
  */
 export async function GET(request: Request) {
+  const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL ?? "").trim().replace(/\/+$/, "");
   const supabase = createClient();
 
   const { user } = await getAuthUser(supabase, request);
 
   if (!user) {
-    const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL ?? "").trim();
     return NextResponse.redirect(`${baseUrl}/login`);
   }
 
@@ -38,14 +37,13 @@ export async function GET(request: Request) {
     .single();
 
   if (!merchant) {
-    const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL ?? "").trim();
     if (returnTo === "integrations") {
       return NextResponse.redirect(`${baseUrl}/dashboard/integrations?shopify_error=merchant_not_found`);
     }
     return NextResponse.redirect(`${baseUrl}/onboarding?step=2&shopify_error=merchant_not_found`);
   }
 
-  const redirectUri = `${(process.env.NEXT_PUBLIC_BASE_URL ?? "").trim()}/api/shopify/oauth/callback`;
+  const redirectUri = `${baseUrl}/api/shopify/oauth/callback`;
 
   // When shop is known (e.g. from a Shopify app-load redirect that sent the
   // merchant to the App URL), use the direct shop OAuth URL. This forces
@@ -53,11 +51,20 @@ export async function GET(request: Request) {
   // install URL (admin.shopify.com/oauth/install) would just loop back.
   const knownShop = searchParams.get("shop") ?? "";
   const isValidShop = /^[a-zA-Z0-9-]+\.myshopify\.com$/.test(knownShop);
+  const flowType = isValidShop ? "direct" : "managed";
   const { url, nonce } = isValidShop
     ? buildDirectInstallUrl(knownShop, redirectUri)
     : buildInstallUrl(redirectUri);
 
-  // Store nonce in database — shop_domain is null because we don't know it yet.
+  console.log("[shopify oauth start]", {
+    flowType,
+    merchantId: merchant.id,
+    hasShopParam: isValidShop,
+    returnTo,
+    redirectUri,
+  });
+
+  // Store nonce in database — shop_domain is null for managed install flow.
   // Shopify provides it in the callback; HMAC verification ensures authenticity.
   const adminSupabase = createAdminClient();
   const { error: stateError } = await adminSupabase
@@ -71,7 +78,6 @@ export async function GET(request: Request) {
 
   if (stateError) {
     console.error("[shopify oauth start] Failed to store state:", stateError);
-    const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL ?? "").trim();
     if (returnTo === "integrations") {
       return NextResponse.redirect(`${baseUrl}/dashboard/integrations?shopify_error=internal`);
     }

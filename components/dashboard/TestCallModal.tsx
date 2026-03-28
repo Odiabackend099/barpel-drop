@@ -1,8 +1,22 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Mic, PhoneOff } from 'lucide-react';
+
+type Status = 'idle' | 'connecting' | 'active' | 'ended' | 'error';
+
+type VapiInstance = {
+  on: (event: string, cb: (...args: unknown[]) => void) => void;
+  start: (assistantId: string) => Promise<void>;
+  stop: () => void;
+};
 
 interface TestCallModalProps {
   open: boolean;
@@ -11,10 +25,9 @@ interface TestCallModalProps {
 }
 
 export function TestCallModal({ open, onClose, assistantId }: TestCallModalProps) {
-  const [status, setStatus] = useState<'idle' | 'connecting' | 'active' | 'ended'>('idle');
+  const [status, setStatus] = useState<Status>('idle');
   const [duration, setDuration] = useState(0);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const vapiRef = useRef<any>(null);
+  const vapiRef = useRef<VapiInstance | null>(null);
   const timerRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
@@ -24,39 +37,51 @@ export function TestCallModal({ open, onClose, assistantId }: TestCallModalProps
       return;
     }
 
-    let vapi: typeof vapiRef.current;
+    let mounted = true;
 
     async function initVapi() {
       try {
+        const publicKey = process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY;
+        if (!publicKey) {
+          if (mounted) setStatus('error');
+          return;
+        }
+
         const { default: Vapi } = await import('@vapi-ai/web');
-        vapi = new Vapi(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY!);
+        const vapi = new Vapi(publicKey) as unknown as VapiInstance;
         vapiRef.current = vapi;
 
         vapi.on('call-start', () => {
+          if (!mounted) return;
           setStatus('active');
+          clearInterval(timerRef.current);
           timerRef.current = setInterval(() => setDuration((d) => d + 1), 1000);
         });
         vapi.on('call-end', () => {
+          if (!mounted) return;
           setStatus('ended');
           clearInterval(timerRef.current);
         });
         vapi.on('error', () => {
-          setStatus('ended');
+          if (!mounted) return;
+          setStatus('error');
           clearInterval(timerRef.current);
         });
 
-        setStatus('connecting');
+        if (mounted) setStatus('connecting');
         await vapi.start(assistantId);
       } catch {
-        setStatus('ended');
+        if (mounted) setStatus('error');
       }
     }
 
     initVapi();
 
     return () => {
+      mounted = false;
       if (vapiRef.current) {
         vapiRef.current.stop();
+        vapiRef.current = null;
       }
       clearInterval(timerRef.current);
     };
@@ -67,6 +92,7 @@ export function TestCallModal({ open, onClose, assistantId }: TestCallModalProps
   const handleEnd = () => {
     if (vapiRef.current) {
       vapiRef.current.stop();
+      vapiRef.current = null;
     }
     onClose();
   };
@@ -76,6 +102,9 @@ export function TestCallModal({ open, onClose, assistantId }: TestCallModalProps
       <DialogContent className="backdrop-blur-sm text-center max-w-sm">
         <DialogHeader>
           <DialogTitle className="tracking-tight">Test Your AI</DialogTitle>
+          <DialogDescription className="sr-only">
+            Test your AI voice assistant directly in the browser.
+          </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col items-center gap-4 py-6">
           <div
@@ -98,8 +127,13 @@ export function TestCallModal({ open, onClose, assistantId }: TestCallModalProps
               Test call complete. Check your Call Logs to see the transcript.
             </p>
           )}
+          {status === 'error' && (
+            <p className="text-sm text-red-500">
+              Connection failed. Please close and try again.
+            </p>
+          )}
         </div>
-        {status !== 'ended' ? (
+        {status !== 'ended' && status !== 'error' ? (
           <Button variant="destructive" onClick={handleEnd} className="w-full">
             <PhoneOff className="w-4 h-4 mr-2" />
             End Call

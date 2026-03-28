@@ -48,21 +48,24 @@ test("All 13 protected onboarding files exist", () => {
   }
 });
 
-test("Onboarding Step 2 has a shop domain input field", () => {
+test("Onboarding Step 2 uses ShopifyOneClickInstall as primary path", () => {
   const onboardingSource = readFileSync(resolve(ROOT, "app/onboarding/page.tsx"), "utf-8");
-  const inputSource = readFileSync(resolve(ROOT, "components/ShopifyStoreInput.tsx"), "utf-8");
-  // ShopifyStoreInput component must be wired into onboarding
-  expect(onboardingSource, "ShopifyStoreInput not imported in onboarding page").toContain("ShopifyStoreInput");
-  // handleConnectShopify must pass the shop param to the start route
-  expect(onboardingSource, "shop param not passed to OAuth start route").toContain("?returnTo=onboarding&shop=");
-  // New UX: placeholder is store name only (not full domain)
-  expect(inputSource, "Store name placeholder missing from ShopifyStoreInput").toContain('placeholder="powerfit-gadgets"');
+  // One-button install is the primary path — managed install URL (no shop param)
+  expect(onboardingSource, "ShopifyOneClickInstall not imported in onboarding page").toContain("ShopifyOneClickInstall");
+  // ShopifyStoreInput is still available as fallback (via the one-click component)
+  expect(existsSync(resolve(ROOT, "components/ShopifyStoreInput.tsx")), "ShopifyStoreInput fallback component missing").toBe(true);
+  expect(existsSync(resolve(ROOT, "components/ShopifyOneClickInstall.tsx")), "ShopifyOneClickInstall component missing").toBe(true);
 });
 
-test("Onboarding Step 2 does NOT use buildInstallUrl (managed install)", () => {
-  const source = readFileSync(resolve(ROOT, "app/onboarding/page.tsx"), "utf-8");
-  // Must not call the managed install URL path (no-shop fallback should not be triggered from UI)
-  expect(source, "buildInstallUrl still referenced directly in onboarding UI").not.toContain("oauth/start?returnTo=onboarding'");
+test("SHOPIFY_SCOPES contains only minimal required scopes (read_orders, read_products)", () => {
+  const source = readFileSync(resolve(ROOT, "lib/shopify/oauth.ts"), "utf-8");
+  // Required scopes
+  expect(source, "read_orders must be present").toContain("read_orders");
+  expect(source, "read_products must be present").toContain("read_products");
+  // Removed scopes — per Shopify best practices, request only what's needed
+  expect(source, "read_checkouts is not a valid Shopify scope").not.toContain("read_checkouts");
+  expect(source, "read_fulfillments is legacy — use read_orders").not.toContain("read_fulfillments");
+  expect(source, "read_customers is not used by any code path").not.toContain("read_customers");
 });
 
 test("OAuth start route uses buildDirectInstallUrl when shop param is valid", () => {

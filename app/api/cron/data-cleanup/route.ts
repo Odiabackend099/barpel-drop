@@ -81,6 +81,16 @@ export async function GET(request: NextRequest) {
     .delete()
     .lt("created_at", ninetyDaysAgo);
 
+  // Stale OAuth states — TTL is 10 min, keep for 1 hour as generous buffer
+  const oauthCutoff = new Date(
+    now.getTime() - 60 * 60 * 1000
+  ).toISOString();
+
+  const { count: oauthCount } = await supabase
+    .from("oauth_states")
+    .delete()
+    .lt("created_at", oauthCutoff);
+
   // Log counts (Sentry would capture these in production)
   const summary = {
     transcripts_nulled: transcriptCount ?? 0,
@@ -89,6 +99,7 @@ export async function GET(request: NextRequest) {
     webhooks_deleted: webhookCount ?? 0,
     dodo_webhooks_deleted: dodoWebhookCount ?? 0,
     cart_data_deleted: cartCount ?? 0,
+    oauth_states_deleted: oauthCount ?? 0,
   };
 
   return NextResponse.json({

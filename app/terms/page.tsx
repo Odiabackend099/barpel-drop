@@ -1,7 +1,10 @@
-"use client";
-
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Phone, ArrowLeft } from 'lucide-react';
+
+export const metadata: Metadata = {
+  title: 'Terms of Service | Barpel AI',
+};
 
 export default function Terms() {
   return (
@@ -47,7 +50,7 @@ export default function Terms() {
                   By accessing or using the Barpel AI voice support platform (the &quot;Service&quot;), you agree to be bound by these Terms of Service (&quot;Terms&quot;). If you do not agree to these Terms, you may not access or use the Service.
                 </p>
                 <p className="text-text-secondary">
-                  These Terms constitute a legally binding agreement between you and Barpel AI Inc. (&quot;Barpel,&quot; &quot;we,&quot; &quot;us,&quot; or &quot;our&quot;) regarding your use of the Service.
+                  These Terms constitute a legally binding agreement between you and Barpel AI (&quot;Barpel,&quot; &quot;we,&quot; &quot;us,&quot; or &quot;our&quot;) regarding your use of the Service.
                 </p>
               </section>
 
@@ -79,8 +82,13 @@ export default function Terms() {
                 </p>
 
                 <h3 className="font-semibold text-brand-navy mb-2">3.3 Account Termination</h3>
-                <p className="text-text-secondary">
+                <p className="text-text-secondary mb-4">
                   We reserve the right to suspend or terminate your account at any time for any reason, including violation of these Terms. Upon termination, your right to use the Service will immediately cease.
+                </p>
+
+                <h3 className="font-semibold text-brand-navy mb-2">3.4 Cancellation</h3>
+                <p className="text-text-secondary">
+                  You may cancel your subscription at any time by uninstalling Barpel from your Shopify Admin or by contacting us at support@barpel.ai. Upon cancellation, your access to the Service will continue until the end of your current billing period. All Shopify store data in our systems will be permanently deleted within 30 days of cancellation, in accordance with our Privacy Policy.
                 </p>
               </section>
 
@@ -88,12 +96,12 @@ export default function Terms() {
                 <h2 className="heading-card text-brand-navy mb-4">4. Payment Terms</h2>
                 <h3 className="font-semibold text-brand-navy mb-2">4.1 Subscription Plans</h3>
                 <p className="text-text-secondary mb-4">
-                  The Service is offered on a subscription basis. You agree to pay all fees associated with your selected plan. Fees are non-refundable except as required by law or as explicitly stated in these Terms.
+                  The Service is offered on a subscription basis. You agree to pay all fees associated with your selected plan. Fees are non-refundable for partial billing periods. If you cancel your subscription, you will continue to have access to the Service until the end of your current billing period. No refunds are issued for the unused portion of a billing period, except as required by applicable law.
                 </p>
 
                 <h3 className="font-semibold text-brand-navy mb-2">4.2 Billing</h3>
                 <p className="text-text-secondary mb-4">
-                  You will be billed in advance on a recurring basis according to your selected billing cycle (monthly or annually). All fees are exclusive of taxes, which you are responsible for paying.
+                  You will be billed in advance on a recurring basis according to your selected billing cycle (monthly or annually). All fees are exclusive of taxes, which you are responsible for paying. Barpel is an independent SaaS platform; subscription fees are charged directly by Barpel and are separate from any Shopify platform charges. Connecting your Shopify store is an integration feature and does not constitute a separate Shopify app charge.
                 </p>
 
                 <h3 className="font-semibold text-brand-navy mb-2">4.3 Changes to Pricing</h3>
@@ -170,7 +178,7 @@ export default function Terms() {
               <section className="mb-8">
                 <h2 className="heading-card text-brand-navy mb-4">12. Governing Law</h2>
                 <p className="text-text-secondary">
-                  These Terms shall be governed by and construed in accordance with the laws of the State of California, United States, without regard to its conflict of law provisions. Any disputes arising under these Terms shall be resolved exclusively in the state or federal courts located in San Francisco, California.
+                  These Terms shall be governed by and construed in accordance with the laws of the Federal Republic of Nigeria, without regard to its conflict of law provisions. The parties agree to first attempt to resolve any dispute through good-faith negotiation. If a dispute cannot be resolved informally within 30 days, it shall be submitted to binding arbitration under internationally recognized arbitration rules. Nothing in this section prevents either party from seeking emergency injunctive relief from a court of competent jurisdiction.
                 </p>
               </section>
 
@@ -187,8 +195,8 @@ export default function Terms() {
                   If you have any questions about these Terms, please contact us at:
                 </p>
                 <p className="text-text-secondary mt-2">
-                  <strong>Email:</strong> legal@barpel.ai<br />
-                  <strong>Address:</strong> Barpel AI Inc., 123 Innovation Drive, San Francisco, CA 94105
+                  <strong>Email:</strong> support@barpel.ai<br />
+                  <strong>Address:</strong> Barpel AI, 26 Romford Street, Suncity, Abuja, Nigeria
                 </p>
               </section>
             </div>

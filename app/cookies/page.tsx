@@ -398,11 +398,11 @@ export default function CookiePolicyPage() {
                 manage your cookie preferences.
               </p>
               <a
-                href="mailto:privacy@barpel.ai"
+                href="mailto:support@barpel.ai"
                 className="inline-flex items-center gap-2 text-sm font-semibold text-teal-600 hover:text-teal-700 transition-colors"
               >
                 <Mail className="w-4 h-4" />
-                privacy@barpel.ai
+                support@barpel.ai
               </a>
             </div>
           </div>

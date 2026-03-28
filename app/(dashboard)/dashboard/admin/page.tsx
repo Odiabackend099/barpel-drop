@@ -9,6 +9,7 @@ import {
   Shield,
   BarChart3,
 } from "lucide-react";
+import { MerchantList } from "@/components/admin/MerchantList";
 
 interface AdminStats {
   mrr: number;
@@ -154,6 +155,12 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Merchant List */}
+      <div className="mt-8 border-t border-[#D0EDE8] pt-8">
+        <h2 className="text-lg font-semibold text-[#1B2A4A] mb-4">Merchants</h2>
+        <MerchantList />
+      </div>
     </div>
   );
 }

@@ -1,7 +1,10 @@
-"use client";
-
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Phone, ArrowLeft } from 'lucide-react';
+
+export const metadata: Metadata = {
+  title: 'Data Processing Addendum | Barpel AI',
+};
 
 export default function DataProcessing() {
   return (
@@ -44,7 +47,7 @@ export default function DataProcessing() {
               <section className="mb-8">
                 <h2 className="heading-card text-brand-navy mb-4">1. Introduction</h2>
                 <p className="text-text-secondary mb-4">
-                  This Data Processing Addendum (&quot;DPA&quot;) forms part of the Terms of Service between Barpel AI Inc. (&quot;Processor&quot;) and the customer (&quot;Controller&quot;) and sets out the terms for processing personal data in accordance with applicable data protection laws, including the General Data Protection Regulation (GDPR).
+                  This Data Processing Addendum (&quot;DPA&quot;) forms part of the Terms of Service between Barpel AI (&quot;Processor&quot;) and the customer (&quot;Controller&quot;) and sets out the terms for processing personal data in accordance with applicable data protection laws, including the General Data Protection Regulation (GDPR).
                 </p>
                 <p className="text-text-secondary">
                   This DPA applies when Barpel processes personal data on behalf of the Controller in the course of providing the AI voice support platform services.
@@ -198,8 +201,8 @@ export default function DataProcessing() {
                 </p>
                 <p className="text-text-secondary mt-2">
                   <strong>Data Protection Officer</strong><br />
-                  <strong>Email:</strong> dpo@barpel.ai<br />
-                  <strong>Address:</strong> Barpel AI Inc., 123 Innovation Drive, San Francisco, CA 94105
+                  <strong>Email:</strong> support@barpel.ai<br />
+                  <strong>Address:</strong> Barpel AI, 26 Romford Street, Suncity, Abuja, Nigeria
                 </p>
               </section>
             </div>
