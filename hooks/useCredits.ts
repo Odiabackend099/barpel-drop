@@ -21,6 +21,9 @@ export function useCredits() {
   const [dodoPlan, setDodoPlan] = useState<string | null>(null);
   const [dodoSubscriptionId, setDodoSubscriptionId] = useState<string | null>(null);
   const [dodoCustomerId, setDodoCustomerId] = useState<string | null>(null);
+  const [shopifyPlan, setShopifyPlan] = useState<string | null>(null);
+  const [shopifySubscriptionId, setShopifySubscriptionId] = useState<string | null>(null);
+  const [shopifyBillingCycle, setShopifyBillingCycle] = useState<string | null>(null);
   const userIdRef = useRef<string | null>(null);
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
 
@@ -64,7 +67,7 @@ export function useCredits() {
 
         const { data, error: dbError } = await supabase
           .from("merchants")
-          .select("credit_balance, flw_plan, flw_subscription_id, paystack_plan, paystack_subscription_id, plan_status, dodo_plan, dodo_subscription_id, dodo_customer_id")
+          .select("credit_balance, flw_plan, flw_subscription_id, paystack_plan, paystack_subscription_id, plan_status, dodo_plan, dodo_subscription_id, dodo_customer_id, shopify_plan, shopify_subscription_id, shopify_billing_cycle")
           .eq("user_id", user.id)
           .single();
 
@@ -80,6 +83,9 @@ export function useCredits() {
           setDodoPlan(data.dodo_plan ?? null);
           setDodoSubscriptionId(data.dodo_subscription_id ?? null);
           setDodoCustomerId(data.dodo_customer_id ?? null);
+          setShopifyPlan(data.shopify_plan ?? null);
+          setShopifySubscriptionId(data.shopify_subscription_id ?? null);
+          setShopifyBillingCycle(data.shopify_billing_cycle ?? null);
         }
       } catch (err) {
         console.error("[useCredits] Failed to fetch balance:", err);
@@ -122,6 +128,9 @@ export function useCredits() {
             if ("dodo_plan" in row) setDodoPlan((row.dodo_plan as string) ?? null);
             if ("dodo_subscription_id" in row) setDodoSubscriptionId((row.dodo_subscription_id as string) ?? null);
             if ("dodo_customer_id" in row) setDodoCustomerId((row.dodo_customer_id as string) ?? null);
+            if ("shopify_plan" in row) setShopifyPlan((row.shopify_plan as string) ?? null);
+            if ("shopify_subscription_id" in row) setShopifySubscriptionId((row.shopify_subscription_id as string) ?? null);
+            if ("shopify_billing_cycle" in row) setShopifyBillingCycle((row.shopify_billing_cycle as string) ?? null);
           }
         }
       )
@@ -137,5 +146,5 @@ export function useCredits() {
   const credits = Math.floor(balance / 60);
   const usagePercent = totalCapacity > 0 ? (balance / totalCapacity) * 100 : 0;
 
-  return { balance, balanceMinutes, balanceSeconds, credits, totalCapacity, usagePercent, transactions, usageData, loading, refreshBalance, flwPlan, flwSubscriptionId, paystackPlan, paystackSubscriptionId, planStatus, dodoPlan, dodoSubscriptionId, dodoCustomerId };
+  return { balance, balanceMinutes, balanceSeconds, credits, totalCapacity, usagePercent, transactions, usageData, loading, refreshBalance, flwPlan, flwSubscriptionId, paystackPlan, paystackSubscriptionId, planStatus, dodoPlan, dodoSubscriptionId, dodoCustomerId, shopifyPlan, shopifySubscriptionId, shopifyBillingCycle };
 }

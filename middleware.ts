@@ -145,6 +145,6 @@ export const config = {
      * - public folder
      * - API webhook routes (they use HMAC verification, not JWT)
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$|api/vapi|api/billing/webhook|api/dodo/webhook|api/shopify/oauth/callback|api/outbound|api/cron|api/health).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$|api/vapi|api/billing/webhook|api/dodo/webhook|api/shopify/oauth/callback|api/shopify/webhooks/subscription|api/outbound|api/cron|api/health).*)",
   ],
 };

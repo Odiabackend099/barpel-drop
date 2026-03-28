@@ -319,6 +319,28 @@ export async function GET(request: Request) {
     // Non-fatal
   }
 
+  // Register app_subscriptions/update webhook — receives Shopify billing lifecycle events
+  // (ACTIVE, CANCELLED, FROZEN, EXPIRED, DECLINED). Required for Managed Pricing.
+  try {
+    await fetch(`https://${shop}/admin/api/2026-01/webhooks.json`, {
+      method: "POST",
+      headers: {
+        "X-Shopify-Access-Token": accessToken,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        webhook: {
+          topic: "app_subscriptions/update",
+          address: `${baseUrl}/api/shopify/webhooks/subscription`,
+          format: "json",
+        },
+      }),
+    });
+  } catch (err) {
+    console.error("[shopify callback] app_subscriptions/update webhook registration failed:", err);
+    // Non-fatal
+  }
+
   console.log("[shopify oauth callback] success", { returnTo, shop, merchantId });
 
   // Redirect based on where the OAuth flow started

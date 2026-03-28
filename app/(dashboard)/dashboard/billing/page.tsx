@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Star, Check, TrendingUp, CreditCard as CardIcon, Zap, XCircle, RefreshCw } from "lucide-react";
+import { Star, Check, TrendingUp, CreditCard as CardIcon, Zap, XCircle, RefreshCw, ExternalLink } from "lucide-react";
 import {
   AreaChart,
   Area,
@@ -146,11 +146,12 @@ export default function BillingPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const [cancelLoading, setCancelLoading] = useState(false);
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
-  const { balance, credits, transactions, usageData, loading, refreshBalance, planStatus, dodoPlan, dodoSubscriptionId, dodoCustomerId } = useCredits();
+  const { balance, credits, transactions, usageData, loading, refreshBalance, planStatus, dodoPlan, dodoSubscriptionId, dodoCustomerId, shopifyPlan, shopifySubscriptionId, shopifyBillingCycle } = useCredits();
 
-  const activePlan = dodoPlan;
-  const hasActiveDodo = !!dodoSubscriptionId;
-  const hasActiveSubscription = hasActiveDodo;
+  const isShopifyMerchant = !!shopifyPlan;
+  const activePlan = shopifyPlan ?? dodoPlan;
+  const hasActiveDodo = !!dodoSubscriptionId && !isShopifyMerchant;
+  const hasActiveSubscription = !!(shopifySubscriptionId ?? dodoSubscriptionId);
 
   // Format usage data for chart — convert ISO dates to "MMM dd"
   const chartData = usageData.map((d) => ({
@@ -283,48 +284,79 @@ export default function BillingPage() {
         </div>
       )}
 
-      {/* Billing Cycle Toggle */}
-      <div className="flex items-center justify-center gap-3 py-2">
-        <span
-          className={`text-sm font-medium transition-colors ${
-            billingCycle === "monthly" ? "text-slate-900" : "text-muted-foreground"
-          }`}
-        >
-          Monthly
-        </span>
-        <button
-          onClick={() => setBillingCycle(billingCycle === "monthly" ? "annual" : "monthly")}
-          className="relative w-12 h-6 bg-brand-600 rounded-full transition-colors"
-          aria-label="Toggle billing period"
-        >
+      {/* Shopify Billing Panel — shown only to Shopify-billed merchants */}
+      {!loading && isShopifyMerchant && (
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 bg-brand-muted rounded-full flex items-center justify-center">
+              <CardIcon className="w-4 h-4 text-brand-600" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground font-sans">Billing managed by Shopify</p>
+              <p className="text-lg font-bold text-slate-900 capitalize">{shopifyPlan} Plan · {shopifyBillingCycle ?? "monthly"}</p>
+            </div>
+          </div>
+          <a
+            href={`https://${shopifySubscriptionId ? "" : ""}admin.shopify.com/charges/subscriptions`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-900 bg-white border border-slate-200 rounded-lg hover:border-brand-600 hover:bg-brand-light transition-all"
+          >
+            <ExternalLink className="w-4 h-4" />
+            Manage in Shopify Admin
+          </a>
+          <p className="text-xs text-muted-foreground mt-3 font-sans">
+            Your subscription is billed through Shopify. To upgrade, downgrade, or cancel, visit your Shopify Admin.
+          </p>
+        </div>
+      )}
+
+      {/* Billing Cycle Toggle — hidden for Shopify merchants */}
+      {!isShopifyMerchant && (
+        <div className="flex items-center justify-center gap-3 py-2">
           <span
-            className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
-              billingCycle === "annual" ? "translate-x-6" : "translate-x-0.5"
+            className={`text-sm font-medium transition-colors ${
+              billingCycle === "monthly" ? "text-slate-900" : "text-muted-foreground"
             }`}
-          />
-        </button>
-        <span
-          className={`text-sm font-medium transition-colors ${
-            billingCycle === "annual" ? "text-slate-900" : "text-muted-foreground"
-          }`}
-        >
-          Annual
-        </span>
-        {billingCycle === "annual" && (
-          <span className="px-2 py-0.5 text-xs font-bold text-brand-600 bg-brand-muted rounded-full">
-            Save 10%
+          >
+            Monthly
           </span>
-        )}
-      </div>
+          <button
+            onClick={() => setBillingCycle(billingCycle === "monthly" ? "annual" : "monthly")}
+            className="relative w-12 h-6 bg-brand-600 rounded-full transition-colors"
+            aria-label="Toggle billing period"
+          >
+            <span
+              className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
+                billingCycle === "annual" ? "translate-x-6" : "translate-x-0.5"
+              }`}
+            />
+          </button>
+          <span
+            className={`text-sm font-medium transition-colors ${
+              billingCycle === "annual" ? "text-slate-900" : "text-muted-foreground"
+            }`}
+          >
+            Annual
+          </span>
+          {billingCycle === "annual" && (
+            <span className="px-2 py-0.5 text-xs font-bold text-brand-600 bg-brand-muted rounded-full">
+              Save 10%
+            </span>
+          )}
+        </div>
+      )}
 
-      {/* Credit Packages */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {CREDIT_PACKAGES.map((pkg) => (
-          <DodoPlanCard key={`dodo-${pkg.id}-${billingCycle}`} pkg={pkg} billingCycle={billingCycle} currentBalance={balance} />
-        ))}
-      </div>
+      {/* Credit Packages — hidden for Shopify merchants (they upgrade via Shopify Admin) */}
+      {!isShopifyMerchant && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {CREDIT_PACKAGES.map((pkg) => (
+            <DodoPlanCard key={`dodo-${pkg.id}-${billingCycle}`} pkg={pkg} billingCycle={billingCycle} currentBalance={balance} />
+          ))}
+        </div>
+      )}
 
-      {/* Subscription Management — Dodo Payments */}
+      {/* Subscription Management — Dodo Payments (hidden for Shopify merchants) */}
       {!loading && hasActiveDodo && (
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
           <h3 className="text-sm font-bold text-slate-900 mb-1 font-sans">Manage USD Subscription</h3>
