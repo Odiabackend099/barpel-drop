@@ -246,7 +246,7 @@ export default function BillingPage() {
                   {credits}
                   <span className="text-xl text-muted-foreground ml-2">credits remaining</span>
                 </p>
-                <p className="text-sm text-muted-foreground mt-1">&asymp; {credits} minutes of AI support</p>
+                <p className="text-sm text-muted-foreground mt-1">1 credit = 1 minute of AI call time</p>
               </div>
               <div className="w-16 h-16 bg-brand-muted rounded-full flex items-center justify-center">
                 <CardIcon className="w-8 h-8 text-brand-600" />
@@ -312,7 +312,7 @@ export default function BillingPage() {
       )}
 
       {/* Billing Cycle Toggle — hidden for Shopify merchants */}
-      {!isShopifyMerchant && (
+      {!loading && !isShopifyMerchant && (
         <div className="flex items-center justify-center gap-3 py-2">
           <span
             className={`text-sm font-medium transition-colors ${
@@ -348,7 +348,7 @@ export default function BillingPage() {
       )}
 
       {/* Credit Packages — hidden for Shopify merchants (they upgrade via Shopify Admin) */}
-      {!isShopifyMerchant && (
+      {!loading && !isShopifyMerchant && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {CREDIT_PACKAGES.map((pkg) => (
             <DodoPlanCard key={`dodo-${pkg.id}-${billingCycle}`} pkg={pkg} billingCycle={billingCycle} currentBalance={balance} />
@@ -491,8 +491,8 @@ export default function BillingPage() {
                           (txn.type === "purchase" || txn.type === "credit") ? "text-brand-600" : "text-[#E74C3C]"
                         }`}
                       >
-                        {(txn.type === "purchase" || txn.type === "credit") ? "+" : ""}
-                        {Math.floor(Math.abs(txn.amount) / 60)}m {Math.abs(txn.amount) % 60}s
+                        {(txn.type === "purchase" || txn.type === "credit") ? "+" : "-"}
+                        {Math.floor(Math.abs(txn.amount) / 60)} credits
                       </td>
                     </tr>
                   ))}
