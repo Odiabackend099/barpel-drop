@@ -14,7 +14,6 @@ import {
   PanelLeftOpen,
   Zap,
   Settings,
-  Shield,
   LifeBuoy,
   LogOut,
 } from "lucide-react";
@@ -30,7 +29,6 @@ const navItems = [
   { href: "/dashboard/voice", icon: Bot, label: "AI Voice" },
   { href: "/dashboard/billing", icon: CreditCard, label: "Billing" },
   { href: "/dashboard/settings", icon: Settings, label: "Settings" },
-  { href: "/dashboard/admin", icon: Shield, label: "Admin CRM" },
 ];
 
 interface SidebarProps {
