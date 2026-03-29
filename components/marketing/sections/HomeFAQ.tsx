@@ -7,7 +7,7 @@ const faqs = [
   {
     question: 'How much does Barpel AI cost?',
     answer:
-      'Barpel AI offers three plans: Starter at $29/month (30 credits, 1 phone number, Shopify integration), Growth at $79/month (100 credits, 3 phone numbers, cart recovery and returns), and Scale at $179/month (250 credits, 10 phone numbers, custom AI training). All plans include a 14-day free trial — no credit card required.',
+      'Barpel AI offers three plans: Starter at $29/month (30 credits, 1 phone number, Shopify integration), Growth at $79/month (100 credits, 3 phone numbers, cart recovery and returns), and Scale at $179/month (250 credits, 10 phone numbers, custom AI training). All new accounts start with 5 free credits — no credit card required.',
   },
   {
     question: 'Does Barpel AI work with Shopify?',
@@ -42,7 +42,7 @@ const faqs = [
   {
     question: 'Is Barpel AI secure and compliant?',
     answer:
-      'Yes. Barpel AI is SOC 2 Type II certified, GDPR compliant, and HIPAA ready. All customer call data is encrypted end-to-end in transit and at rest. Payments are processed securely via Paystack. We never share or sell your data.',
+      'Yes. Barpel AI is SOC 2 Type II certified, GDPR compliant, and HIPAA ready. All customer call data is encrypted end-to-end in transit and at rest. Payments are processed securely via Dodo Payments. We never share or sell your data.',
   },
   {
     question: 'Does Barpel AI replace my customer support team?',

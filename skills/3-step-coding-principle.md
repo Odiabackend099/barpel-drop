@@ -227,11 +227,12 @@ const handleSaveProfile = async () => {
 - [ ] Data in ZIP is user's actual data (not someone else's)
 - [ ] Emails in ZIP match auth user email (not merchants.email, which doesn't exist)
 
-#### Billing — Package Buttons
-- [ ] Click "Buy Now" → Flutterwave modal opens
-- [ ] Modal shows correct package price ($29, $79, $179)
-- [ ] Can cancel payment → closes modal + no error
-- [ ] Can complete payment → credit balance updates
+#### Billing — Package Buttons (Dodo Payments — non-Shopify merchants only)
+- [ ] Click "Subscribe" → redirected to Dodo-hosted checkout page
+- [ ] Checkout shows correct package price ($29, $79, $179)
+- [ ] Can abandon checkout → returns to billing page, no error
+- [ ] Can complete payment → redirected to success page, credit balance updates via webhook
+- [ ] Shopify merchants see "Managed by Shopify" panel instead of plan cards
 
 #### Billing — Credit Usage Chart
 - [ ] Chart renders without errors

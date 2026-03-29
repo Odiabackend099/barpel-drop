@@ -224,7 +224,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
                   href="/signup"
                   className="inline-flex items-center gap-2 px-8 py-4 bg-teal-500 text-white font-semibold rounded-lg hover:bg-teal-600 transition-all duration-200"
                 >
-                  Start your free 14-day trial →
+                  Start your free trial →
                 </Link>
               </div>
             </div>

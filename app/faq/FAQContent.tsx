@@ -42,7 +42,7 @@ const faqData: FAQItem[] = [
   {
     category: 'Pricing & Billing',
     question: 'Can I cancel my subscription anytime?',
-    answer: 'Yes, you can cancel your subscription at any time with no cancellation fees. Your service will continue until the end of your current billing period. We also offer a 14-day free trial with no credit card required.',
+    answer: 'Yes, you can cancel your subscription at any time with no cancellation fees. Your service will continue until the end of your current billing period. Every new account starts with 5 free credits — no credit card required.',
   },
 
   // AI & Voice

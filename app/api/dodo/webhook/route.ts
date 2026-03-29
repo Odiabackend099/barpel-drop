@@ -1,7 +1,6 @@
 import { type NextRequest } from "next/server";
 import { Webhooks } from "@dodopayments/nextjs";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { addCredits } from "@/lib/credits";
 import { sendReceiptEmail, sendPaymentFailedEmail } from "@/lib/email/client";
 import { CREDIT_PACKAGES } from "@/lib/constants";
 
@@ -100,13 +99,14 @@ function getWebhookHandler() {
       ? rawNextBillingDate.toISOString()
       : (rawNextBillingDate as string | null | undefined) ?? null;
 
-    // Grant credits + activate plan — wrapped so tx reverts to 'pending' on failure
+    // Grant credits + activate plan — wrapped so tx reverts to 'pending' on failure.
+    // RESET credit_balance (not ADD) — prevents stacking free trial credits on top of plan.
+    // Using a direct update makes this idempotent: re-processing sets the same value.
     try {
-      await addCredits(adminSupabase, tx.merchant_id, pkg.credits_seconds, `dodo_sub_${subId}`);
-
       await adminSupabase
         .from("merchants")
         .update({
+          credit_balance:       pkg.credits_seconds,
           dodo_subscription_id: subId,
           dodo_customer_id:     customerId,
           dodo_plan:            tx.plan,
@@ -118,12 +118,23 @@ function getWebhookHandler() {
         })
         .eq("id", tx.merchant_id);
 
+      // Audit trail
+      await adminSupabase.from("credit_transactions").insert({
+        merchant_id:       tx.merchant_id,
+        type:              "purchase",
+        amount:            pkg.credits_seconds,
+        balance_after:     pkg.credits_seconds,
+        description:       `Plan activated — ${tx.plan} (Dodo Payments)`,
+        stripe_payment_id: `dodo_sub_${subId}`,
+      });
+
       await adminSupabase
         .from("billing_transactions")
         .update({ status: "completed", updated_at: new Date().toISOString() })
         .eq("tx_ref", txRef);
     } catch (err) {
-      // Revert to 'pending' so Dodo webhook retry can re-attempt
+      // Revert to 'pending' so Dodo webhook retry can re-attempt.
+      // Safe because RESET is idempotent — re-processing sets the same credit_balance.
       console.error("[dodo/webhook] onSubscriptionActive credit grant failed — reverting tx to pending:", (err as Error).message);
       await adminSupabase
         .from("billing_transactions")

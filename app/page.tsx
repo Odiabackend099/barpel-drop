@@ -16,7 +16,7 @@ import HomeFAQ from "@/components/marketing/sections/HomeFAQ";
 export const metadata: Metadata = {
   title: "Barpel AI | AI Voice Support for E-Commerce Stores",
   description:
-    "AI phone agent for e-commerce stores. Answers calls 24/7, tracks orders, handles returns, recovers carts. 2.3s response. Free 14-day trial.",
+    "AI phone agent for e-commerce stores. Answers calls 24/7, tracks orders, handles returns, recovers carts. 2.3s response. 5 free credits to start.",
   alternates: {
     canonical: 'https://dropship.barpel.ai',
   },
@@ -96,7 +96,7 @@ const jsonLd = {
           "name": "How much does Barpel AI cost?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Barpel AI offers three plans: Starter at $29/month (30 credits, 1 phone number), Growth at $79/month (100 credits, 3 phone numbers), and Scale at $179/month (250 credits, 10 phone numbers with custom AI training). A 14-day free trial is available — no credit card required."
+            "text": "Barpel AI offers three plans: Starter at $29/month (30 credits, 1 phone number), Growth at $79/month (100 credits, 3 phone numbers), and Scale at $179/month (250 credits, 10 phone numbers with custom AI training). 5 free credits are included on signup — no credit card required."
           }
         },
         {
@@ -144,7 +144,7 @@ const jsonLd = {
           "name": "Is Barpel AI secure and compliant?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes. Barpel AI is SOC 2 Type II certified, GDPR compliant, HIPAA ready, and uses end-to-end encryption for all customer call data. Payments are secured by Paystack."
+            "text": "Yes. Barpel AI is SOC 2 Type II certified, GDPR compliant, HIPAA ready, and uses end-to-end encryption for all customer call data. Payments are secured by Dodo Payments."
           }
         }
       ]

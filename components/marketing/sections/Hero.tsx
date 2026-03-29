@@ -368,7 +368,7 @@ export default function Hero() {
             >
               {[
                 { icon: CheckCircle2, text: 'No credit card' },
-                { icon: CheckCircle2, text: '14-day free trial' },
+                { icon: CheckCircle2, text: '5 free credits' },
                 { icon: CheckCircle2, text: '100+ merchants' },
               ].map((item, i) => (
                 <motion.div

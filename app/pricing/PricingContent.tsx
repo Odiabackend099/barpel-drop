@@ -159,7 +159,7 @@ const faqs = [
   {
     question: 'Is there a free trial?',
     answer:
-      'Every plan comes with a 14-day free trial, no credit card required. You get full access to all features in your chosen plan during the trial period. If you do not upgrade, your account simply pauses.',
+      'Every new account starts with 5 free credits — no credit card required. You get full access to all features. When your credits run out, upgrade to a paid plan to keep your AI line active.',
   },
   {
     question: 'What happens if I run out of credits?',
@@ -174,7 +174,7 @@ const faqs = [
   {
     question: 'What payment methods do you accept?',
     answer:
-      'We accept all major credit and debit cards (Visa, Mastercard, American Express). All payments are processed securely through Paystack.',
+      'We accept all major credit and debit cards (Visa, Mastercard, American Express). All payments are processed securely through Dodo Payments.',
   },
 ];
 

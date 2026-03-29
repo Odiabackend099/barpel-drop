@@ -2,8 +2,12 @@
 
 ## Who is the business user?
 
-A Shopify merchant who wants to add AI phone support to their store.
-They are non-technical. They expect everything to just work.
+Two types of merchants use Barpel AI:
+
+1. **Shopify merchant** — installs the app from the Shopify App Store. Billing is managed by Shopify (Managed Pricing). They never see Dodo Payments.
+2. **Direct signup** — signs up at `https://dropship.barpel.ai`. Billing is through Dodo Payments (USD, international cards). They never see Shopify billing controls.
+
+Both are non-technical. They expect everything to just work.
 
 ---
 
@@ -26,11 +30,10 @@ They are non-technical. They expect everything to just work.
 - Completes Shopify OAuth (external — human assisted)
 - Returns to onboarding, sees "Connected" badge
 
-### 4. Onboarding — Step 3: Pay for Minutes
-- Sees three credit packages (Starter $29, Growth $79, Scale $179)
-- Clicks "Buy Now" on Starter
-- Completes Flutterwave payment (external — human assisted)
-- Returns to onboarding, advances to Step 4
+### 4. Onboarding — Step 3: Free Credits
+- Receives 5 free credits (300 seconds) automatically on account creation
+- No payment is required during onboarding
+- Payment happens later on the `/dashboard/billing` page when credits run out
 
 ### 5. Onboarding — Step 4: Set Up AI Phone Line
 - Chooses BYOC (Bring Your Own Number) using Twilio credentials
@@ -45,14 +48,30 @@ They are non-technical. They expect everything to just work.
 - Clicks "Go to Dashboard"
 
 ### 7. Dashboard — Daily Use
-- Views real-time stats (calls today, minutes used, money saved)
+- Views real-time stats (calls today, credits used, money saved)
 - Checks call logs (list, search, filter by sentiment, view transcript)
 - Manages AI Voice (greeting, personality, voice type)
 - Checks Integrations (phone line active, Shopify connected)
-- Views Billing (balance, transaction history, buy more credits)
+- Views Billing (balance, transaction history, upgrade plan)
 - Manages Settings (business name, notifications, download data)
 
-### 8. Edge Cases to Test
+### 8. Billing — Two Paths
+
+**Path A: Shopify merchant** (installed via App Store)
+- Billing page shows "Billing managed by Shopify" panel
+- "Manage in Shopify Admin" button links to their Shopify admin charges page
+- No Dodo plan cards, no Dodo payment controls
+- Plan upgrade/downgrade/cancel happens in Shopify Admin
+
+**Path B: Direct signup** (non-Shopify or self-service)
+- Billing page shows 3 plan cards (Starter $29, Growth $79, Scale $179)
+- Monthly/Annual toggle with "Save 10%" badge
+- Clicking "Subscribe" → redirects to Dodo-hosted checkout page
+- On completion, user is redirected to `/dashboard/billing/success`
+- Credits are granted via webhook (not redirect)
+- "Manage USD Subscription" section shows Update Payment Method + Cancel Subscription
+
+### 9. Edge Cases to Test
 - Tries to submit empty forms (should show validation errors)
 - Tries to delete account (opens modal, sees warnings, clicks Cancel)
 - Toggles notification preferences (should persist across page reload)
@@ -82,6 +101,8 @@ They are non-technical. They expect everything to just work.
 ✅ Session persists (login → navigate → still logged in)
 ✅ Forms save changes (update business name → refresh → persists)
 ✅ Notifications work (toast on success, error, warning)
+✅ Shopify merchants never see Dodo plan cards or payment controls
+✅ Non-Shopify merchants never see "Billing managed by Shopify" panel
 
 ---
 
@@ -96,7 +117,7 @@ They are non-technical. They expect everything to just work.
 | `/dashboard/calls` | List renders, search/filter work, pagination, detail view |
 | `/dashboard/voice` | Greeting save, voice selector, personality fields, char counts |
 | `/dashboard/integrations` | Phone line status, Shopify connected badge, cart toggle, modals |
-| `/dashboard/billing` | Balance display, 3 packages, transaction history, chart renders |
+| `/dashboard/billing` | Balance display, correct UI for Shopify vs Dodo merchant, transaction history, chart renders |
 | `/dashboard/settings` | Business name save, password reset, 3 toggles, download, delete modal |
 | `/privacy` | Page loads, content visible |
 | `/login` | Email + password fields, sign-in, redirect to dashboard |
@@ -109,5 +130,5 @@ TestSprite will use email + password Supabase auth. No OAuth or magic links duri
 
 ---
 
-**Last Updated:** 2026-03-18
+**Last Updated:** 2026-03-29
 **Test Status:** Pending TestSprite run

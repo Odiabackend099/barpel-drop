@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import { CREDIT_PACKAGES } from "@/lib/constants";
 import { useCredits } from "@/hooks/useCredits";
+import { useIntegrations } from "@/hooks/useIntegrations";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 
@@ -147,8 +148,10 @@ export default function BillingPage() {
   const [cancelLoading, setCancelLoading] = useState(false);
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
   const { balance, credits, transactions, usageData, loading, refreshBalance, planStatus, dodoPlan, dodoSubscriptionId, dodoCustomerId, shopifyPlan, shopifySubscriptionId, shopifyBillingCycle } = useCredits();
+  const { shopifyIntegration } = useIntegrations();
 
   const isShopifyMerchant = !!shopifyPlan;
+  const shopDomain = shopifyIntegration?.shop_domain;
   const activePlan = shopifyPlan ?? dodoPlan;
   const hasActiveDodo = !!dodoSubscriptionId && !isShopifyMerchant;
   const hasActiveSubscription = !!(shopifySubscriptionId ?? dodoSubscriptionId);
@@ -297,7 +300,7 @@ export default function BillingPage() {
             </div>
           </div>
           <a
-            href={`https://${shopifySubscriptionId ? "" : ""}admin.shopify.com/charges/subscriptions`}
+            href={shopDomain ? `https://${shopDomain}/admin/charges` : "https://admin.shopify.com/"}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-900 bg-white border border-slate-200 rounded-lg hover:border-brand-600 hover:bg-brand-light transition-all"

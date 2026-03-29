@@ -162,7 +162,7 @@ export default function DashboardPage() {
             <StatCard
               icon={Clock}
               label="Credits Remaining"
-              value={`${Math.floor((stats?.credits_remaining ?? 0) / 60)} min`}
+              value={`${Math.floor((stats?.credits_remaining ?? 0) / 60)} credits`}
               color="#7DD9C0"
               progress
               progressValue={((stats?.credits_remaining ?? 0) / 6000) * 100}

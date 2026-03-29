@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
+import { verifyShopifyWebhook } from "@/lib/security";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { ensureIdempotent } from "@/lib/idempotency";
 
 export const runtime = "nodejs";
 
 /**
  * Shopify app_subscriptions/update webhook handler.
  *
- * Security:   Per-shop HMAC verification via Vault webhook secret.
+ * Security:   Per-shop HMAC verification via Vault webhook secret (base64).
+ *             Uses verifyShopifyWebhook() from lib/security — no custom HMAC code.
+ *             Never falls back to global SHOPIFY_API_SECRET (matches abandoned-cart pattern).
  * Idempotency: webhook_events table keyed on X-Shopify-Webhook-Id header.
  * Credit reset: ACTIVE → hard-sets credit_balance to plan allocation (no stacking).
  *
@@ -23,51 +26,9 @@ const PLAN_MAP: Record<string, { plan: string; credits: number }> = {
   "barpel-scale":   { plan: "scale",   credits: 15000 },
 };
 
-async function verifyHmac(
-  body: string,
-  hmacHeader: string | null,
-  merchantId: string
-): Promise<boolean> {
-  if (!hmacHeader) return false;
-
-  const adminSupabase = createAdminClient();
-  const secretName = `shopify-webhook-secret-${merchantId}`;
-
-  // Retrieve per-shop webhook secret from Vault
-  const { data: secretRows } = await adminSupabase
-    .rpc("vault_lookup_secret_by_name", { p_name: secretName });
-
-  const vaultSecretId: string | null =
-    Array.isArray(secretRows) && secretRows[0]?.id ? secretRows[0].id : null;
-
-  let webhookSecret: string | null = null;
-  if (vaultSecretId) {
-    const { data: secretData } = await adminSupabase
-      .rpc("vault_read_secret_by_id", { p_id: vaultSecretId });
-    webhookSecret = (secretData as string | null) ?? null;
-  }
-
-  // Fall back to shared API secret if per-shop secret not found
-  if (!webhookSecret) {
-    webhookSecret = process.env.SHOPIFY_API_SECRET ?? null;
-  }
-
-  if (!webhookSecret) return false;
-
-  const hash = crypto
-    .createHmac("sha256", webhookSecret)
-    .update(body, "utf8")
-    .digest("base64");
-
-  const hashBuf = Buffer.from(hash);
-  const hmacBuf = Buffer.from(hmacHeader);
-  if (hashBuf.length !== hmacBuf.length) return false;
-  return crypto.timingSafeEqual(hashBuf, hmacBuf);
-}
-
 export async function POST(req: NextRequest) {
-  const body = await req.text();
-  const hmacHeader = req.headers.get("x-shopify-hmac-sha256");
+  const rawBody = await req.text();
+  const hmacHeader = req.headers.get("x-shopify-hmac-sha256") ?? "";
   const webhookId  = req.headers.get("x-shopify-webhook-id");
   const shopDomain = req.headers.get("x-shopify-shop-domain");
 
@@ -75,15 +36,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing shop domain" }, { status: 400 });
   }
 
+  // Reject if webhook ID header is missing — required for idempotency
+  if (!webhookId) {
+    return NextResponse.json({ error: "Missing webhook ID" }, { status: 400 });
+  }
+
   const adminSupabase = createAdminClient();
 
-  // Look up merchant by shop domain via integrations table
-  const { data: integration } = await adminSupabase
+  // Look up merchant + per-shop webhook secret in a single query.
+  // HMAC verification uses the per-shop Vault secret — never the global SHOPIFY_API_SECRET,
+  // as that would allow any Shopify app holder to inject forged webhook data.
+  const { data: integration, error: lookupError } = await adminSupabase
     .from("integrations")
-    .select("merchant_id")
+    .select("merchant_id, webhook_secret_vault_id")
     .eq("shop_domain", shopDomain)
     .eq("platform", "shopify")
-    .single();
+    .maybeSingle();
+
+  if (lookupError) {
+    // DB error — return 503 so Shopify retries instead of silently dropping
+    console.error("[shopify/subscription] DB lookup failed:", lookupError.message);
+    return NextResponse.json({ error: "DB unavailable" }, { status: 503 });
+  }
 
   if (!integration) {
     // Unknown shop — return 200 to prevent Shopify retry storm
@@ -93,29 +67,35 @@ export async function POST(req: NextRequest) {
 
   const merchantId = integration.merchant_id;
 
-  // HMAC verification — uses per-shop Vault secret
-  const valid = await verifyHmac(body, hmacHeader, merchantId);
-  if (!valid) {
+  // Per-shop HMAC verification via Vault secret
+  if (!integration.webhook_secret_vault_id) {
+    console.warn("[shopify/subscription] No Vault secret for merchant:", merchantId);
+    return NextResponse.json({ received: true }, { status: 200 });
+  }
+
+  const { data: vaultSecret } = await adminSupabase
+    .rpc("vault_read_secret_by_id", { p_id: integration.webhook_secret_vault_id });
+
+  if (!vaultSecret) {
+    console.error("[shopify/subscription] Vault read failed for merchant:", merchantId);
+    return NextResponse.json({ error: "Vault unavailable" }, { status: 503 });
+  }
+
+  if (!verifyShopifyWebhook(rawBody, vaultSecret, hmacHeader)) {
     console.warn("[shopify/subscription] Invalid HMAC for shop:", shopDomain);
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   // Idempotency guard — keyed on X-Shopify-Webhook-Id
-  if (webhookId) {
-    const { error: idempotencyError } = await adminSupabase
-      .from("webhook_events")
-      .insert({ event_id: webhookId, source: "shopify" });
-
-    if (idempotencyError) {
-      // Unique constraint violation = already processed
-      console.log("[shopify/subscription] Duplicate webhook, skipping:", webhookId);
-      return NextResponse.json({ received: true }, { status: 200 });
-    }
+  const isNew = await ensureIdempotent(webhookId, "shopify", adminSupabase);
+  if (!isNew) {
+    console.log("[shopify/subscription] Duplicate webhook, skipping:", webhookId);
+    return NextResponse.json({ received: true }, { status: 200 });
   }
 
   let payload: Record<string, unknown>;
   try {
-    payload = JSON.parse(body);
+    payload = JSON.parse(rawBody);
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
@@ -130,8 +110,9 @@ export async function POST(req: NextRequest) {
   switch (status) {
     case "ACTIVE": {
       if (!name || !(name in PLAN_MAP)) {
+        // Return 200 to stop Shopify retry loop — log error for investigation
         console.error("[shopify/subscription] Unrecognized plan handle:", name);
-        return NextResponse.json({ error: "Unrecognized plan handle" }, { status: 400 });
+        return NextResponse.json({ received: true, error: "unrecognized_plan" }, { status: 200 });
       }
 
       const { plan, credits } = PLAN_MAP[name];
@@ -212,22 +193,30 @@ export async function POST(req: NextRequest) {
     }
 
     case "DECLINED": {
-      // Clear any pending subscription state — no credits granted
-      await adminSupabase
+      // Clear pending subscription state for THIS merchant only
+      // Verify subscription match in JS to avoid SQL logic issues
+      const { data: currentMerchant } = await adminSupabase
         .from("merchants")
-        .update({
-          shopify_subscription_id: null,
-          shopify_plan:            null,
-        })
+        .select("shopify_subscription_id")
         .eq("id", merchantId)
-        .is("shopify_subscription_id", subscriptionId ?? null);
+        .single();
+
+      if (!subscriptionId || currentMerchant?.shopify_subscription_id === subscriptionId) {
+        await adminSupabase
+          .from("merchants")
+          .update({
+            shopify_subscription_id: null,
+            shopify_plan:            null,
+          })
+          .eq("id", merchantId);
+      }
 
       console.log("[shopify/subscription] DECLINED processed", { merchantId });
       break;
     }
 
     default:
-      console.log("[shopify/subscription] Unhandled status:", status);
+      console.warn("[shopify/subscription] Unhandled status:", status);
   }
 
   return NextResponse.json({ received: true }, { status: 200 });
