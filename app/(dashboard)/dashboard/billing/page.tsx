@@ -147,20 +147,32 @@ export default function BillingPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const [cancelLoading, setCancelLoading] = useState(false);
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
+  const [mounted, setMounted] = useState(false);
   const { balance, credits, transactions, usageData, loading, refreshBalance, planStatus, dodoPlan, dodoSubscriptionId, dodoCustomerId, shopifyPlan, shopifySubscriptionId, shopifyBillingCycle } = useCredits();
   const { shopifyIntegration } = useIntegrations();
 
   const isShopifyMerchant = !!shopifyPlan;
   const shopDomain = shopifyIntegration?.shop_domain;
+  const storeHandle = shopDomain?.replace(".myshopify.com", "") ?? null;
+  const appHandle = process.env.NEXT_PUBLIC_SHOPIFY_APP_HANDLE || null;
+  const shopifyAdminUrl = shopDomain
+    ? storeHandle && appHandle
+      ? `https://admin.shopify.com/store/${storeHandle}/charges/${appHandle}/pricing_plans`
+      : `https://${shopDomain}/admin/settings/billing`
+    : "https://admin.shopify.com/";
   const activePlan = shopifyPlan ?? dodoPlan;
   const hasActiveDodo = !!dodoSubscriptionId && !isShopifyMerchant;
   const hasActiveSubscription = !!(shopifySubscriptionId ?? dodoSubscriptionId);
 
-  // Format usage data for chart — convert ISO dates to "MMM dd"
-  const chartData = usageData.map((d) => ({
-    date: format(new Date(d.date), "MMM dd"),
-    credits: d.credits,
-  }));
+  // Format usage data for chart — convert ISO dates to "MMM dd".
+  // Parse date parts directly from the ISO string to avoid timezone-driven
+  // server/client mismatch (new Date("YYYY-MM-DD") is UTC midnight, which
+  // can roll back a day in negative-offset timezones → React hydration error).
+  const chartData = usageData.map((d) => {
+    const [year, month, day] = d.date.split("-").map(Number);
+    const label = format(new Date(year, month - 1, day), "MMM dd");
+    return { date: label, credits: d.credits };
+  });
 
   // Determine plan capacity for progress bar scaling
   const currentPkg = CREDIT_PACKAGES.find((p) => p.id === activePlan);
@@ -173,6 +185,8 @@ export default function BillingPage() {
     : balance >= 60
     ? "from-amber-400 to-amber-300"      // amber: 1-10 minutes
     : "from-red-500 to-red-400";         // red: < 1 minute
+
+  useEffect(() => { setMounted(true); }, []);
 
   // Handle return from Paystack redirect (trxref param on success).
   // The webhook is the authoritative credit path; this is UI feedback only.
@@ -300,7 +314,7 @@ export default function BillingPage() {
             </div>
           </div>
           <a
-            href={shopDomain ? `https://${shopDomain}/admin/charges` : "https://admin.shopify.com/"}
+            href={shopifyAdminUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-900 bg-white border border-slate-200 rounded-lg hover:border-brand-600 hover:bg-brand-light transition-all"
@@ -435,34 +449,36 @@ export default function BillingPage() {
           <h3 className="text-sm font-bold text-slate-900 font-sans">Credit Usage (Last 30 Days)</h3>
         </div>
         <div className="h-48">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData}>
-              <defs>
-                <linearGradient id="usageGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#E74C3C" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="#E74C3C" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: "#8AADA6", fontSize: 10 }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: "#8AADA6", fontSize: 10 }} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "#FFFFFF",
-                  border: "1px solid #D0EDE8",
-                  borderRadius: "8px",
-                  boxShadow: "0 4px 20px rgba(0,169,157,0.15)",
-                }}
-              />
-              <Area
-                type="monotone"
-                dataKey="credits"
-                stroke="#E74C3C"
-                strokeWidth={2}
-                fillOpacity={1}
-                fill="url(#usageGradient)"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+          {mounted && (
+            <ResponsiveContainer width="100%" height={192}>
+              <AreaChart data={chartData}>
+                <defs>
+                  <linearGradient id="usageGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#E74C3C" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="#E74C3C" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: "#8AADA6", fontSize: 10 }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: "#8AADA6", fontSize: 10 }} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#FFFFFF",
+                    border: "1px solid #D0EDE8",
+                    borderRadius: "8px",
+                    boxShadow: "0 4px 20px rgba(0,169,157,0.15)",
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="credits"
+                  stroke="#E74C3C"
+                  strokeWidth={2}
+                  fillOpacity={1}
+                  fill="url(#usageGradient)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          )}
         </div>
       </div>
 

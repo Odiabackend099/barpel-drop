@@ -84,6 +84,9 @@ export default function DashboardPage() {
   const [expandedId] = useState<string | null>(null);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -212,34 +215,36 @@ export default function DashboardPage() {
                 <h3 className="text-sm font-bold text-slate-900 font-sans">Call volume, last 2 weeks</h3>
               </div>
               <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={stats?.chart_data ?? chartData}>
-                    <defs>
-                      <linearGradient id="colorCalls" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#00A99D" stopOpacity={0.2} />
-                        <stop offset="95%" stopColor="#00A99D" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: "#8AADA6", fontSize: 11 }} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fill: "#8AADA6", fontSize: 11 }} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "#FFFFFF",
-                        border: "1px solid #D0EDE8",
-                        borderRadius: "8px",
-                        boxShadow: "0 4px 20px rgba(0,169,157,0.15)",
-                      }}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="count"
-                      stroke="#00A99D"
-                      strokeWidth={2}
-                      fillOpacity={1}
-                      fill="url(#colorCalls)"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
+                {mounted && (
+                  <ResponsiveContainer width="100%" height={256}>
+                    <AreaChart data={stats?.chart_data ?? chartData}>
+                      <defs>
+                        <linearGradient id="colorCalls" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#00A99D" stopOpacity={0.2} />
+                          <stop offset="95%" stopColor="#00A99D" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: "#8AADA6", fontSize: 11 }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: "#8AADA6", fontSize: 11 }} />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "#FFFFFF",
+                          border: "1px solid #D0EDE8",
+                          borderRadius: "8px",
+                          boxShadow: "0 4px 20px rgba(0,169,157,0.15)",
+                        }}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="count"
+                        stroke="#00A99D"
+                        strokeWidth={2}
+                        fillOpacity={1}
+                        fill="url(#colorCalls)"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                )}
               </div>
             </div>
 

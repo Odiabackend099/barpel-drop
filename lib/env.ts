@@ -72,6 +72,8 @@ const clientSchema = z.object({
   NEXT_PUBLIC_VAPI_PUBLIC_KEY: z.string().min(1),
   // Optional — controls mock API in local dev only
   NEXT_PUBLIC_USE_MOCK_API: z.string().optional().default("false"),
+  // Optional — Shopify app handle for deep-linking to subscription page in merchant admin
+  NEXT_PUBLIC_SHOPIFY_APP_HANDLE: z.string().optional(),
   // Optional — monitoring
   NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
   NEXT_PUBLIC_POSTHOG_KEY: z.string().optional(),

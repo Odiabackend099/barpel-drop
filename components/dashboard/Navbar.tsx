@@ -36,7 +36,9 @@ export function Navbar({ onMenuToggle }: NavbarProps) {
           >
             <Menu className="w-5 h-5" />
           </button>
-          <span className="hidden lg:inline text-sm text-muted-foreground font-sans">
+          {/* suppressHydrationWarning: getGreeting() is time-based — server (UTC) and
+              client (local TZ) can differ, causing a benign text mismatch on hydration */}
+          <span className="hidden lg:inline text-sm text-muted-foreground font-sans" suppressHydrationWarning>
             {getGreeting()}{merchant?.business_name ? `, ${merchant.business_name}` : ""}
           </span>
         </div>

@@ -14,6 +14,7 @@ type Status = 'idle' | 'connecting' | 'active' | 'ended' | 'error';
 
 type VapiInstance = {
   on: (event: string, cb: (...args: unknown[]) => void) => void;
+  off: (event: string, cb: (...args: unknown[]) => void) => void;
   start: (assistantId: string) => Promise<void>;
   stop: () => void;
 };
@@ -24,11 +25,26 @@ interface TestCallModalProps {
   assistantId: string;
 }
 
+// Module-level singleton — Vapi and KrispSDK initialize ONCE per page load.
+// Re-creating Vapi on every call duplicates KrispSDK which degrades after the
+// 2nd or 3rd call in the same session, causing the AI to stop receiving audio.
+let _vapiSingleton: VapiInstance | null = null;
+let _vapiSingletonKey: string | null = null;
+
+async function getVapi(publicKey: string): Promise<VapiInstance> {
+  if (_vapiSingleton && _vapiSingletonKey === publicKey) return _vapiSingleton;
+  const { default: Vapi } = await import('@vapi-ai/web');
+  _vapiSingleton = new Vapi(publicKey) as unknown as VapiInstance;
+  _vapiSingletonKey = publicKey;
+  return _vapiSingleton;
+}
+
 export function TestCallModal({ open, onClose, assistantId }: TestCallModalProps) {
   const [status, setStatus] = useState<Status>('idle');
   const [duration, setDuration] = useState(0);
   const vapiRef = useRef<VapiInstance | null>(null);
   const timerRef = useRef<NodeJS.Timeout>();
+  const micStreamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
     if (!open) {
@@ -39,6 +55,23 @@ export function TestCallModal({ open, onClose, assistantId }: TestCallModalProps
 
     let mounted = true;
 
+    const onCallStart = () => {
+      if (!mounted) return;
+      setStatus('active');
+      clearInterval(timerRef.current);
+      timerRef.current = setInterval(() => setDuration((d) => d + 1), 1000);
+    };
+    const onCallEnd = () => {
+      if (!mounted) return;
+      setStatus('ended');
+      clearInterval(timerRef.current);
+    };
+    const onError = () => {
+      if (!mounted) return;
+      setStatus('error');
+      clearInterval(timerRef.current);
+    };
+
     async function initVapi() {
       try {
         const publicKey = process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY;
@@ -47,26 +80,26 @@ export function TestCallModal({ open, onClose, assistantId }: TestCallModalProps
           return;
         }
 
-        const { default: Vapi } = await import('@vapi-ai/web');
-        const vapi = new Vapi(publicKey) as unknown as VapiInstance;
+        // Acquire a fresh microphone track before every call. This guarantees
+        // Daily.co receives a live track regardless of prior call history.
+        const micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        if (!mounted) {
+          micStream.getTracks().forEach((t) => t.stop());
+          return;
+        }
+        micStreamRef.current = micStream;
+        const audioTrack = micStream.getAudioTracks()[0];
+
+        // Reuse singleton — KrispSDK is already initialized from the first call.
+        const vapi = await getVapi(publicKey);
+        // Inject the fresh track into Vapi's Daily config before this call starts.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (vapi as any).dailyCallObject = { audioSource: audioTrack };
         vapiRef.current = vapi;
 
-        vapi.on('call-start', () => {
-          if (!mounted) return;
-          setStatus('active');
-          clearInterval(timerRef.current);
-          timerRef.current = setInterval(() => setDuration((d) => d + 1), 1000);
-        });
-        vapi.on('call-end', () => {
-          if (!mounted) return;
-          setStatus('ended');
-          clearInterval(timerRef.current);
-        });
-        vapi.on('error', () => {
-          if (!mounted) return;
-          setStatus('error');
-          clearInterval(timerRef.current);
-        });
+        vapi.on('call-start', onCallStart);
+        vapi.on('call-end', onCallEnd);
+        vapi.on('error', onError);
 
         if (mounted) setStatus('connecting');
         await vapi.start(assistantId);
@@ -79,11 +112,18 @@ export function TestCallModal({ open, onClose, assistantId }: TestCallModalProps
 
     return () => {
       mounted = false;
+      clearInterval(timerRef.current);
       if (vapiRef.current) {
+        vapiRef.current.off('call-start', onCallStart);
+        vapiRef.current.off('call-end', onCallEnd);
+        vapiRef.current.off('error', onError);
         vapiRef.current.stop();
         vapiRef.current = null;
       }
-      clearInterval(timerRef.current);
+      if (micStreamRef.current) {
+        micStreamRef.current.getTracks().forEach((t) => t.stop());
+        micStreamRef.current = null;
+      }
     };
   }, [open, assistantId]);
 
@@ -93,6 +133,10 @@ export function TestCallModal({ open, onClose, assistantId }: TestCallModalProps
     if (vapiRef.current) {
       vapiRef.current.stop();
       vapiRef.current = null;
+    }
+    if (micStreamRef.current) {
+      micStreamRef.current.getTracks().forEach((t) => t.stop());
+      micStreamRef.current = null;
     }
     onClose();
   };
