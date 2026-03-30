@@ -53,10 +53,11 @@ export async function lookupOrder(
   // Try multiple search formats — the primary format `name:<number>` is correct per
   // Shopify docs (https://shopify.dev/docs/api/admin-graphql/2025-01/queries/orders),
   // but custom order name prefixes or API inconsistencies can cause misses.
+  // `status:any` is required to include archived orders (Shopify excludes them by default).
   const searchFormats = [
-    `name:${cleanNumber}`,   // standard: matches #1001 per Shopify docs
-    `name:#${cleanNumber}`,  // defensive: explicit hash prefix
-    cleanNumber,             // last resort: full-text search
+    `name:${cleanNumber} status:any`,
+    `name:#${cleanNumber} status:any`,
+    `${cleanNumber} status:any`,
   ];
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -78,12 +79,15 @@ export async function lookupOrder(
     );
 
     if (!response.ok) {
+      // HTTP-level failure (401, 403, 429) applies to all formats — fail fast
       throw new Error(`Shopify API error: ${response.status}`);
     }
 
     const json = await response.json();
     if (json.errors?.length) {
-      throw new Error(`Shopify GraphQL error: ${json.errors[0].message}`);
+      // GraphQL error is specific to this search format — try the next one
+      console.warn(`[shopify] GraphQL error for "${searchString}":`, json.errors[0].message);
+      continue;
     }
 
     orderNode = json.data?.orders?.edges?.[0]?.node;

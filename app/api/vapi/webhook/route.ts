@@ -244,6 +244,7 @@ async function handleLookupOrder(
     .single();
 
   if (!integration) {
+    console.error("[webhook] lookup_order: no active Shopify integration", { merchantId });
     return "I don't have access to your store's order system yet. Please contact support directly.";
   }
 
@@ -252,8 +253,18 @@ async function handleLookupOrder(
   const { data: shopifyToken } = await supabase
     .rpc("vault_read_secret_by_id", { p_id: integration.access_token_secret_id });
   if (!shopifyToken) {
+    console.error("[webhook] lookup_order: vault token null", {
+      merchantId,
+      secretId: integration.access_token_secret_id,
+    });
     return "I'm unable to access your store's orders right now. Please contact support.";
   }
+
+  console.log("[webhook] lookup_order: querying Shopify", {
+    merchantId,
+    shop: integration.shop_domain,
+    orderNumber,
+  });
 
   // B-5: 4-second timeout race — return holding message if approaching 5s Vapi limit
   const timeoutPromise = new Promise<null>((resolve) =>
@@ -266,15 +277,32 @@ async function handleLookupOrder(
     // lookupOrder already uses withRetry internally for each search format —
     // wrapping it again would cause up to 27 Shopify calls and blow the 5s timeout.
     order = await lookupOrder(integration.shop_domain, shopifyToken, orderNumber);
-  } catch {
+  } catch (err) {
+    console.error("[webhook] lookup_order: Shopify API threw", {
+      merchantId,
+      shop: integration.shop_domain,
+      orderNumber,
+      error: String(err),
+    });
     notifyMerchantFailedLookup(supabase, merchantId, orderNumber).catch(() => {});
     return `I wasn't able to find order ${orderNumber}. Could you double-check the order number?`;
   }
 
   if (!order) {
+    console.warn("[webhook] lookup_order: not found after all search formats", {
+      merchantId,
+      shop: integration.shop_domain,
+      orderNumber,
+    });
     notifyMerchantFailedLookup(supabase, merchantId, orderNumber).catch(() => {});
     return `I wasn't able to find order ${orderNumber}. Could you double-check the order number?`;
   }
+
+  console.log("[webhook] lookup_order: found", {
+    merchantId,
+    orderName: order.name,
+    status: order.fulfillmentStatus,
+  });
 
   // Step 2: If tracking number exists, try AfterShip (if configured) else use Shopify status
   if (order.trackingNumbers.length > 0 && isAfterShipEnabled()) {
@@ -301,11 +329,17 @@ async function handleLookupOrder(
     }
   }
 
-  // Fall back to Shopify fulfillment status
+  // Fall back to Shopify fulfillment status — covers all displayFulfillmentStatus values
   const statusMap: Record<string, string> = {
     FULFILLED: "has been shipped and is on its way",
     UNFULFILLED: "is being prepared for shipping",
     PARTIALLY_FULFILLED: "has been partially shipped",
+    IN_PROGRESS: "is currently being fulfilled",
+    PENDING_FULFILLMENT: "is queued for fulfillment",
+    ON_HOLD: "is on hold — the store may need to take action",
+    SCHEDULED: "is scheduled for a future fulfillment date",
+    OPEN: "is open and being processed",
+    RESTOCKED: "has been cancelled and restocked",
     null: "is being processed",
   };
 
