@@ -55,9 +55,9 @@ export async function lookupOrder(
   // but custom order name prefixes or API inconsistencies can cause misses.
   // `status:any` is required to include archived orders (Shopify excludes them by default).
   const searchFormats = [
-    `name:${cleanNumber} status:any`,
-    `name:#${cleanNumber} status:any`,
-    `${cleanNumber} status:any`,
+    `name:${cleanNumber}`,
+    `name:#${cleanNumber}`,
+    cleanNumber,
   ];
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
