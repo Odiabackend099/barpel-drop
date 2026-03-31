@@ -26,7 +26,7 @@ const plans = [
     annualTotalPrice: pkgMap['starter'].annualPriceUsdCents / 100,
     annualMonthlyEquiv: Math.round(pkgMap['starter'].annualPriceUsdCents / 12 / 100),
     features: [
-      '500 credits/month',
+      `${pkgMap['starter'].credits} credits/month`,
       '1 phone number',
       'Shopify integration',
       'Order tracking',
@@ -44,7 +44,7 @@ const plans = [
     annualTotalPrice: pkgMap['growth'].annualPriceUsdCents / 100,
     annualMonthlyEquiv: Math.round(pkgMap['growth'].annualPriceUsdCents / 12 / 100),
     features: [
-      '2,000 credits/month',
+      `${pkgMap['growth'].credits} credits/month`,
       '3 phone numbers',
       'All integrations',
       'Returns handling',
@@ -63,7 +63,7 @@ const plans = [
     annualTotalPrice: pkgMap['scale'].annualPriceUsdCents / 100,
     annualMonthlyEquiv: Math.round(pkgMap['scale'].annualPriceUsdCents / 12 / 100),
     features: [
-      '6,000 credits/month',
+      `${pkgMap['scale'].credits} credits/month`,
       '10 phone numbers',
       'Custom AI training',
       'Advanced analytics',
@@ -101,7 +101,7 @@ const comparisonFeatures = [
   {
     category: 'Voice AI',
     features: [
-      { name: 'Monthly credits', starter: '500', growth: '2,000', scale: '6,000', enterprise: 'Unlimited' },
+      { name: 'Monthly credits', starter: String(pkgMap['starter'].credits), growth: String(pkgMap['growth'].credits), scale: String(pkgMap['scale'].credits), enterprise: 'Unlimited' },
       { name: 'Phone numbers', starter: '1', growth: '3', scale: '10', enterprise: 'Unlimited' },
       { name: 'Concurrent calls', starter: '2', growth: '10', scale: '50', enterprise: 'Unlimited' },
       { name: 'Call recording', starter: true, growth: true, scale: true, enterprise: true },
