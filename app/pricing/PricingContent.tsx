@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import { CREDIT_PACKAGES } from '@/lib/constants';
 import {
   Check,
   X,
@@ -15,12 +16,15 @@ import {
 } from 'lucide-react';
 import ContentPageLayout from '@/components/marketing/ContentPageLayout';
 
+const pkgMap = Object.fromEntries(CREDIT_PACKAGES.map(p => [p.id, p]));
+
 const plans = [
   {
     name: 'Starter',
     description: 'For small stores just getting started with AI support',
-    monthlyPrice: 29,
-    yearlyPrice: 26,
+    monthlyPrice: pkgMap['starter'].priceUsdCents / 100,
+    annualTotalPrice: pkgMap['starter'].annualPriceUsdCents / 100,
+    annualMonthlyEquiv: Math.round(pkgMap['starter'].annualPriceUsdCents / 12 / 100),
     features: [
       '500 credits/month',
       '1 phone number',
@@ -36,8 +40,9 @@ const plans = [
   {
     name: 'Growth',
     description: 'For growing businesses ready to scale support',
-    monthlyPrice: 79,
-    yearlyPrice: 71,
+    monthlyPrice: pkgMap['growth'].priceUsdCents / 100,
+    annualTotalPrice: pkgMap['growth'].annualPriceUsdCents / 100,
+    annualMonthlyEquiv: Math.round(pkgMap['growth'].annualPriceUsdCents / 12 / 100),
     features: [
       '2,000 credits/month',
       '3 phone numbers',
@@ -54,8 +59,9 @@ const plans = [
   {
     name: 'Scale',
     description: 'For high-volume stores needing maximum power',
-    monthlyPrice: 179,
-    yearlyPrice: 161,
+    monthlyPrice: pkgMap['scale'].priceUsdCents / 100,
+    annualTotalPrice: pkgMap['scale'].annualPriceUsdCents / 100,
+    annualMonthlyEquiv: Math.round(pkgMap['scale'].annualPriceUsdCents / 12 / 100),
     features: [
       '6,000 credits/month',
       '10 phone numbers',
@@ -73,7 +79,8 @@ const plans = [
     name: 'Enterprise',
     description: 'For large organizations with custom needs',
     monthlyPrice: null,
-    yearlyPrice: null,
+    annualTotalPrice: null,
+    annualMonthlyEquiv: null,
     priceText: 'Custom',
     features: [
       'Unlimited credits',
@@ -269,14 +276,16 @@ export default function PricingPage() {
               ) : (
                 <div className="flex items-baseline gap-1">
                   <span className="text-3xl font-bold text-brand-navy">
-                    ${isYearly ? plan.yearlyPrice : plan.monthlyPrice}
+                    ${isYearly ? plan.annualTotalPrice : plan.monthlyPrice}
                   </span>
-                  <span className="text-text-secondary">/month</span>
+                  <span className="text-text-secondary">
+                    {isYearly ? '/year' : '/month'}
+                  </span>
                 </div>
               )}
-              {plan.yearlyPrice && isYearly && (
+              {plan.annualTotalPrice && isYearly && (
                 <div className="text-sm text-brand-teal mt-1">
-                  Save ${((plan.monthlyPrice ?? 0) - plan.yearlyPrice) * 12}/year
+                  ${plan.annualMonthlyEquiv}/mo · Save 10%
                 </div>
               )}
             </div>
