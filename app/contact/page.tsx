@@ -351,22 +351,25 @@ export default function ContactPage() {
             ))}
           </div>
 
-          {/* Map Placeholder */}
+          {/* Google Maps Embed */}
           <motion.div
-            className="rounded-2xl bg-gradient-to-br from-teal-500 to-teal-400 p-8 aspect-[4/3] flex items-center justify-center relative overflow-hidden"
+            id="map"
+            className="rounded-2xl overflow-hidden border border-light-mint shadow-sm aspect-[4/3]"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.3, duration: 0.5 }}
           >
-            <div className="absolute inset-0 bg-white/5" />
-            <div className="relative z-10 text-center">
-              <MapPin className="w-12 h-12 text-white/80 mx-auto mb-3" />
-              <div className="text-white font-semibold text-sm">San Francisco, CA</div>
-              <div className="text-white/60 text-xs mt-1">548 Market Street, Suite 300</div>
-            </div>
-            <div className="absolute -bottom-6 -right-6 w-32 h-32 border border-white/10 rounded-full" />
-            <div className="absolute top-4 -left-4 w-20 h-20 border border-white/15 rounded-full" />
+            <iframe
+              src="https://maps.google.com/maps?q=548+Market+Street,+San+Francisco,+CA+94104&t=&z=15&ie=UTF8&iwloc=&output=embed"
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Barpel AI Office — 548 Market Street, San Francisco"
+            />
           </motion.div>
 
           {/* Social Links */}
