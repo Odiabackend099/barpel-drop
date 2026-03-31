@@ -139,17 +139,14 @@ export async function POST(req: NextRequest) {
     utm_campaign: utm_campaign?.trim() || undefined,
   };
 
-  // 4. Store lead in DB
+  // 4. Store lead in DB — best-effort, never blocks the response
   const adminSupabase = createAdminClient();
-  const { error: dbError } = await adminSupabase.from("leads").insert(lead);
-
-  if (dbError) {
-    console.error("[contact] Failed to insert lead:", dbError);
-    return NextResponse.json(
-      { error: "Failed to submit your message. Please try again." },
-      { status: 500 }
-    );
-  }
+  adminSupabase
+    .from("leads")
+    .insert(lead)
+    .then(({ error }) => {
+      if (error) console.error("[contact] Failed to insert lead:", error);
+    });
 
   // 5. Fire notifications in parallel — errors are logged but don't fail the response
   await Promise.allSettled([
