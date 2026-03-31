@@ -78,11 +78,16 @@ export async function POST(req: NextRequest) {
   // 1. Rate limit — 1 per IP per 10 min, cross-instance via Redis
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  if (await rateLimit(`rl:contact:${ip}`, 1, 10 * 60)) {
-    return NextResponse.json(
-      { error: "Too many submissions. Please wait a few minutes." },
-      { status: 429 }
-    );
+  try {
+    if (await rateLimit(`rl:contact:${ip}`, 1, 10 * 60)) {
+      return NextResponse.json(
+        { error: "Too many submissions. Please wait a few minutes." },
+        { status: 429 }
+      );
+    }
+  } catch (e) {
+    // Redis not configured — log and continue, don't block legitimate submissions
+    console.error("[contact] Rate limit check failed:", e);
   }
 
   let body: Record<string, unknown>;
