@@ -255,9 +255,12 @@ export async function GET(request: Request) {
     // Postgres unique violation — this shop is already connected to another merchant.
     // Clean up the Vault secret we just wrote to avoid orphaned secrets.
     if (upsertError.code === "23505") {
-      await adminSupabase
-        .rpc("vault_update_secret", { p_id: accessTokenResult, p_secret: "__revoked__" })
-        .catch(() => {});
+      try {
+        await adminSupabase
+          .rpc("vault_update_secret", { p_id: accessTokenResult, p_secret: "__revoked__" });
+      } catch {
+        // Best-effort cleanup — non-fatal
+      }
       return redirectError("store_already_connected");
     }
     return redirectError("vault_store_failed");
