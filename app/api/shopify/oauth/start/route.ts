@@ -51,9 +51,35 @@ export async function GET(request: Request) {
   // install URL (admin.shopify.com/oauth/install) would just loop back.
   const knownShop = searchParams.get("shop") ?? "";
   const isValidShop = /^[a-zA-Z0-9-]+\.myshopify\.com$/.test(knownShop);
+
+  // custom_app=barpel-connect: use the Barpel AI Connect custom app credentials
+  // instead of the main "Barpel Drop AI" app. Required for stores that can't
+  // install the main Draft app (different Shopify org).
+  const customApp = searchParams.get("custom_app");
+  let installClientId: string | undefined;
+
+  if (customApp === "barpel-connect") {
+    if (!isValidShop) {
+      console.error("[shopify oauth start] custom_app=barpel-connect requires ?shop param");
+      if (returnTo === "integrations") {
+        return NextResponse.redirect(`${baseUrl}/dashboard/integrations?shopify_error=missing_shop_for_custom_app`);
+      }
+      return NextResponse.redirect(`${baseUrl}/onboarding?step=2&shopify_error=missing_shop_for_custom_app`);
+    }
+
+    installClientId = process.env.BARPEL_CONNECT_CLIENT_ID;
+    if (!installClientId) {
+      console.error("[shopify oauth start] BARPEL_CONNECT_CLIENT_ID env var missing");
+      if (returnTo === "integrations") {
+        return NextResponse.redirect(`${baseUrl}/dashboard/integrations?shopify_error=missing_custom_app_credentials`);
+      }
+      return NextResponse.redirect(`${baseUrl}/onboarding?step=2&shopify_error=missing_custom_app_credentials`);
+    }
+  }
+
   const flowType = isValidShop ? "direct" : "managed";
   const { url, nonce } = isValidShop
-    ? buildDirectInstallUrl(knownShop, redirectUri)
+    ? buildDirectInstallUrl(knownShop, redirectUri, installClientId)
     : buildInstallUrl(redirectUri);
 
   console.log("[shopify oauth start]", {
@@ -62,18 +88,23 @@ export async function GET(request: Request) {
     hasShopParam: isValidShop,
     returnTo,
     redirectUri,
+    appType: customApp === "barpel-connect" ? "barpel-connect" : "main",
   });
 
   // Store nonce in database — shop_domain is null for managed install flow.
-  // Shopify provides it in the callback; HMAC verification ensures authenticity.
+  // Also null for barpel-connect custom app flow: Dev Dashboard apps may return
+  // a different shop domain format in the callback. HMAC verification is the
+  // authoritative security check; shop_domain is only a secondary defence.
   const adminSupabase = createAdminClient();
+  const isCustomApp = customApp === "barpel-connect";
   const { error: stateError } = await adminSupabase
     .from("oauth_states")
     .insert({
       state: nonce,
       merchant_id: merchant.id,
-      shop_domain: isValidShop ? knownShop : null,
+      shop_domain: (isValidShop && !isCustomApp) ? knownShop : null,
       return_to: returnTo,
+      app_type: isCustomApp ? "barpel-connect" : null,
     });
 
   if (stateError) {

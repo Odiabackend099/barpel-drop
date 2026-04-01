@@ -11,6 +11,7 @@ interface ShopifyOneClickInstallProps {
   errorMessage?: string;
   deniedWarning?: boolean;
   onFallbackConnect?: (shop: string) => void;
+  useCustomDistribution?: boolean;
 }
 
 export function ShopifyOneClickInstall({
@@ -19,6 +20,7 @@ export function ShopifyOneClickInstall({
   errorMessage,
   deniedWarning,
   onFallbackConnect,
+  useCustomDistribution = false,
 }: ShopifyOneClickInstallProps) {
   const [showFallback, setShowFallback] = useState(false);
   const [navigating, setNavigating] = useState(false);
@@ -47,50 +49,64 @@ export function ShopifyOneClickInstall({
         </div>
       )}
 
-      <button
-        onClick={handleOneClick}
-        disabled={isLoading}
-        className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-brand-600 text-white font-semibold text-sm hover:bg-brand-700 shadow-brand hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:translate-y-0"
-      >
-        {isLoading ? (
-          <>
-            <Loader2 className="w-4 h-4 animate-spin" />
-            Connecting to Shopify...
-          </>
-        ) : (
-          <>
-            <ShopifyIcon size={16} />
-            Connect with Shopify
-          </>
-        )}
-      </button>
-
-      <p className="text-xs text-slate-400 text-center">
-        You&apos;ll be redirected to Shopify to log in and approve access.
-      </p>
-
-      {onFallbackConnect && (
-        <div>
-          <button
-            type="button"
-            onClick={() => setShowFallback((v) => !v)}
-            className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 transition-colors mx-auto"
-          >
-            I know my store URL
-            <ChevronDown
-              className={`w-3 h-3 transition-transform ${showFallback ? "rotate-180" : ""}`}
+      {useCustomDistribution ? (
+        <>
+          {onFallbackConnect && (
+            <ShopifyStoreInput
+              onConnect={onFallbackConnect}
+              loading={isLoading}
+              autoFocus
             />
+          )}
+        </>
+      ) : (
+        <>
+          <button
+            onClick={handleOneClick}
+            disabled={isLoading}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-brand-600 text-white font-semibold text-sm hover:bg-brand-700 shadow-brand hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:translate-y-0"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Connecting to Shopify...
+              </>
+            ) : (
+              <>
+                <ShopifyIcon size={16} />
+                Connect with Shopify
+              </>
+            )}
           </button>
 
-          {showFallback && (
-            <div className="mt-3">
-              <ShopifyStoreInput
-                onConnect={onFallbackConnect}
-                loading={isLoading}
-              />
+          <p className="text-xs text-slate-400 text-center">
+            You&apos;ll be redirected to Shopify to log in and approve access.
+          </p>
+
+          {onFallbackConnect && (
+            <div>
+              <button
+                type="button"
+                onClick={() => setShowFallback((v) => !v)}
+                className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 transition-colors mx-auto"
+              >
+                I know my store URL
+                <ChevronDown
+                  className={`w-3 h-3 transition-transform ${showFallback ? "rotate-180" : ""}`}
+                />
+              </button>
+
+              {showFallback && (
+                <div className="mt-3">
+                  <ShopifyStoreInput
+                    onConnect={onFallbackConnect}
+                    loading={isLoading}
+                  />
+                </div>
+              )}
             </div>
           )}
-        </div>
+        </>
       )}
     </div>
   );

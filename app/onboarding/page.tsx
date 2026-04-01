@@ -478,7 +478,9 @@ function OnboardingContent() {
     setConnectingShopify(true);
     setError("");
     track("onboarding_step", { step: 2, action: "completed" });
-    window.location.href = `/api/shopify/oauth/start?returnTo=onboarding&shop=${encodeURIComponent(shopDomain)}`;
+    const useCD = process.env.NEXT_PUBLIC_SHOPIFY_USE_CUSTOM_DISTRIBUTION === "true";
+    const extra = useCD ? "&custom_app=barpel-connect" : "";
+    window.location.href = `/api/shopify/oauth/start?returnTo=onboarding&shop=${encodeURIComponent(shopDomain)}${extra}`;
   }
 
   async function handleSkipShopify() {
@@ -820,6 +822,7 @@ function OnboardingContent() {
                               errorMessage={error || undefined}
                               deniedWarning={shopifyDenied}
                               onFallbackConnect={handleConnectShopify}
+                              useCustomDistribution={process.env.NEXT_PUBLIC_SHOPIFY_USE_CUSTOM_DISTRIBUTION === "true"}
                             />
 
                             <button

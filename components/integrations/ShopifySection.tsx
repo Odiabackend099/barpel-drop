@@ -105,8 +105,11 @@ export function ShopifySection({
                     loading={connecting}
                     onFallbackConnect={(shop) => {
                       setConnecting(true);
-                      window.location.href = `/api/shopify/oauth/start?returnTo=integrations&shop=${encodeURIComponent(shop)}`;
+                      const useCD = process.env.NEXT_PUBLIC_SHOPIFY_USE_CUSTOM_DISTRIBUTION === "true";
+                      const extra = useCD ? "&custom_app=barpel-connect" : "";
+                      window.location.href = `/api/shopify/oauth/start?returnTo=integrations&shop=${encodeURIComponent(shop)}${extra}`;
                     }}
+                    useCustomDistribution={process.env.NEXT_PUBLIC_SHOPIFY_USE_CUSTOM_DISTRIBUTION === "true"}
                   />
                 </div>
               )}
