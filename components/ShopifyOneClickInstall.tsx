@@ -50,15 +50,19 @@ export function ShopifyOneClickInstall({
       )}
 
       {useCustomDistribution ? (
-        <>
-          {onFallbackConnect && (
-            <ShopifyStoreInput
-              onConnect={onFallbackConnect}
-              loading={isLoading}
-              autoFocus
-            />
-          )}
-        </>
+        // Custom distribution: store URL input is the only path — no managed install button.
+        // onFallbackConnect must be provided by the parent; without it nothing renders.
+        onFallbackConnect ? (
+          <ShopifyStoreInput
+            onConnect={onFallbackConnect}
+            loading={isLoading}
+            autoFocus
+          />
+        ) : (
+          <p className="text-xs text-red-500 text-center">
+            Configuration error: store connection unavailable.
+          </p>
+        )
       ) : (
         <>
           <button

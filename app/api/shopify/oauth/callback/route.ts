@@ -37,7 +37,6 @@ export async function GET(request: Request) {
   // Try to look up return_to from oauth_states so denial redirects to the correct page.
   const shopifyDenied = searchParams.get("error");
   if (shopifyDenied) {
-    console.log("[shopify oauth callback] denied", { error: shopifyDenied });
     const state = searchParams.get("state");
     if (state) {
       const adminSupabase = createAdminClient();
@@ -67,13 +66,6 @@ export async function GET(request: Request) {
   const shop = searchParams.get("shop");
   const hmac = searchParams.get("hmac");
 
-  console.log("[shopify oauth callback] received", {
-    hasCode: !!code,
-    hasState: !!state,
-    hasShop: !!shop,
-    hasHmac: !!hmac,
-  });
-
   // Validate required params — all four must be present
   if (!code || !state || !shop || !hmac) {
     return redirectError("missing_params");
@@ -84,7 +76,7 @@ export async function GET(request: Request) {
 
   const { data: oauthState } = await adminSupabase
     .from("oauth_states")
-    .select("merchant_id, shop_domain, created_at, return_to")
+    .select("merchant_id, shop_domain, created_at, return_to, app_type")
     .eq("state", state)
     .single();
 
@@ -104,13 +96,6 @@ export async function GET(request: Request) {
     return redirectError("csrf_mismatch");
   }
 
-  console.log("[shopify oauth callback] state verified", {
-    returnTo: oauthState.return_to,
-    storedShop: oauthState.shop_domain ?? "(managed)",
-    callbackShop: shop,
-    stateAgeMs: stateAge,
-  });
-
   // Verify shop matches what was originally requested.
   // When shop_domain is null (one-button flow), skip this check — the HMAC
   // verification below already proves the shop param came from Shopify.
@@ -120,10 +105,33 @@ export async function GET(request: Request) {
   }
 
   // ── Verify Shopify HMAC — OAuth callback uses hex encoding (NOT base64) ──
-  // NOTE: State is deleted AFTER HMAC verification to prevent replay attacks
-  // where an attacker causes state deletion before the legitimate request.
-  const apiSecret = process.env.SHOPIFY_API_SECRET;
-  if (!apiSecret || !hmac) {
+  //
+  // State is deleted AFTER HMAC verification (not before) to prevent a timing
+  // attack where a forged denial request (error=access_denied&state=X) deletes
+  // the state before the legitimate request arrives, causing a csrf_mismatch
+  // loop. HMAC verification is the authoritative security check here.
+  //
+  // Credentials are chosen based on which app initiated the OAuth flow.
+  // Main app uses SHOPIFY_API_SECRET; custom app uses BARPEL_CONNECT_CLIENT_SECRET.
+  // Using the wrong secret produces invalid_hmac (Shopify signs with the
+  // originating app's secret).
+  let apiSecret: string | undefined;
+  let appCredentials: { clientId: string; clientSecret: string } | undefined;
+
+  if (oauthState.app_type === "barpel-connect") {
+    const connectId = process.env.BARPEL_CONNECT_CLIENT_ID;
+    const connectSecret = process.env.BARPEL_CONNECT_CLIENT_SECRET;
+    if (!connectId || !connectSecret) {
+      console.error("[shopify oauth callback] Barpel Connect env vars missing for app_type=barpel-connect");
+      return redirectError("missing_secret");
+    }
+    apiSecret = connectSecret;
+    appCredentials = { clientId: connectId, clientSecret: connectSecret };
+  } else {
+    apiSecret = process.env.SHOPIFY_API_SECRET;
+  }
+
+  if (!apiSecret) {
     return redirectError("missing_secret");
   }
 
@@ -138,28 +146,14 @@ export async function GET(request: Request) {
   // Delete the used state only after HMAC verification (single-use token — prevents replay attacks)
   await adminSupabase.from("oauth_states").delete().eq("state", state);
 
-  // Exchange code for permanent access token
+  // Exchange code for permanent offline access token.
+  // exchangeCodeForToken throws if Shopify returns an online (per-user) token.
   let accessToken: string;
   try {
-    accessToken = await exchangeCodeForToken(shop, code);
-  } catch {
+    accessToken = await exchangeCodeForToken(shop, code, appCredentials);
+  } catch (err) {
+    console.error("[shopify oauth callback] token exchange failed:", err);
     return redirectError("token_exchange_failed");
-  }
-
-  console.log("[shopify oauth callback] token exchanged", { shop });
-
-  // Fetch shop display name from Shopify (non-fatal — falls back to domain)
-  let shopName = shop;
-  try {
-    const shopRes = await fetch(`https://${shop}/admin/api/2026-01/shop.json`, {
-      headers: { "X-Shopify-Access-Token": accessToken },
-    });
-    if (shopRes.ok) {
-      const shopData = await shopRes.json();
-      shopName = shopData.shop?.name ?? shop;
-    }
-  } catch {
-    // non-fatal
   }
 
   // Look up merchant using admin client (bypasses RLS).
@@ -177,77 +171,68 @@ export async function GET(request: Request) {
     return redirectError("merchant_not_found");
   }
 
-  // Trust oauth_states as the sole authority for merchant identity.
-  // The session cookie on this domain may belong to a different user
-  // (e.g. dropship.barpel.ai vs barpel-drop-ai.vercel.app) or be
-  // expired after the Shopify redirect hop. The oauth_state was created
-  // server-side during an authenticated request — that's sufficient.
-
   const merchantId = merchant.id;
 
+  // ── Vault storage — run both operations in parallel ───────────────────────
   // B-14: Store access token in Supabase Vault via public wrapper functions.
   // vault.* schema is not exposed through PostgREST, so we use
   // public.vault_create_secret / public.vault_update_secret wrappers.
-  const accessTokenSecretName = `shopify-token-${merchantId}`;
-  let accessTokenSecretId: string | null = null;
-  try {
+  async function upsertVaultSecret(name: string, value: string, description: string): Promise<string> {
     const { data: existingRows } = await adminSupabase
-      .rpc("vault_lookup_secret_by_name", { p_name: accessTokenSecretName });
+      .rpc("vault_lookup_secret_by_name", { p_name: name });
 
     const existingId = Array.isArray(existingRows) && existingRows[0]?.id
       ? existingRows[0].id as string
       : null;
 
     if (existingId) {
-      const { error: updateError } = await adminSupabase
-        .rpc("vault_update_secret", { p_id: existingId, p_secret: accessToken });
-      if (updateError) throw new Error(updateError.message);
-      accessTokenSecretId = existingId;
+      const { error } = await adminSupabase
+        .rpc("vault_update_secret", { p_id: existingId, p_secret: value });
+      if (error) throw new Error(error.message);
+      return existingId;
     } else {
-      const { data: secretId, error: createError } = await adminSupabase
-        .rpc("vault_create_secret", {
-          p_secret: accessToken,
-          p_name: accessTokenSecretName,
-          p_description: `Shopify OAuth token for merchant ${merchantId}`,
-        });
-      if (createError) throw new Error(createError.message);
-      accessTokenSecretId = secretId as string;
+      const { data: secretId, error } = await adminSupabase
+        .rpc("vault_create_secret", { p_secret: value, p_name: name, p_description: description });
+      if (error) throw new Error(error.message);
+      return secretId as string;
     }
-  } catch (err) {
-    console.error("[shopify callback] Failed to store token in Vault:", err);
+  }
+
+  const webhookSecret = randomBytes(32).toString("hex");
+
+  const [accessTokenResult, webhookSecretResult] = await Promise.all([
+    upsertVaultSecret(
+      `shopify-token-${merchantId}`,
+      accessToken,
+      `Shopify OAuth token for merchant ${merchantId}`,
+    ).catch((err) => { console.error("[shopify callback] Failed to store access token in Vault:", err); return null; }),
+
+    upsertVaultSecret(
+      `shopify-webhook-secret-${merchantId}`,
+      webhookSecret,
+      `Shopify webhook HMAC secret for merchant ${merchantId}`,
+    ).catch((err) => { console.error("[shopify callback] Failed to store webhook secret in Vault:", err); return null; }),
+  ]);
+
+  if (!accessTokenResult) {
     return redirectError("vault_store_failed");
   }
 
-  // B-14: Generate and store per-shop webhook secret in Vault (upsert — non-fatal)
-  const webhookSecretName = `shopify-webhook-secret-${merchantId}`;
-  let webhookSecretVaultId: string | null = null;
+  // Fetch shop display name from Shopify (non-fatal — falls back to domain)
+  let shopName = shop;
   try {
-    const webhookSecret = randomBytes(32).toString("hex");
-    const { data: existingRows } = await adminSupabase
-      .rpc("vault_lookup_secret_by_name", { p_name: webhookSecretName });
-
-    const existingId = Array.isArray(existingRows) && existingRows[0]?.id
-      ? existingRows[0].id as string
-      : null;
-
-    if (existingId) {
-      const { error: updateError } = await adminSupabase
-        .rpc("vault_update_secret", { p_id: existingId, p_secret: webhookSecret });
-      if (updateError) throw new Error(updateError.message);
-      webhookSecretVaultId = existingId;
-    } else {
-      const { data: webhookSecretId, error: createError } = await adminSupabase
-        .rpc("vault_create_secret", {
-          p_secret: webhookSecret,
-          p_name: webhookSecretName,
-          p_description: `Shopify webhook HMAC secret for merchant ${merchantId}`,
-        });
-      if (createError) throw new Error(createError.message);
-      webhookSecretVaultId = webhookSecretId as string;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5_000);
+    const shopRes = await fetch(`https://${shop}/admin/api/2026-01/shop.json`, {
+      headers: { "X-Shopify-Access-Token": accessToken },
+      signal: controller.signal,
+    }).finally(() => clearTimeout(timeout));
+    if (shopRes.ok) {
+      const shopData = await shopRes.json();
+      shopName = shopData.shop?.name ?? shop;
     }
-  } catch (err) {
-    console.error("[shopify callback] Failed to store webhook secret in Vault:", err);
-    // Non-fatal — fall back to SHOPIFY_API_SECRET for webhook verification
+  } catch {
+    // non-fatal
   }
 
   // Upsert integration — store Vault UUID references (not raw tokens)
@@ -257,91 +242,83 @@ export async function GET(request: Request) {
       platform: "shopify",
       shop_domain: shop,
       shop_name: shopName,
-      access_token_secret_id: accessTokenSecretId,
-      webhook_secret_vault_id: webhookSecretVaultId,
+      access_token_secret_id: accessTokenResult,
+      webhook_secret_vault_id: webhookSecretResult,
       connection_active: true,
       last_synced_at: new Date().toISOString(),
     },
     { onConflict: "merchant_id,platform" }
   );
 
-  // If upsert fails due to shop_domain uniqueness (store already connected to another account),
-  // surface a clear error rather than silently proceeding to the success redirect.
   if (upsertError) {
     console.error("[shopify callback] Integration upsert failed:", upsertError);
-    // Postgres unique violation code is 23505
+    // Postgres unique violation — this shop is already connected to another merchant.
+    // Clean up the Vault secret we just wrote to avoid orphaned secrets.
     if (upsertError.code === "23505") {
+      await adminSupabase
+        .rpc("vault_update_secret", { p_id: accessTokenResult, p_secret: "__revoked__" })
+        .catch(() => {});
       return redirectError("store_already_connected");
     }
     return redirectError("vault_store_failed");
   }
 
-  // B-14: Register Shopify abandoned cart webhook
-  try {
+  // ── Register Shopify webhooks ─────────────────────────────────────────────
+  // Run all registrations in parallel. Each is idempotent — we check for an
+  // existing webhook before creating to prevent duplicates on reconnect
+  // (Shopify does not deduplicate duplicate webhook topics automatically).
+  const isCustomApp = oauthState.app_type === "barpel-connect";
+
+  async function registerWebhook(topic: string, address: string): Promise<void> {
+    // Check if this webhook already exists to avoid duplicates on reconnect
+    const listRes = await fetch(
+      `https://${shop}/admin/api/2026-01/webhooks.json?topic=${encodeURIComponent(topic)}`,
+      { headers: { "X-Shopify-Access-Token": accessToken } }
+    );
+    if (listRes.ok) {
+      const listData = await listRes.json();
+      if (Array.isArray(listData.webhooks) && listData.webhooks.length > 0) {
+        return; // Already registered — skip
+      }
+    }
+
     await fetch(`https://${shop}/admin/api/2026-01/webhooks.json`, {
       method: "POST",
       headers: {
         "X-Shopify-Access-Token": accessToken,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        webhook: {
-          topic: "checkouts/create",
-          address: `${baseUrl}/api/outbound/abandoned-cart`,
-          format: "json",
-        },
-      }),
+      body: JSON.stringify({ webhook: { topic, address, format: "json" } }),
     });
-  } catch (err) {
-    console.error("[shopify callback] checkouts/create webhook registration failed:", err);
-    // Non-fatal — merchant can reconnect later
   }
 
-  // Register orders/create webhook — cancels pending abandoned cart calls
-  // when customer completes purchase (prevents calling buyers)
-  try {
-    await fetch(`https://${shop}/admin/api/2026-01/webhooks.json`, {
-      method: "POST",
-      headers: {
-        "X-Shopify-Access-Token": accessToken,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        webhook: {
-          topic: "orders/create",
-          address: `${baseUrl}/api/outbound/order-completed`,
-          format: "json",
-        },
-      }),
-    });
-  } catch (err) {
-    console.error("[shopify callback] orders/create webhook registration failed:", err);
-    // Non-fatal
+  const webhookRegistrations = [
+    // Abandoned cart — triggers outbound recovery call when checkout is created
+    registerWebhook("checkouts/create", `${baseUrl}/api/outbound/abandoned-cart`),
+    // Order completed — cancels pending abandoned cart calls so buyers aren't called
+    registerWebhook("orders/create", `${baseUrl}/api/outbound/order-completed`),
+  ];
+
+  // app_subscriptions/update is only relevant for Shopify Billing (managed pricing).
+  // Custom Distribution apps cannot use Shopify Billing — skip for barpel-connect.
+  if (!isCustomApp) {
+    webhookRegistrations.push(
+      registerWebhook("app_subscriptions/update", `${baseUrl}/api/shopify/webhooks/subscription`)
+    );
   }
 
-  // Register app_subscriptions/update webhook — receives Shopify billing lifecycle events
-  // (ACTIVE, CANCELLED, FROZEN, EXPIRED, DECLINED). Required for Managed Pricing.
-  try {
-    await fetch(`https://${shop}/admin/api/2026-01/webhooks.json`, {
-      method: "POST",
-      headers: {
-        "X-Shopify-Access-Token": accessToken,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        webhook: {
-          topic: "app_subscriptions/update",
-          address: `${baseUrl}/api/shopify/webhooks/subscription`,
-          format: "json",
-        },
-      }),
-    });
-  } catch (err) {
-    console.error("[shopify callback] app_subscriptions/update webhook registration failed:", err);
-    // Non-fatal
-  }
+  await Promise.allSettled(
+    webhookRegistrations.map((p) => p.catch((err) =>
+      console.error("[shopify callback] webhook registration failed:", err)
+    ))
+  );
 
-  console.log("[shopify oauth callback] success", { returnTo, shop, merchantId });
+  console.log("[shopify oauth callback] success", {
+    returnTo,
+    shop,
+    merchantId,
+    appType: oauthState.app_type ?? "main",
+  });
 
   // Redirect based on where the OAuth flow started
   if (returnTo === "onboarding") {
