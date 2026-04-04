@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import Navigation from "@/components/marketing/Navigation";
+import HomepageChatWidget from "@/components/widgets/HomepageChatWidget";
 import Hero from "@/components/marketing/sections/Hero";
 import LogoCloud from "@/components/marketing/sections/LogoCloud";
 import Features from "@/components/marketing/sections/Features";
@@ -192,6 +193,7 @@ export default function HomePage() {
         <CTA />
       </main>
       <Footer />
+      <HomepageChatWidget />
     </>
   );
 }

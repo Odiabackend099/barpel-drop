@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { Navbar } from "@/components/dashboard/Navbar";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import DashboardSupportWidget from "@/components/widgets/DashboardSupportWidget";
 
 const COLLAPSED_KEY = "barpel_sidebar_collapsed";
 
@@ -40,6 +41,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <ErrorBoundary>{children}</ErrorBoundary>
         </main>
       </div>
+      <DashboardSupportWidget />
     </div>
   );
 }
