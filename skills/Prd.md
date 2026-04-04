@@ -14,6 +14,15 @@
 
 ## ✅ Completed Features
 
+### Shopify OAuth Dual-Credential Support (2026-03-30)
+- **Problem**: Merchants whose stores can't install the main Draft app (different Shopify org) were using 24-hour `client_credentials` tokens that expired daily
+- **Solution**: Added custom app flow via "Barpel AI Connect" Dev Dashboard app with permanent authorization code grant tokens
+- **Implementation**: `app_type` column in `oauth_states` routes OAuth callbacks to correct credentials (HMAC verification, token exchange). Custom app flow enforces `?shop=` param validation. Merchant allowlist prevents unauthorized custom app access
+- **Env vars**: `BARPEL_CONNECT_CLIENT_ID`, `BARPEL_CONNECT_CLIENT_SECRET` (stored in Vercel)
+- **Key fix**: `shop_domain: null` for custom app flows prevents shop_mismatch errors when Shopify returns canonical `.myshopify.com` subdomain instead of display name
+- **Result**: Rafael Store (`barpel-ai-stores.myshopify.com`) now has permanent token; orders #1001, #1002 return correctly via webhook chain
+- **Standard merchants unaffected**: All App Store merchants always received permanent tokens via standard authorization code grant
+
 ### Settings Page (2026-03-18)
 - **Email display**: Shows user email from Supabase auth via `useMerchant` hook (not from merchants table, which doesn't have email column)
 - **Change password**: Sends password reset email via `supabase.auth.resetPasswordForEmail()`
@@ -69,7 +78,7 @@ Two billing systems run in parallel. A merchant uses exactly one, never both.
 |-----------|--------|--------------|
 | Dashboard home | ✅ Working | 2026-03-13 |
 | Call Logs | ✅ Working | 2026-03-13 |
-| Integrations (Shopify + BYOC) | ✅ Working | 2026-03-18 |
+| Integrations (Shopify standard + custom app + BYOC) | ✅ Working, permanent tokens verified | 2026-03-30 |
 | AI Voice settings | ✅ Working | 2026-03-13 |
 | Billing (Shopify Managed Pricing + Dodo Payments) | ✅ Live, dual system, security hardened | 2026-03-29 |
 | Settings (Profile + Notifications) | ✅ Working | 2026-03-18 |
@@ -81,20 +90,33 @@ Two billing systems run in parallel. A merchant uses exactly one, never both.
 - **Auth**: Supabase + HTTP-only cookies. Client-side `useCredits()` hook uses `getSession()` (localStorage cache, no network) for instant balance load
 - **Provisioning**: Managed mode (Barpel's Twilio) vs BYOC (merchant's Twilio credentials from vault)
 - **Vapi**: Phone numbers + AI assistants managed via Vapi API; deleted when merchant deletes account
+- **Shopify OAuth**: **Standard merchants** use main app (authorization code grant → permanent token). **Cross-org merchants** use custom Dev Dashboard app (stored in `oauth_states.app_type`). Both routes guarantee permanent tokens (no expiry). Key fix: `shop_domain: null` for custom app flow prevents shop_mismatch errors
 - **Billing**: **Dual system** — Shopify Managed Pricing (App Store merchants, per-shop HMAC via Vault) + Dodo Payments USD (direct signups, StandardWebhooks signature verification). Credit balance stored in `merchants.credit_balance` (seconds). Credits RESET on plan activation/renewal (never stacked).
 - **Email**: User email comes from Supabase `auth.user.email`, not merchants table; payment receipts sent via Resend
 
 ---
 
-## 🚀 Next Priorities
+## 🧪 Contract Tests
 
-1. Wait for Shopify App Store review result — notification goes to austyn@odia.dev
-2. End-to-end Dodo payment test with new customer (verify webhook delivery automatically grants credits)
-3. Phone call functional test (dial the provisioned number)
-4. Monitor Dodo webhook delivery for retry backoff issues
-5. Test contract suite (`npm run test:contracts`) for billing endpoints
+Run `npm run test:contracts` (executes `scripts/full-contract-test.ts`). Verifies complete chain: Vapi → Barpel webhook → Vault → Shopify → DB.
+
+**Contracts covered:**
+1. Vapi assistant configuration (system prompt, tools, server URL)
+2. Phone number linked to assistant
+3. Webhook returns correct format (200, toolCallId match, single-line result, no newlines)
+4. Order lookup chain (integration active, vault readable, Shopify query returns real data)
+4b. Token permanence check (`access_scopes.json` returns 200 — confirms permanent authorization code grant, not 24-hour client_credentials)
 
 ---
 
-**Last reviewed**: 2026-03-29 — Dual billing system (Shopify + Dodo) complete, security hardening deployed, marketing copy updated
+## 🚀 Next Priorities
+
+1. Wait for Shopify App Store review result — notification goes to austyn@barpel.ai
+2. End-to-end Dodo payment test with new customer (verify webhook delivery automatically grants credits)
+3. Phone call functional test (dial the provisioned number)
+4. Monitor Dodo webhook delivery for retry backoff issues
+
+---
+
+**Last reviewed**: 2026-03-30 — Shopify OAuth dual-credential support (permanent tokens via custom app flow) deployed, contract 4b (token permanence verification) added, architecture clarified
 **Next review**: After Shopify App Store review result or first 5 paying customers
