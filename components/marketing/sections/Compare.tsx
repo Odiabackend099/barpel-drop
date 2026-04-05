@@ -23,7 +23,7 @@ export default function Compare() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-sm">
+          <table className="w-full min-w-[480px] border-collapse text-sm">
             <thead>
               <tr>
                 <th className="text-left py-4 px-5 text-text-secondary font-medium w-1/4" scope="col">

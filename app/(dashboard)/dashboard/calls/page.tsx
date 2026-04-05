@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Phone, Download, ChevronLeft, ChevronRight, PhoneOff } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
@@ -49,7 +49,7 @@ export default function CallsPage() {
   };
 
   return (
-    <motion.div
+    <m.div
       className="space-y-6"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -218,6 +218,6 @@ export default function CallsPage() {
           </div>
         )}
       </div>
-    </motion.div>
+    </m.div>
   );
 }

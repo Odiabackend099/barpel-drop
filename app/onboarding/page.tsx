@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import {
   Store,
   Sparkles,
@@ -575,12 +575,12 @@ function OnboardingContent() {
       {/* ── LEFT PANEL (dark, 40%) ── */}
       <div className="hidden md:flex w-2/5 bg-[#0f172a] flex-col justify-between p-10 relative overflow-hidden">
         {/* Ambient orbs with drift */}
-        <motion.div
+        <m.div
           className="absolute -top-32 -right-32 w-80 h-80 rounded-full bg-brand-600/10 blur-3xl pointer-events-none"
           animate={{ x: [0, 20, -10, 0], y: [0, -15, 10, 0] }}
           transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
         />
-        <motion.div
+        <m.div
           className="absolute -bottom-32 -left-32 w-80 h-80 rounded-full bg-brand-600/5 blur-3xl pointer-events-none"
           animate={{ x: [0, -15, 10, 0], y: [0, 20, -10, 0] }}
           transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
@@ -618,7 +618,7 @@ function OnboardingContent() {
                   <div className="relative w-2 h-2 flex-shrink-0">
                     <div className={`w-2 h-2 rounded-full transition-colors duration-300 ${isDone || isActive ? "bg-brand-400" : "bg-white/15"}`} />
                     {isActive && (
-                      <motion.div
+                      <m.div
                         layoutId="onboarding-dot"
                         className="absolute inset-[-3px] rounded-full border-2 border-brand-400/50"
                         transition={{ type: "spring", stiffness: 350, damping: 30 }}
@@ -639,8 +639,8 @@ function OnboardingContent() {
 
         {/* Trust signal + footer */}
         <div className="relative">
-          <p className="text-slate-400 text-sm mb-3">Trusted by 200+ Shopify merchants</p>
-          <p className="text-slate-600 text-xs">Powered by Vapi · Twilio · AI</p>
+          <p className="text-slate-400 text-sm mb-3">Official Shopify Integration</p>
+          <p className="text-slate-600 text-xs">Enterprise-grade AI · End-to-end encrypted</p>
         </div>
       </div>
 
@@ -696,15 +696,15 @@ function OnboardingContent() {
 
                 {/* ─── Step 1: Business Name + Country ─── */}
                 {currentStep === 1 && (
-                  <motion.div key="step1" {...cardEnter} transition={springTransition}>
-                    <motion.div
+                  <m.div key="step1" {...cardEnter} transition={springTransition}>
+                    <m.div
                       className="bg-white rounded-2xl border border-slate-200 overflow-hidden"
                       style={{ boxShadow: "0 20px 40px -8px rgba(0,0,0,0.10), 0 0 32px rgba(0,169,157,0.12)" }}
                       whileHover={{ y: -2 }}
                       transition={{ type: "spring", stiffness: 400, damping: 25 }}
                     >
                       <div className="h-1 bg-gradient-to-r from-brand-600 to-brand-400" />
-                      <motion.div
+                      <m.div
                         className="p-8"
                         initial={{ opacity: 0, y: 6 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -762,22 +762,22 @@ function OnboardingContent() {
                           {saving ? "Saving..." : "Continue"}
                           <ArrowRight className="w-4 h-4" />
                         </button>
-                      </motion.div>
-                    </motion.div>
-                  </motion.div>
+                      </m.div>
+                    </m.div>
+                  </m.div>
                 )}
 
                 {/* ─── Step 2: Connect Store ─── */}
                 {currentStep === 2 && (
-                  <motion.div key="step2" {...cardEnter} transition={springTransition}>
-                    <motion.div
+                  <m.div key="step2" {...cardEnter} transition={springTransition}>
+                    <m.div
                       className="bg-white rounded-2xl border border-slate-200 overflow-hidden"
                       style={{ boxShadow: "0 20px 40px -8px rgba(0,0,0,0.10), 0 0 32px rgba(0,169,157,0.12)" }}
                       whileHover={{ y: -2 }}
                       transition={{ type: "spring", stiffness: 400, damping: 25 }}
                     >
                       <div className="h-1 bg-gradient-to-r from-brand-600 to-brand-400" />
-                      <motion.div
+                      <m.div
                         className="p-8"
                         initial={{ opacity: 0, y: 6 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -843,22 +843,22 @@ function OnboardingContent() {
                             </button>
                           </>
                         )}
-                      </motion.div>
-                    </motion.div>
-                  </motion.div>
+                      </m.div>
+                    </m.div>
+                  </m.div>
                 )}
 
                 {/* ─── Step 3: Get Minutes ─── */}
                 {currentStep === 3 && (
-                  <motion.div key="step3" {...cardEnter} transition={springTransition}>
-                    <motion.div
+                  <m.div key="step3" {...cardEnter} transition={springTransition}>
+                    <m.div
                       className="bg-white rounded-2xl border border-slate-200 overflow-hidden"
                       style={{ boxShadow: "0 20px 40px -8px rgba(0,0,0,0.10), 0 0 32px rgba(0,169,157,0.12)" }}
                       whileHover={{ y: -2 }}
                       transition={{ type: "spring", stiffness: 400, damping: 25 }}
                     >
                       <div className="h-1 bg-gradient-to-r from-brand-600 to-brand-400" />
-                      <motion.div
+                      <m.div
                         className="p-8"
                         initial={{ opacity: 0, y: 6 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -936,22 +936,22 @@ function OnboardingContent() {
                         >
                           <ArrowLeft className="w-3 h-3" /> Back
                         </button>
-                      </motion.div>
-                    </motion.div>
-                  </motion.div>
+                      </m.div>
+                    </m.div>
+                  </m.div>
                 )}
 
                 {/* ─── Step 4: AI Phone Line ─── */}
                 {currentStep === 4 && (
-                  <motion.div key="step4" {...cardEnter} transition={springTransition}>
-                    <motion.div
+                  <m.div key="step4" {...cardEnter} transition={springTransition}>
+                    <m.div
                       className="bg-white rounded-2xl border border-slate-200 overflow-hidden"
                       style={{ boxShadow: "0 20px 40px -8px rgba(0,0,0,0.10), 0 0 32px rgba(0,169,157,0.12)" }}
                       whileHover={{ y: -2 }}
                       transition={{ type: "spring", stiffness: 400, damping: 25 }}
                     >
                       <div className="h-1 bg-gradient-to-r from-amber-400 to-orange-400" />
-                      <motion.div
+                      <m.div
                         className="p-8"
                         initial={{ opacity: 0, y: 6 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -1088,22 +1088,22 @@ function OnboardingContent() {
                             </button>
                           </>
                         )}
-                      </motion.div>
-                    </motion.div>
-                  </motion.div>
+                      </m.div>
+                    </m.div>
+                  </m.div>
                 )}
 
                 {/* ─── Step 5: Ready! ─── */}
                 {currentStep === 5 && (
-                  <motion.div key="step5" {...cardEnter} transition={springTransition}>
-                    <motion.div
+                  <m.div key="step5" {...cardEnter} transition={springTransition}>
+                    <m.div
                       className="bg-white rounded-2xl border border-slate-200 overflow-hidden"
                       style={{ boxShadow: "0 20px 40px -8px rgba(0,0,0,0.10), 0 0 32px rgba(0,169,157,0.12)" }}
                       whileHover={{ y: -2 }}
                       transition={{ type: "spring", stiffness: 400, damping: 25 }}
                     >
                       <div className="h-1 bg-gradient-to-r from-brand-600 to-brand-400" />
-                      <motion.div
+                      <m.div
                         className="p-8"
                         initial={{ opacity: 0, y: 6 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -1317,7 +1317,7 @@ function OnboardingContent() {
                                     <div className="space-y-3">
                                       <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
                                         <p className="text-xs font-medium text-amber-800">
-                                          Twilio is calling {callerIdPhone}. Answer and enter this code when prompted:
+                                          Twilio is calling {callerIdPhone} now. When you answer, you'll hear a 6-digit code. Confirm it matches the code below, then click Verify:
                                         </p>
                                         <p className="text-2xl font-mono font-bold text-amber-900 mt-1 tracking-widest">
                                           {callerIdCode}
@@ -1349,10 +1349,10 @@ function OnboardingContent() {
                                         disabled={callerIdLoading}
                                         className="w-full py-2 rounded-lg bg-brand-600 text-white text-xs font-semibold hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                       >
-                                        {callerIdLoading ? "Verifying..." : "Done — I entered the code"}
+                                        {callerIdLoading ? "Verifying..." : "I heard the code — Verify my number"}
                                       </button>
                                       <p className="text-xs text-slate-400">
-                                        After you enter the code on the call, click the button above.
+                                        Answer the call, confirm the code matches, then click the button above.
                                       </p>
                                     </div>
                                   ) : (
@@ -1366,7 +1366,9 @@ function OnboardingContent() {
                                       />
                                       <button
                                         onClick={async () => {
-                                          if (!callerIdPhone.startsWith("+") || callerIdPhone.length < 10) {
+                                          // Strip spaces, dashes, parens before validation
+                                          const cleaned = callerIdPhone.replace(/[\s\-()]/g, "");
+                                          if (!/^\+[1-9]\d{6,14}$/.test(cleaned)) {
                                             setCallerIdError("Enter a valid phone number in E.164 format (e.g. +2348012345678)");
                                             return;
                                           }
@@ -1376,7 +1378,7 @@ function OnboardingContent() {
                                             const res = await fetch("/api/caller-id/start", {
                                               method: "POST",
                                               headers: { "Content-Type": "application/json" },
-                                              body: JSON.stringify({ phone_number: callerIdPhone }),
+                                              body: JSON.stringify({ phone_number: callerIdPhone.replace(/[\s\-()]/g, "") }),
                                             });
                                             const data = await res.json();
                                             if (!res.ok) {
@@ -1445,9 +1447,9 @@ function OnboardingContent() {
                             </button>
                           </>
                         )}
-                      </motion.div>
-                    </motion.div>
-                  </motion.div>
+                      </m.div>
+                    </m.div>
+                  </m.div>
                 )}
 
               </AnimatePresence>

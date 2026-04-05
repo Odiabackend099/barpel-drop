@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Clock } from "lucide-react";
 import { ShopifyIcon } from "@/components/brand/ShopifyIcon";
 import { ShopifyOneClickInstall } from "@/components/ShopifyOneClickInstall";
@@ -66,7 +66,7 @@ export function ShopifySection({
 
   return (
     <>
-      <motion.div
+      <m.div
         className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm"
         whileHover={{ y: -2, boxShadow: "0 8px 30px rgba(13,148,136,0.08)" }}
         transition={{ type: "spring", stiffness: 400, damping: 25 }}
@@ -128,7 +128,7 @@ export function ShopifySection({
             </Button>
           )}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Disconnect Confirmation Modal */}
       <Dialog open={disconnectOpen} onOpenChange={setDisconnectOpen}>

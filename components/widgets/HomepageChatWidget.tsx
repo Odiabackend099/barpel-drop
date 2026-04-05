@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { MessageSquare, X, Send, Mic, MicOff, RotateCcw } from 'lucide-react'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -38,7 +38,7 @@ function TypingDots() {
   return (
     <div className="flex items-center gap-1 px-4 py-3">
       {[0, 1, 2].map((i) => (
-        <motion.span
+        <m.span
           key={i}
           className="w-2 h-2 rounded-full bg-slate-300 block"
           animate={{ y: [0, -5, 0] }}
@@ -369,7 +369,7 @@ export default function HomepageChatWidget() {
       {/* Chat panel */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div
+          <m.div
             key="panel"
             initial={{ scale: 0.85, y: 20, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
@@ -407,7 +407,7 @@ export default function HomepageChatWidget() {
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 scroll-smooth">
               {messages.map((msg) => (
-                <motion.div
+                <m.div
                   key={msg.id}
                   initial={{ y: 8, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
@@ -433,7 +433,7 @@ export default function HomepageChatWidget() {
                       </button>
                     )}
                   </div>
-                </motion.div>
+                </m.div>
               ))}
 
               {/* Typing indicator — shown while streaming and last message is empty */}
@@ -488,12 +488,12 @@ export default function HomepageChatWidget() {
                 </button>
               </div>
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 
       {/* Trigger button */}
-      <motion.button
+      <m.button
         onClick={handleOpen}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
@@ -507,7 +507,7 @@ export default function HomepageChatWidget() {
         {hasProactiveTriggered && !isOpen && (
           <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white" />
         )}
-      </motion.button>
+      </m.button>
     </div>
   )
 }

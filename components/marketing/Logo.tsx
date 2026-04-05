@@ -1,5 +1,5 @@
 "use client";
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
@@ -18,12 +18,12 @@ const sizes = {
 
 export default function Logo({ size = 'md', showText = true, className = '', animated = true, variant = 'dark' }: LogoProps) {
   const { container, text } = sizes[size];
-  const textColor = variant === 'light' ? 'text-white' : 'text-brand-teal';
+  const textColor = variant === 'light' ? 'text-white' : 'text-slate-900';
 
   const LogoContent = (
     <div className={`flex items-center gap-2.5 ${className}`}>
       {/* Logo Image with Animation */}
-      <motion.div
+      <m.div
         className={`${container} relative flex-shrink-0`}
         whileHover={animated ? { scale: 1.05, rotate: 5 } : {}}
         whileTap={animated ? { scale: 0.95 } : {}}
@@ -36,18 +36,18 @@ export default function Logo({ size = 'md', showText = true, className = '', ani
         />
         {/* Glow effect */}
         <div className="absolute inset-0 bg-teal-500/20 rounded-full blur-xl -z-10" />
-      </motion.div>
+      </m.div>
 
       {/* Text */}
       {showText && (
-        <motion.span
+        <m.span
           className={`${text} font-semibold ${textColor} tracking-tight transition-colors duration-300`}
           initial={animated ? { opacity: 0, x: -10 } : {}}
           animate={animated ? { opacity: 1, x: 0 } : {}}
           transition={{ delay: 0.1, duration: 0.3 }}
         >
           Barpel<span className={`font-bold ml-1 ${variant === 'light' ? 'text-[#0d9488]' : 'text-[#0d9488]'}`}>AI</span>
-        </motion.span>
+        </m.span>
       )}
     </div>
   );
@@ -61,7 +61,7 @@ export function AnimatedLogo({ size = 'lg' }: { size?: 'sm' | 'md' | 'lg' | 'xl'
 
   return (
     <div className="flex flex-col items-center gap-4">
-      <motion.div
+      <m.div
         className={`${container} relative`}
         animate={{
           scale: [1, 1.1, 1],
@@ -78,7 +78,7 @@ export function AnimatedLogo({ size = 'lg' }: { size?: 'sm' | 'md' | 'lg' | 'xl'
           alt="Barpel AI logo"
           className="w-full h-full object-contain"
         />
-        <motion.div
+        <m.div
           className="absolute inset-0 bg-teal-500/30 rounded-full blur-xl -z-10"
           animate={{
             scale: [1, 1.3, 1],
@@ -90,8 +90,8 @@ export function AnimatedLogo({ size = 'lg' }: { size?: 'sm' | 'md' | 'lg' | 'xl'
             ease: "easeInOut"
           }}
         />
-      </motion.div>
-      <motion.div
+      </m.div>
+      <m.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
@@ -99,7 +99,7 @@ export function AnimatedLogo({ size = 'lg' }: { size?: 'sm' | 'md' | 'lg' | 'xl'
       >
         <h2 className="text-xl font-semibold text-slate-900 tracking-tight">Barpel AI</h2>
         <p className="text-sm text-slate-500">Loading...</p>
-      </motion.div>
+      </m.div>
     </div>
   );
 }

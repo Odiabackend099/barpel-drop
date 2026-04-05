@@ -1,7 +1,7 @@
 "use client";
 
 import ContentPageLayout from '@/components/marketing/ContentPageLayout';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -143,7 +143,7 @@ export default function AmazonSellersPage() {
       subtitle="Protect your seller metrics, prevent A-to-Z claims, and provide instant support across FBA and FBM orders — all with AI."
     >
       {/* Challenges */}
-      <motion.div {...fadeInUp} className="mb-20">
+      <m.div {...fadeInUp} className="mb-20">
         <div className="text-center mb-12">
           <h2 className="heading-section text-brand-navy mb-4">
             Amazon&apos;s strict metrics <span className="text-teal-500">demand more</span>
@@ -155,7 +155,7 @@ export default function AmazonSellersPage() {
         </div>
         <div className="grid md:grid-cols-3 gap-8">
           {challenges.map((challenge, index) => (
-            <motion.div
+            <m.div
               key={challenge.title}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -168,17 +168,17 @@ export default function AmazonSellersPage() {
               </div>
               <h3 className="text-lg font-semibold text-brand-navy mb-2">{challenge.title}</h3>
               <p className="text-slate-600 text-sm leading-relaxed">{challenge.description}</p>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Stats */}
-      <motion.div {...fadeInUp} className="mb-20">
+      <m.div {...fadeInUp} className="mb-20">
         <div className="bg-gradient-to-br from-[#FF9900] to-[#e88a00] rounded-2xl p-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {metrics.map((stat, index) => (
-              <motion.div
+              <m.div
                 key={stat.label}
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
@@ -188,14 +188,14 @@ export default function AmazonSellersPage() {
               >
                 <div className="text-4xl md:text-5xl font-bold text-white mb-2">{stat.value}</div>
                 <div className="text-white/80 text-sm">{stat.label}</div>
-              </motion.div>
+              </m.div>
             ))}
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Features */}
-      <motion.div {...fadeInUp} className="mb-20">
+      <m.div {...fadeInUp} className="mb-20">
         <div className="text-center mb-12">
           <h2 className="heading-section text-brand-navy mb-4">
             Built for Amazon <span className="text-teal-500">seller success</span>
@@ -207,7 +207,7 @@ export default function AmazonSellersPage() {
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
-            <motion.div
+            <m.div
               key={feature.title}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -220,13 +220,13 @@ export default function AmazonSellersPage() {
               </div>
               <h3 className="text-lg font-semibold text-brand-navy mb-2">{feature.title}</h3>
               <p className="text-slate-600 text-sm leading-relaxed">{feature.description}</p>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Seller Benefits Checklist */}
-      <motion.div {...fadeInUp} className="mb-20">
+      <m.div {...fadeInUp} className="mb-20">
         <div className="bg-gradient-to-br from-slate-50 to-teal-50/30 rounded-2xl p-12">
           <div className="flex flex-col lg:flex-row gap-12 items-center">
             <div className="flex-1">
@@ -239,7 +239,7 @@ export default function AmazonSellersPage() {
               </p>
               <div className="grid sm:grid-cols-2 gap-3">
                 {sellerBenefits.map((benefit, index) => (
-                  <motion.div
+                  <m.div
                     key={benefit}
                     initial={{ opacity: 0, x: -10 }}
                     whileInView={{ opacity: 1, x: 0 }}
@@ -249,7 +249,7 @@ export default function AmazonSellersPage() {
                   >
                     <CheckCircle2 className="w-5 h-5 text-teal-500 flex-shrink-0 mt-0.5" />
                     <span className="text-sm text-slate-700">{benefit}</span>
-                  </motion.div>
+                  </m.div>
                 ))}
               </div>
             </div>
@@ -265,10 +265,10 @@ export default function AmazonSellersPage() {
             </div>
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Comparison Table */}
-      <motion.div {...fadeInUp} className="mb-20">
+      <m.div {...fadeInUp} className="mb-20">
         <div className="text-center mb-12">
           <h2 className="heading-section text-brand-navy mb-4">
             Barpel AI vs <span className="text-teal-500">traditional support</span>
@@ -285,7 +285,7 @@ export default function AmazonSellersPage() {
             </thead>
             <tbody>
               {comparisonItems.map((item, index) => (
-                <motion.tr
+                <m.tr
                   key={item.category}
                   initial={{ opacity: 0, x: -10 }}
                   whileInView={{ opacity: 1, x: 0 }}
@@ -301,15 +301,15 @@ export default function AmazonSellersPage() {
                       {item.barpel}
                     </div>
                   </td>
-                </motion.tr>
+                </m.tr>
               ))}
             </tbody>
           </table>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Final CTA */}
-      <motion.div {...fadeInUp} className="text-center">
+      <m.div {...fadeInUp} className="text-center">
         <h2 className="heading-section text-brand-navy mb-4">
           Protect your Amazon business with AI support
         </h2>
@@ -329,7 +329,7 @@ export default function AmazonSellersPage() {
             Schedule a demo
           </Link>
         </div>
-      </motion.div>
+      </m.div>
     </ContentPageLayout>
   );
 }

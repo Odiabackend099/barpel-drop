@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { CREDIT_PACKAGES } from '@/lib/constants';
 import {
@@ -207,7 +207,7 @@ export default function PricingPage() {
       showCTA={false}
     >
       {/* Billing Toggle */}
-      <motion.div
+      <m.div
         className="flex items-center justify-center gap-4 mb-12"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -241,12 +241,12 @@ export default function PricingPage() {
         <span className="px-2 py-1 text-xs font-semibold text-brand-teal bg-brand-teal/10 rounded-full">
           Save 10%
         </span>
-      </motion.div>
+      </m.div>
 
       {/* Pricing Cards */}
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-24">
         {plans.map((plan, index) => (
-          <motion.div
+          <m.div
             key={plan.name}
             className={`relative bg-white rounded-2xl p-6 transition-all duration-300 ${
               plan.popular
@@ -309,12 +309,12 @@ export default function PricingPage() {
             >
               {plan.cta}
             </Link>
-          </motion.div>
+          </m.div>
         ))}
       </div>
 
       {/* Feature Comparison Table */}
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
@@ -384,10 +384,10 @@ export default function PricingPage() {
             </tbody>
           </table>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Enterprise CTA */}
-      <motion.div
+      <m.div
         className="mt-20 bg-gradient-to-br from-brand-navy via-slate-800 to-brand-navy rounded-2xl p-12 text-center"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -412,10 +412,10 @@ export default function PricingPage() {
           Contact our sales team
           <ArrowRight className="w-4 h-4" />
         </Link>
-      </motion.div>
+      </m.div>
 
       {/* FAQ Section */}
-      <motion.div
+      <m.div
         className="mt-24"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -433,7 +433,7 @@ export default function PricingPage() {
 
         <div className="max-w-3xl mx-auto space-y-4">
           {faqs.map((faq, index) => (
-            <motion.div
+            <m.div
               key={index}
               className="bg-white rounded-xl border border-slate-100 overflow-hidden"
               initial={{ opacity: 0, y: 10 }}
@@ -446,16 +446,16 @@ export default function PricingPage() {
                 className="w-full flex items-center justify-between px-6 py-4 text-left"
               >
                 <span className="text-sm font-semibold text-brand-navy pr-4">{faq.question}</span>
-                <motion.div
+                <m.div
                   animate={{ rotate: openFaq === index ? 180 : 0 }}
                   transition={{ duration: 0.2 }}
                 >
                   <ChevronDown className="w-5 h-5 text-slate-400 flex-shrink-0" />
-                </motion.div>
+                </m.div>
               </button>
               <AnimatePresence>
                 {openFaq === index && (
-                  <motion.div
+                  <m.div
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
@@ -464,16 +464,16 @@ export default function PricingPage() {
                     <div className="px-6 pb-4 text-sm text-text-secondary leading-relaxed">
                       {faq.answer}
                     </div>
-                  </motion.div>
+                  </m.div>
                 )}
               </AnimatePresence>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Bottom CTA */}
-      <motion.div
+      <m.div
         className="mt-16 text-center"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -486,7 +486,7 @@ export default function PricingPage() {
             Talk to our team
           </Link>
         </p>
-      </motion.div>
+      </m.div>
     </ContentPageLayout>
   );
 }

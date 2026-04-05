@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Check, ArrowRight, Sparkles, Lock } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 
 const plans = [
   {
@@ -65,7 +65,7 @@ export default function Pricing() {
     <section id="pricing" className="section-padding bg-white">
       <div className="container-default">
         {/* Section Header */}
-        <motion.div
+        <m.div
           className="text-center max-w-3xl mx-auto mb-12"
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -79,13 +79,13 @@ export default function Pricing() {
           <p className="body-large text-text-secondary">
             Start free, upgrade as you grow. No hidden fees.
           </p>
-        </motion.div>
+        </m.div>
 
 
         {/* Pricing Cards — 3 columns */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
           {plans.map((plan, index) => (
-            <motion.div
+            <m.div
               key={plan.name}
               initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -161,12 +161,12 @@ export default function Pricing() {
                   Secured by Dodo Payments · Cancel anytime
                 </span>
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </div>
 
         {/* Enterprise Card */}
-        <motion.div
+        <m.div
           className="mt-8 max-w-5xl mx-auto"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -191,7 +191,7 @@ export default function Pricing() {
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
-        </motion.div>
+        </m.div>
       </div>
     </section>
   );

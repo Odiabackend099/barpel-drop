@@ -1,7 +1,7 @@
 "use client";
 
 import ContentPageLayout from '@/components/marketing/ContentPageLayout';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -127,7 +127,7 @@ export default function TrendyMartCaseStudy() {
       subtitle="How a fast-fashion Shopify store saved $50K annually by automating return processing with Barpel AI."
     >
       {/* Back Link */}
-      <motion.div {...fadeInUp} className="mb-8">
+      <m.div {...fadeInUp} className="mb-8">
         <Link
           href="/customer-stories"
           className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-teal-600 transition-colors"
@@ -135,10 +135,10 @@ export default function TrendyMartCaseStudy() {
           <ArrowLeft className="w-4 h-4" />
           Back to Customer Stories
         </Link>
-      </motion.div>
+      </m.div>
 
       {/* Company Overview */}
-      <motion.div {...fadeInUp} className="mb-16">
+      <m.div {...fadeInUp} className="mb-16">
         <div className="bg-gradient-to-br from-[#9C27B0] to-[#E91E63] rounded-2xl p-10">
           <div className="flex flex-col md:flex-row gap-8 items-center">
             <div className="flex-1">
@@ -161,10 +161,10 @@ export default function TrendyMartCaseStudy() {
             </div>
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* The Challenge */}
-      <motion.div {...fadeInUp} className="mb-16">
+      <m.div {...fadeInUp} className="mb-16">
         <h2 className="heading-section text-brand-navy mb-6">The Challenge</h2>
         <p className="body-large text-slate-600 leading-relaxed mb-4">
           Returns are a fact of life in fast fashion. Sizing inconsistencies, trend-sensitive purchases,
@@ -182,7 +182,7 @@ export default function TrendyMartCaseStudy() {
         {/* Challenge Stats */}
         <div className="grid md:grid-cols-3 gap-6">
           {returnChallenges.map((item, index) => (
-            <motion.div
+            <m.div
               key={item.label}
               initial={{ opacity: 0, y: 15 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -193,13 +193,13 @@ export default function TrendyMartCaseStudy() {
               <div className="text-3xl font-bold text-red-500 mb-1">{item.stat}</div>
               <div className="text-sm font-semibold text-brand-navy mb-2">{item.label}</div>
               <p className="text-xs text-slate-600">{item.description}</p>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* The Solution */}
-      <motion.div {...fadeInUp} className="mb-16">
+      <m.div {...fadeInUp} className="mb-16">
         <h2 className="heading-section text-brand-navy mb-6">The Solution</h2>
         <p className="text-slate-600 leading-relaxed mb-8">
           TrendyMart implemented Barpel AI to fully automate their return support workflow. The AI handles
@@ -209,7 +209,7 @@ export default function TrendyMartCaseStudy() {
 
         <div className="grid md:grid-cols-2 gap-6 mb-8">
           {automationFeatures.map((feature, index) => (
-            <motion.div
+            <m.div
               key={feature.title}
               initial={{ opacity: 0, y: 15 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -220,7 +220,7 @@ export default function TrendyMartCaseStudy() {
               <feature.icon className="w-8 h-8 text-teal-500 mb-3" />
               <h3 className="text-sm font-semibold text-brand-navy mb-1">{feature.title}</h3>
               <p className="text-xs text-slate-600 leading-relaxed">{feature.description}</p>
-            </motion.div>
+            </m.div>
           ))}
         </div>
 
@@ -229,7 +229,7 @@ export default function TrendyMartCaseStudy() {
           <h3 className="text-lg font-semibold text-brand-navy mb-4">Automated return flow</h3>
           <div className="space-y-3">
             {returnFlowSteps.map((step, index) => (
-              <motion.div
+              <m.div
                 key={step}
                 initial={{ opacity: 0, x: -10 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -241,18 +241,18 @@ export default function TrendyMartCaseStudy() {
                   {index + 1}
                 </div>
                 <span className="text-sm text-slate-700">{step}</span>
-              </motion.div>
+              </m.div>
             ))}
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Timeline */}
-      <motion.div {...fadeInUp} className="mb-16">
+      <m.div {...fadeInUp} className="mb-16">
         <h2 className="heading-section text-brand-navy mb-8">Implementation Timeline</h2>
         <div className="space-y-6">
           {timeline.map((item, index) => (
-            <motion.div
+            <m.div
               key={item.day}
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -268,13 +268,13 @@ export default function TrendyMartCaseStudy() {
                 <h3 className="text-sm font-semibold text-brand-navy mb-1">{item.title}</h3>
                 <p className="text-sm text-slate-600">{item.description}</p>
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Before & After */}
-      <motion.div {...fadeInUp} className="mb-16">
+      <m.div {...fadeInUp} className="mb-16">
         <h2 className="heading-section text-brand-navy mb-8">Before & After</h2>
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
@@ -287,7 +287,7 @@ export default function TrendyMartCaseStudy() {
             </thead>
             <tbody>
               {beforeAfter.map((item, index) => (
-                <motion.tr
+                <m.tr
                   key={item.category}
                   initial={{ opacity: 0 }}
                   whileInView={{ opacity: 1 }}
@@ -303,15 +303,15 @@ export default function TrendyMartCaseStudy() {
                       {item.after}
                     </div>
                   </td>
-                </motion.tr>
+                </m.tr>
               ))}
             </tbody>
           </table>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Quote */}
-      <motion.div {...fadeInUp} className="mb-16">
+      <m.div {...fadeInUp} className="mb-16">
         <div className="bg-gradient-to-br from-teal-50 to-emerald-50 rounded-2xl p-10">
           <Quote className="w-10 h-10 text-teal-300 mb-4" />
           <blockquote className="text-xl text-brand-navy font-medium leading-relaxed mb-6">
@@ -326,10 +326,10 @@ export default function TrendyMartCaseStudy() {
             <div className="text-sm text-slate-500">COO, TrendyMart</div>
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* CTA */}
-      <motion.div {...fadeInUp} className="text-center">
+      <m.div {...fadeInUp} className="text-center">
         <h2 className="heading-section text-brand-navy mb-4">
           Automate your return support
         </h2>
@@ -349,7 +349,7 @@ export default function TrendyMartCaseStudy() {
             More customer stories
           </Link>
         </div>
-      </motion.div>
+      </m.div>
     </ContentPageLayout>
   );
 }

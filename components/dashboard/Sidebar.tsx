@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import {
   LayoutDashboard,
   Phone,
@@ -126,19 +126,19 @@ export function Sidebar({ open, onClose, collapsed, onToggleCollapse }: SidebarP
                 }`}
               >
                 {active && (
-                  <motion.div
+                  <m.div
                     layoutId="sidebar-active"
                     className="absolute inset-0 bg-white/5 rounded-lg border-l-2 border-brand-600"
                     transition={{ type: "spring", stiffness: 350, damping: 30 }}
                   />
                 )}
-                <motion.span
+                <m.span
                   className="relative z-10 shrink-0"
                   whileHover={{ scale: 1.1 }}
                   transition={{ type: "spring", stiffness: 400, damping: 25 }}
                 >
                   <Icon className="w-4 h-4" />
-                </motion.span>
+                </m.span>
                 {!collapsed && <span className="relative z-10">{item.label}</span>}
               </Link>
             );

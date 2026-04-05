@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import Link from 'next/link';
 import {
   Mail,
@@ -122,7 +122,7 @@ export default function ContactPage() {
     >
       <div className="grid lg:grid-cols-5 gap-12">
         {/* Contact Form - Left Side */}
-        <motion.div
+        <m.div
           className="lg:col-span-3"
           initial={{ opacity: 0, x: -20 }}
           whileInView={{ opacity: 1, x: 0 }}
@@ -130,7 +130,7 @@ export default function ContactPage() {
           transition={{ duration: 0.5 }}
         >
           {isSubmitted ? (
-            <motion.div
+            <m.div
               className="bg-teal-50 rounded-2xl p-12 text-center border border-teal-100"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -160,7 +160,7 @@ export default function ContactPage() {
                   Send another message
                 </button>
               </div>
-            </motion.div>
+            </m.div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Honeypot — visually hidden, only bots fill it */}
@@ -289,7 +289,7 @@ export default function ContactPage() {
               )}
 
               {/* Submit Button */}
-              <motion.button
+              <m.button
                 type="submit"
                 disabled={isSubmitting}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-brand-teal text-white font-semibold rounded-lg transition-all duration-200 hover:bg-[#008F85] hover:-translate-y-0.5 hover:shadow-teal-glow disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
@@ -306,7 +306,7 @@ export default function ContactPage() {
                     <Send className="w-4 h-4" />
                   </>
                 )}
-              </motion.button>
+              </m.button>
 
               <p className="text-xs text-text-secondary">
                 By submitting this form, you agree to our{' '}
@@ -317,10 +317,10 @@ export default function ContactPage() {
               </p>
             </form>
           )}
-        </motion.div>
+        </m.div>
 
         {/* Contact Info - Right Side */}
-        <motion.div
+        <m.div
           className="lg:col-span-2 space-y-8"
           initial={{ opacity: 0, x: 20 }}
           whileInView={{ opacity: 1, x: 0 }}
@@ -330,7 +330,7 @@ export default function ContactPage() {
           {/* Contact Details */}
           <div className="space-y-4">
             {contactInfo.map((item, index) => (
-              <motion.a
+              <m.a
                 key={item.label}
                 href={item.href}
                 className="flex items-start gap-4 p-4 bg-off-white rounded-xl border border-light-mint hover:shadow-teal-sm transition-all duration-200 group"
@@ -347,12 +347,12 @@ export default function ContactPage() {
                   <div className="text-sm text-brand-teal">{item.value}</div>
                   <div className="text-xs text-text-secondary mt-0.5">{item.description}</div>
                 </div>
-              </motion.a>
+              </m.a>
             ))}
           </div>
 
           {/* Google Maps Embed */}
-          <motion.div
+          <m.div
             id="map"
             className="rounded-2xl overflow-hidden border border-light-mint shadow-sm aspect-[4/3]"
             initial={{ opacity: 0, y: 20 }}
@@ -370,14 +370,14 @@ export default function ContactPage() {
               referrerPolicy="no-referrer-when-downgrade"
               title="Barpel AI Office — 548 Market Street, San Francisco"
             />
-          </motion.div>
+          </m.div>
 
           {/* Social Links */}
           <div>
             <h3 className="text-sm font-semibold text-brand-navy mb-4">Follow Us</h3>
             <div className="flex gap-2">
               {socialLinks.map((social) => (
-                <motion.a
+                <m.a
                   key={social.label}
                   href={social.href}
                   target="_blank"
@@ -388,7 +388,7 @@ export default function ContactPage() {
                   whileTap={{ scale: 0.95 }}
                 >
                   <social.icon className="w-4 h-4" />
-                </motion.a>
+                </m.a>
               ))}
             </div>
           </div>
@@ -408,7 +408,7 @@ export default function ContactPage() {
               <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
-        </motion.div>
+        </m.div>
       </div>
     </ContentPageLayout>
   );

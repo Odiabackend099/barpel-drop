@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Instrument_Serif, Plus_Jakarta_Sans } from "next/font/google";
+import { LazyMotion, domAnimation } from "framer-motion";
 import { GoogleAnalytics } from "@next/third-parties/google";
+import Script from "next/script";
 import { AnalyticsProvider } from "@/components/providers/AnalyticsProvider";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
@@ -52,10 +54,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${displayFont.variable} ${bodyFont.variable}`}>
-      <body>
-        <AnalyticsProvider>{children}</AnalyticsProvider>
+    <html lang="en" className={`${displayFont.variable} ${bodyFont.variable} overflow-x-hidden`}>
+      <body className="overflow-x-hidden">
+        <LazyMotion features={domAnimation} strict>
+          <AnalyticsProvider>{children}</AnalyticsProvider>
+        </LazyMotion>
         <Toaster richColors position="top-right" />
+        <Script id="tapfiliate-js" strategy="afterInteractive">
+          {`(function(t,a,p){t.TapsAssocId="63365-6bd0a5";t.TapfiliateObject=a;t[a]=t[a]||function(){
+(t[a].q=t[a].q||[]).push(arguments)};var s=p.createElement('script');s.async=true;
+s.src='https://script.tapfiliate.com/tapfiliate.js';var r=p.getElementsByTagName('script')[0];
+r.parentNode.insertBefore(s,r)})(window,'tap',document);
+tap('create','63365-6bd0a5',{integration:'javascript'});
+tap('detect');`}
+        </Script>
       </body>
       {process.env.NEXT_PUBLIC_GA_ID && (
         <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />

@@ -143,9 +143,12 @@ export function AbandonedCartSection({
                 </div>
               )}
             </div>
-            <p className="text-sm text-muted-foreground mb-3 font-sans">
+            <p className="text-sm text-muted-foreground mb-1 font-sans">
               When a customer adds items to their cart but doesn&apos;t buy, your AI automatically
               calls them back 15 minutes later to answer questions and recover the sale.
+            </p>
+            <p className="text-xs text-muted-foreground/70 mb-3 font-sans">
+              Only fires for carts over $100 where the customer has a phone number on file.
             </p>
 
             {/* Caller ID section — shown when enabled */}

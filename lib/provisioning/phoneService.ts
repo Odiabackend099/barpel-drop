@@ -76,6 +76,7 @@ async function purchaseTwilioNumber(
     `${baseUrl}/AvailablePhoneNumbers/${countryCode}/Local.json`
   );
   searchUrl.searchParams.set("voiceEnabled", "true");
+  searchUrl.searchParams.set("smsEnabled", "true");
   searchUrl.searchParams.set("pageSize", "1");
 
   const searchResp = await withRetry(
@@ -342,7 +343,8 @@ export async function createVapiAssistant(
 /**
  * Imports the Twilio number into Vapi and links it to the assistant.
  * Returns the vapi_phone_id (UUID).
- * Uses POST /phone-number/import per RESEARCH_NOTES.md R-1.
+ * Uses POST /phone-number per Vapi docs (https://docs.vapi.ai/phone-numbers/import-twilio).
+ * Auth: Bearer token with VAPI_PRIVATE_KEY. Twilio creds: Account SID + Auth Token.
  */
 async function importNumberIntoVapi(
   phoneNumber: string,
@@ -359,14 +361,15 @@ async function importNumberIntoVapi(
 
   const resp = await withRetry(
     () =>
-      fetch("https://api.vapi.ai/phone-number/import", {
+      fetch("https://api.vapi.ai/phone-number", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${vapiKey}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          twilioPhoneNumber: phoneNumber,
+          provider: "twilio",
+          number: phoneNumber,
           twilioAccountSid: accountSid,
           twilioAuthToken: authToken,
           assistantId: agentId,
@@ -570,7 +573,40 @@ export async function provisionMerchantLine(
         purchasedPhoneNumber = numData.phone_number as string;
       }
 
-      vapiPhoneId = await importNumberIntoVapi(purchasedPhoneNumber, vapiAgentId);
+      try {
+        vapiPhoneId = await importNumberIntoVapi(purchasedPhoneNumber, vapiAgentId);
+      } catch (importErr) {
+        // Vapi import failed — release the Twilio number to avoid orphaned billing.
+        // Only release if this is a fresh purchase (not a retry of a previously purchased number).
+        if (twilioNumberSid) {
+          try {
+            const accountSid = process.env.TWILIO_ACCOUNT_SID;
+            const authToken = process.env.TWILIO_AUTH_TOKEN;
+            const credentials = Buffer.from(`${accountSid}:${authToken}`).toString("base64");
+            await fetch(
+              `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/IncomingPhoneNumbers/${twilioNumberSid}.json`,
+              { method: "DELETE", headers: { Authorization: `Basic ${credentials}` } }
+            );
+            // Clear the SID so a retry starts fresh
+            await supabase
+              .from("merchants")
+              .update({ twilio_number_sid: null })
+              .eq("id", merchantId);
+          } catch (releaseErr) {
+            const errMsg = releaseErr instanceof Error ? releaseErr.message : String(releaseErr);
+            console.error(
+              `[CRITICAL] Failed to release Twilio number ${twilioNumberSid} for merchant ${merchantId} after Vapi import failed. This number will be orphaned and continue to be billed. Error: ${errMsg}`
+            );
+            // Optionally send to Sentry if available
+            if (typeof globalThis !== "undefined" && (globalThis as Record<string, unknown>).Sentry) {
+              const Sentry = (globalThis as Record<string, unknown>).Sentry as { captureException: (err: unknown) => void };
+              Sentry.captureException(releaseErr);
+            }
+            // Don't re-throw — let the original import error propagate
+          }
+        }
+        throw importErr;
+      }
 
       await supabase
         .from("merchants")

@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import {
   ArrowRight,
   MapPin,
@@ -137,7 +137,7 @@ export default function CareersPage() {
       subtitle="Join the future of AI customer support. Help us build the platform that transforms how e-commerce brands serve their customers."
     >
       {/* Why Barpel */}
-      <motion.div
+      <m.div
         className="mb-24"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -154,7 +154,7 @@ export default function CareersPage() {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          <motion.div
+          <m.div
             className="card-feature text-center p-8"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -166,8 +166,8 @@ export default function CareersPage() {
             <p className="text-sm text-text-secondary">
               Every feature you ship reaches hundreds of merchants and millions of their customers. Your work directly drives revenue and customer satisfaction.
             </p>
-          </motion.div>
-          <motion.div
+          </m.div>
+          <m.div
             className="card-feature text-center p-8"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -179,8 +179,8 @@ export default function CareersPage() {
             <p className="text-sm text-text-secondary">
               At 30 people, everyone owns a meaningful piece of the product. No bureaucracy, no waiting for approval. Ship fast, learn fast.
             </p>
-          </motion.div>
-          <motion.div
+          </m.div>
+          <m.div
             className="card-feature text-center p-8"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -192,12 +192,12 @@ export default function CareersPage() {
             <p className="text-sm text-text-secondary">
               Work with the latest in voice AI, large language models, and real-time speech synthesis. This is applied AI at its most exciting.
             </p>
-          </motion.div>
+          </m.div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Benefits */}
-      <motion.div
+      <m.div
         className="mb-24"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -215,7 +215,7 @@ export default function CareersPage() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
           {benefits.map((benefit, index) => (
-            <motion.div
+            <m.div
               key={benefit.title}
               className="bg-off-white rounded-xl p-5 border border-light-mint"
               initial={{ opacity: 0, y: 15 }}
@@ -226,13 +226,13 @@ export default function CareersPage() {
               <benefit.icon className="w-6 h-6 text-brand-teal mb-3" />
               <h3 className="text-sm font-semibold text-brand-navy mb-1">{benefit.title}</h3>
               <p className="text-xs text-text-secondary leading-relaxed">{benefit.description}</p>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Open Positions */}
-      <motion.div
+      <m.div
         className="mb-24"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -250,7 +250,7 @@ export default function CareersPage() {
 
         <div className="space-y-6">
           {positions.map((position, index) => (
-            <motion.div
+            <m.div
               key={position.title}
               className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300"
               initial={{ opacity: 0, y: 20 }}
@@ -309,13 +309,13 @@ export default function CareersPage() {
                   </ul>
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Don't See Your Role */}
-      <motion.div
+      <m.div
         className="bg-off-white rounded-2xl p-12 text-center border border-light-mint"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -342,7 +342,7 @@ export default function CareersPage() {
             careers@barpel.ai
           </a>
         </p>
-      </motion.div>
+      </m.div>
     </ContentPageLayout>
   );
 }

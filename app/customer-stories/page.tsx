@@ -1,7 +1,7 @@
 "use client";
 
 import ContentPageLayout from '@/components/marketing/ContentPageLayout';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -89,11 +89,11 @@ export default function CustomerStoriesPage() {
       subtitle="See how businesses of all sizes are growing with Barpel AI voice support."
     >
       {/* Overall Stats */}
-      <motion.div {...fadeInUp} className="mb-20">
+      <m.div {...fadeInUp} className="mb-20">
         <div className="bg-gradient-to-br from-brand-navy to-slate-800 rounded-2xl p-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {overallStats.map((stat, index) => (
-              <motion.div
+              <m.div
                 key={stat.label}
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
@@ -103,17 +103,17 @@ export default function CustomerStoriesPage() {
               >
                 <div className="text-4xl md:text-5xl font-bold text-teal-400 mb-2">{stat.value}</div>
                 <div className="text-white/70 text-sm">{stat.label}</div>
-              </motion.div>
+              </m.div>
             ))}
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Story Cards */}
-      <motion.div {...fadeInUp} className="mb-20">
+      <m.div {...fadeInUp} className="mb-20">
         <div className="space-y-12">
           {stories.map((story, index) => (
-            <motion.div
+            <m.div
               key={story.company}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -167,13 +167,13 @@ export default function CustomerStoriesPage() {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Bottom CTA */}
-      <motion.div {...fadeInUp} className="text-center">
+      <m.div {...fadeInUp} className="text-center">
         <div className="bg-gradient-to-br from-teal-50 to-emerald-50 rounded-2xl p-12">
           <Star className="w-10 h-10 text-teal-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-brand-navy mb-4">
@@ -196,7 +196,7 @@ export default function CustomerStoriesPage() {
             </Link>
           </div>
         </div>
-      </motion.div>
+      </m.div>
     </ContentPageLayout>
   );
 }

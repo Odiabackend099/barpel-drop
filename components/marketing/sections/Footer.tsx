@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Linkedin, Facebook, Youtube } from 'lucide-react';
 import Logo from '@/components/marketing/Logo';
 
@@ -89,7 +89,7 @@ const itemVariants = {
 export default function Footer() {
   return (
     <footer className="bg-[#0f172a] border-t border-white/10">
-      <motion.div
+      <m.div
         className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12"
         initial="hidden"
         whileInView="visible"
@@ -99,7 +99,7 @@ export default function Footer() {
         {/* Main Footer Content */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 lg:gap-12">
           {/* Brand Column */}
-          <motion.div variants={itemVariants} className="col-span-2 md:col-span-3 lg:col-span-2">
+          <m.div variants={itemVariants} className="col-span-2 md:col-span-3 lg:col-span-2">
             <Logo size="lg" showText={true} variant="light" className="mb-4" />
             <p className="text-sm text-white/60 mb-6 max-w-xs leading-relaxed">
               AI-powered voice support for modern e-commerce. Handle customer
@@ -109,7 +109,7 @@ export default function Footer() {
             {/* Social Links */}
             <div className="flex gap-2">
               {socialLinks.map((social, index) => (
-                <motion.a
+                <m.a
                   key={social.label}
                   href={social.href}
                   target="_blank"
@@ -123,20 +123,20 @@ export default function Footer() {
                   transition={{ delay: 0.5 + index * 0.1 }}
                 >
                   <social.icon className="w-4 h-4" />
-                </motion.a>
+                </m.a>
               ))}
             </div>
-          </motion.div>
+          </m.div>
 
           {/* Link Columns */}
           {Object.values(footerLinks).map((section, sectionIndex) => (
-            <motion.div key={section.title} variants={itemVariants}>
+            <m.div key={section.title} variants={itemVariants}>
               <h3 className="text-sm font-semibold text-white mb-4 tracking-tight">
                 {section.title}
               </h3>
               <ul className="space-y-2.5">
                 {section.links.map((link, linkIndex) => (
-                  <motion.li
+                  <m.li
                     key={link.label}
                     initial={{ opacity: 0, x: -10 }}
                     whileInView={{ opacity: 1, x: 0 }}
@@ -149,15 +149,15 @@ export default function Footer() {
                     >
                       {link.label}
                     </Link>
-                  </motion.li>
+                  </m.li>
                 ))}
               </ul>
-            </motion.div>
+            </m.div>
           ))}
         </div>
 
         {/* Bottom Bar */}
-        <motion.div
+        <m.div
           variants={itemVariants}
           className="mt-12 pt-8 border-t border-white/10"
         >
@@ -192,8 +192,8 @@ export default function Footer() {
               </Link>
             </div>
           </div>
-        </motion.div>
-      </motion.div>
+        </m.div>
+      </m.div>
     </footer>
   );
 }

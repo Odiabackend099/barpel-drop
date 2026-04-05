@@ -3,7 +3,7 @@
 import Navigation from '@/components/marketing/Navigation';
 import Footer from '@/components/marketing/sections/Footer';
 import CTA from '@/components/marketing/sections/CTA';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 
 interface ContentPageLayoutProps {
   title: string;
@@ -19,7 +19,7 @@ export default function ContentPageLayout({ title, subtitle, children, showCTA =
       {/* Hero Banner */}
       <section className="pt-24 pb-12 bg-gradient-to-br from-brand-navy via-slate-800 to-brand-navy">
         <div className="container-default">
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
@@ -27,7 +27,7 @@ export default function ContentPageLayout({ title, subtitle, children, showCTA =
           >
             <h1 className="heading-hero text-white mb-4">{title}</h1>
             {subtitle && <p className="body-large text-white/70 max-w-2xl mx-auto">{subtitle}</p>}
-          </motion.div>
+          </m.div>
         </div>
       </section>
       {/* Content */}

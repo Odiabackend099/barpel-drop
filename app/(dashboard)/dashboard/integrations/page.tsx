@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
@@ -155,20 +155,20 @@ export default function IntegrationsPage() {
         </div>
       )}
 
-      <motion.div
+      <m.div
         initial="hidden"
         animate="visible"
         variants={{ visible: { transition: { staggerChildren: 0.08 } } }}
         className="space-y-6"
       >
-        <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
+        <m.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
           <PhoneLineSection
             merchant={merchant}
             onDelete={deleteAiVoice}
             onTogglePause={togglePause}
             onOpenCountrySelector={() => setCountryModalOpen(true)}
           />
-        </motion.div>
+        </m.div>
 
         <CountrySelectorModal
           open={countryModalOpen}
@@ -177,26 +177,26 @@ export default function IntegrationsPage() {
           defaultCountry={merchant?.country}
         />
 
-        <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
+        <m.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
           <ShopifySection
             shopifyIntegration={shopifyIntegration}
             isShopifyConnected={isShopifyConnected}
             onRefetch={refetch}
           />
-        </motion.div>
+        </m.div>
 
-        <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
+        <m.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
           <AbandonedCartSection
             merchant={merchant}
             shopifyIntegration={shopifyIntegration}
             isShopifyConnected={isShopifyConnected}
           />
-        </motion.div>
+        </m.div>
 
-        <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
+        <m.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
           <ComingSoonSection />
-        </motion.div>
-      </motion.div>
+        </m.div>
+      </m.div>
     </div>
   );
 }

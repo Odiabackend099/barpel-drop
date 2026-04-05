@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { Package, RefreshCw, ShoppingCart, Search, Globe, Clock, ArrowRight } from 'lucide-react';
-import { motion, useScroll, useTransform, useInView } from 'framer-motion';
+import { m, useInView } from 'framer-motion';
 
 const features = [
   {
@@ -63,35 +63,37 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
   };
 
   return (
-    <motion.div
+    <m.div
       ref={cardRef}
-      initial={{ opacity: 0, y: 50, rotate: 2 }}
-      animate={isInView ? { opacity: 1, y: 0, rotate: 0 } : { opacity: 0, y: 50, rotate: 2 }}
-      transition={{ duration: 0.5, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+      initial={{ opacity: 0, y: 40 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+      transition={{ duration: 0.5, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
       whileHover={{
         y: -4,
         boxShadow: "0 20px 40px -8px rgba(0,0,0,0.1), 0 0 20px rgba(0,169,157,0.15)",
         transition: { duration: 0.2, ease: "easeOut" },
       }}
       onMouseMove={handleMouseMove}
-      className="group relative bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-slate-100 hover:border-[#0d9488] hover:bg-[rgba(13,148,136,0.06)] overflow-hidden transition-all duration-200"
+      className="group relative bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:border-[#0d9488] overflow-hidden transition-colors duration-200"
     >
-      {/* Mouse-following glow */}
+      {/* Mouse-following glow — pointer-events-none, only paints on hover */}
       <div
         className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
         style={{
-          background: `radial-gradient(300px circle at ${mousePos.x}px ${mousePos.y}px, rgba(13,148,136,0.15), transparent 60%)`,
+          background: `radial-gradient(280px circle at ${mousePos.x}px ${mousePos.y}px, rgba(13,148,136,0.12), transparent 60%)`,
         }}
       />
       {/* Bottom accent line */}
       <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-teal-400 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
       {/* Icon */}
-      <motion.div
-        className={`relative w-12 h-12 rounded-xl ${feature.iconBg} flex items-center justify-center mb-5 transition-all duration-200 group-hover:brightness-110 group-hover:scale-110`}
-        whileHover={{ rotate: 5 }}
+      <m.div
+        className={`relative w-12 h-12 rounded-xl ${feature.iconBg} flex items-center justify-center mb-5`}
+        whileHover={{ rotate: 5, scale: 1.1 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 17 }}
       >
         <feature.icon className={`w-6 h-6 ${feature.iconColor}`} />
-      </motion.div>
+      </m.div>
 
       {/* Content */}
       <h3 className="text-base font-semibold text-slate-900 mb-2 tracking-tight group-hover:text-teal-600 transition-colors">
@@ -102,56 +104,36 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
       </p>
 
       {/* Link */}
-      <motion.a
+      <m.a
         href="/features"
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-teal-600 group/link"
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-teal-600"
         whileHover={{ x: 4 }}
+        transition={{ duration: 0.2 }}
       >
         Learn more
-        <motion.div
-          initial={{ x: 0 }}
-          whileHover={{ x: 4 }}
-          transition={{ duration: 0.2 }}
-        >
-          <ArrowRight className="w-4 h-4" />
-        </motion.div>
-      </motion.a>
-    </motion.div>
+        <ArrowRight className="w-4 h-4" />
+      </m.a>
+    </m.div>
   );
 }
 
 export default function Features() {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "end start"]
-  });
-
-  const y = useTransform(scrollYProgress, [0, 1], [100, -100]);
-  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0]);
-
   return (
-    <section id="features" ref={sectionRef} className="section-padding bg-white relative overflow-hidden">
-      {/* Background Decoration */}
-      <motion.div
-        className="absolute top-0 right-0 w-96 h-96 bg-teal-100/30 rounded-full blur-3xl pointer-events-none"
-        style={{ y, opacity }}
-      />
-      <motion.div
-        className="absolute bottom-0 left-0 w-96 h-96 bg-teal-100/20 rounded-full blur-3xl pointer-events-none"
-        style={{ y: useTransform(scrollYProgress, [0, 1], [-50, 50]), opacity }}
-      />
+    <section id="features" className="section-padding bg-white relative overflow-hidden">
+      {/* Background blobs — CSS-only, no JS scroll callbacks */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-teal-100/30 rounded-full blur-3xl pointer-events-none animate-hero-orb-1" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-teal-100/20 rounded-full blur-3xl pointer-events-none animate-hero-orb-2" />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
-        <motion.div
+        <m.div
           className="text-center max-w-2xl mx-auto mb-12"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <motion.span
+          <m.span
             className="inline-block px-3 py-1 bg-teal-50 text-teal-600 text-xs font-medium rounded-full mb-4"
             initial={{ opacity: 0, scale: 0.8 }}
             whileInView={{ opacity: 1, scale: 1 }}
@@ -159,7 +141,7 @@ export default function Features() {
             transition={{ delay: 0.2 }}
           >
             Features
-          </motion.span>
+          </m.span>
           <h2 className="heading-section text-slate-900 mb-4">
             Everything your customers need,{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-teal-400">
@@ -170,7 +152,7 @@ export default function Features() {
             From order tracking to returns, our voice AI handles it all — 24/7,
             in any language.
           </p>
-        </motion.div>
+        </m.div>
 
         {/* Feature Cards */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

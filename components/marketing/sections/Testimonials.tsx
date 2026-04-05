@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Star, CheckCircle2 } from 'lucide-react';
 
 const testimonials = [
@@ -41,7 +41,7 @@ export default function Testimonials() {
     <section className="section-padding bg-[#0f172a] overflow-hidden">
       <div className="container-default">
         {/* Section Header */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -55,12 +55,12 @@ export default function Testimonials() {
           <p className="body-large text-white/50">
             From Shopify to TikTok Shop — merchants across every platform trust Barpel to handle their customer calls.
           </p>
-        </motion.div>
+        </m.div>
 
         {/* Testimonial Cards Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {testimonials.map((testimonial, index) => (
-            <motion.div
+            <m.div
               key={testimonial.name}
               initial={{ opacity: 0, y: 32 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -110,7 +110,7 @@ export default function Testimonials() {
                   </span>
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </div>
       </div>

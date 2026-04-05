@@ -529,6 +529,52 @@ export async function sendSupportTicketConfirmEmail(
   });
 }
 
+// ─── Chat widget lead notification ─────────────────────────────────────────
+
+/** Internal alert sent to founding team when a chat widget visitor is captured as a lead. */
+export async function sendChatWidgetLeadEmail(lead: {
+  name?: string;
+  email: string;
+  phone?: string;
+  platform?: string;
+}) {
+  const safeName = lead.name ? esc(lead.name.slice(0, 100)) : null;
+  const displayName = safeName || lead.email;
+
+  const resend = new Resend(process.env.RESEND_API_KEY!)
+  await resend.emails.send({
+    from: `Barpel AI <hello@barpel.ai>`,
+    to: ["raphael@barpel.ai", "austyn@barpel.ai"],
+    replyTo: lead.email,
+    subject: `💬 New chat lead: ${displayName}${lead.platform ? ` (${lead.platform} store)` : ""}`,
+    html: `
+      <div style="${EMAIL_STYLES}">
+        <h2 style="margin-top: 0; color: #00A99D;">New Chat Widget Lead</h2>
+        <p style="color: #8AADA6; font-size: 13px;">Captured from the Barpel AI homepage chat widget (Aria).</p>
+
+        <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+          <tr><td style="padding: 8px 0; color: #8AADA6; width: 100px;">Name</td>
+              <td style="padding: 8px 0; font-weight: 600;">${safeName || "—"}</td></tr>
+          <tr><td style="padding: 8px 0; color: #8AADA6;">Email</td>
+              <td style="padding: 8px 0;"><a href="mailto:${esc(lead.email)}" style="color: #00A99D;">${esc(lead.email)}</a></td></tr>
+          <tr><td style="padding: 8px 0; color: #8AADA6;">Phone</td>
+              <td style="padding: 8px 0;">${lead.phone ? esc(lead.phone) : "—"}</td></tr>
+          <tr><td style="padding: 8px 0; color: #8AADA6;">Platform</td>
+              <td style="padding: 8px 0;">${lead.platform ? esc(lead.platform) : "—"}</td></tr>
+          <tr><td style="padding: 8px 0; color: #8AADA6;">Time</td>
+              <td style="padding: 8px 0;">${new Date().toLocaleString("en-US", { timeZone: "UTC", dateStyle: "full", timeStyle: "short" })} UTC</td></tr>
+        </table>
+
+        <p style="margin-top: 24px;">
+          ${ctaButton(`mailto:${esc(lead.email)}`, "Reply to lead →")}
+        </p>
+
+        ${SIGNATURE}
+      </div>
+    `,
+  });
+}
+
 // ─── Support ticket notification (team-facing) ─────────────────────────────
 
 /** Internal alert sent to support team + CEO when a dashboard support ticket is submitted. */

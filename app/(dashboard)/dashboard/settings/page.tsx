@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { useMerchant } from "@/hooks/useMerchant";
 import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -272,7 +272,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <motion.div
+    <m.div
       className="max-w-2xl mx-auto p-6 space-y-6"
       initial="hidden"
       animate="visible"
@@ -284,7 +284,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Section 1: Profile */}
-      <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
+      <m.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-slate-900 text-base">
@@ -362,7 +362,7 @@ export default function SettingsPage() {
             <label className="text-sm font-medium text-slate-900">
               Change password
             </label>
-            <div className="space-y-2 mt-1.5">
+            <form onSubmit={(e) => { e.preventDefault(); handleChangePassword(); }} className="space-y-2 mt-1.5">
               <Input
                 type="password"
                 value={newPassword}
@@ -376,7 +376,7 @@ export default function SettingsPage() {
                 placeholder="Confirm new password"
               />
               <Button
-                onClick={handleChangePassword}
+                type="submit"
                 disabled={
                   changingPassword ||
                   newPassword.length < 8 ||
@@ -391,7 +391,7 @@ export default function SettingsPage() {
                 )}
                 Change Password
               </Button>
-            </div>
+            </form>
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-dashed">
               <p className="text-xs text-slate-400">
                 Or send a password reset link to your email
@@ -413,10 +413,10 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
-      </motion.div>
+      </m.div>
 
       {/* Section 2: Notifications */}
-      <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
+      <m.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-slate-900 text-base">
@@ -502,10 +502,10 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
-      </motion.div>
+      </m.div>
 
       {/* Section 3: Data & Privacy */}
-      <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
+      <m.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-slate-900 text-base">
@@ -559,10 +559,10 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
-      </motion.div>
+      </m.div>
 
       {/* Section 4: Danger Zone */}
-      <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
+      <m.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
       <Card className="border-red-200">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-red-600 text-base">
@@ -593,12 +593,12 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
-      </motion.div>
+      </m.div>
 
       <DeleteAccountModal
         open={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
       />
-    </motion.div>
+    </m.div>
   );
 }

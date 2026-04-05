@@ -4,7 +4,7 @@ import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Eye, EyeOff, Mail } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import Logo from '@/components/marketing/Logo';
 import { createClient } from '@/lib/supabase/client';
 
@@ -93,21 +93,21 @@ function LoginForm() {
           </div>
         </header>
         <main className="flex-1 flex items-center justify-center py-12 px-4">
-          <motion.div
+          <m.div
             className="w-full max-w-md"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
             <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-200/60 text-center">
-              <motion.div
+              <m.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 200 }}
                 className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4"
               >
                 <Mail className="w-8 h-8 text-teal-600" />
-              </motion.div>
+              </m.div>
               <h1 className="text-xl font-semibold text-slate-900 mb-2 tracking-tight">
                 Check your email
               </h1>
@@ -121,7 +121,7 @@ function LoginForm() {
                 Back to sign in
               </button>
             </div>
-          </motion.div>
+          </m.div>
         </main>
       </div>
     );
@@ -140,7 +140,7 @@ function LoginForm() {
 
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center py-12 px-4">
-        <motion.div
+        <m.div
           className="w-full max-w-md"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -149,14 +149,14 @@ function LoginForm() {
           {/* Form Card */}
           <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-200/60">
             <div className="text-center mb-8">
-              <motion.div
+              <m.div
                 initial={{ scale: 0.8 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 200 }}
                 className="flex justify-center mb-4"
               >
                 <Logo size="lg" showText={false} />
-              </motion.div>
+              </m.div>
               <h1 className="text-xl font-semibold text-slate-900 mb-2 tracking-tight">
                 Welcome back
               </h1>
@@ -166,18 +166,18 @@ function LoginForm() {
             </div>
 
             {error && (
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600"
               >
                 {error}
-              </motion.div>
+              </m.div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Email */}
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 }}
@@ -197,11 +197,11 @@ function LoginForm() {
                   placeholder="you@company.com"
                   required
                 />
-              </motion.div>
+              </m.div>
 
               {/* Password (hidden when magic link mode) */}
               {!showMagicLink && (
-                <motion.div
+                <m.div
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.2 }}
@@ -230,11 +230,11 @@ function LoginForm() {
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
-                </motion.div>
+                </m.div>
               )}
 
               {/* Forgot Password & Magic Link Toggle */}
-              <motion.div
+              <m.div
                 className="flex justify-between items-center"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -255,10 +255,10 @@ function LoginForm() {
                     Forgot password?
                   </Link>
                 )}
-              </motion.div>
+              </m.div>
 
               {/* Submit Button */}
-              <motion.button
+              <m.button
                 type="submit"
                 disabled={isLoading}
                 className="w-full py-3 px-4 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
@@ -269,7 +269,7 @@ function LoginForm() {
                 transition={{ delay: 0.4 }}
               >
                 {isLoading ? (
-                  <motion.div
+                  <m.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                     className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
@@ -279,11 +279,11 @@ function LoginForm() {
                 ) : (
                   'Sign in'
                 )}
-              </motion.button>
+              </m.button>
             </form>
 
             {/* Divider */}
-            <motion.div
+            <m.div
               className="relative my-6"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -295,16 +295,16 @@ function LoginForm() {
               <div className="relative flex justify-center text-xs">
                 <span className="px-3 bg-white text-slate-400">Or continue with</span>
               </div>
-            </motion.div>
+            </m.div>
 
             {/* Social Login */}
-            <motion.div
+            <m.div
               className="space-y-3"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
             >
-              <motion.button
+              <m.button
                 type="button"
                 onClick={handleGoogleLogin}
                 disabled={isGoogleLoading}
@@ -313,7 +313,7 @@ function LoginForm() {
                 whileTap={{ scale: 0.99 }}
               >
                 {isGoogleLoading ? (
-                  <motion.div
+                  <m.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                     className="w-4 h-4 border-2 border-slate-300 border-t-slate-600 rounded-full"
@@ -329,12 +329,12 @@ function LoginForm() {
                     Continue with Google
                   </>
                 )}
-              </motion.button>
-            </motion.div>
+              </m.button>
+            </m.div>
           </div>
 
           {/* Sign Up Link */}
-          <motion.p
+          <m.p
             className="text-center mt-6 text-sm text-slate-500"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -344,8 +344,8 @@ function LoginForm() {
             <Link href="/signup" className="text-teal-600 font-medium hover:text-teal-700 transition-colors">
               Get started
             </Link>
-          </motion.p>
-        </motion.div>
+          </m.p>
+        </m.div>
       </main>
     </div>
   );

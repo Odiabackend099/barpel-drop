@@ -332,6 +332,21 @@ async function run() {
         };
       }
     }
+    // ── CONTRACT 4b: Token is permanent (not client_credentials) ──────────
+    console.log("CONTRACT 4b: Token permanence check...");
+
+    const scopeRes = await fetch(
+      `https://${integration.shop_domain}/admin/oauth/access_scopes.json`,
+      { headers: { "X-Shopify-Access-Token": shopifyToken } }
+    );
+
+    results["4b_token_not_expired"] = {
+      pass: scopeRes.status === 200,
+      detail:
+        scopeRes.status === 200
+          ? "Token valid — access_scopes returned 200"
+          : `Token returned ${scopeRes.status} — may be expired (client_credentials?)`,
+    };
   } else {
     results["4_vault_readable"] = {
       pass: false,

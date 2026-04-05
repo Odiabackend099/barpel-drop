@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -115,7 +115,7 @@ export default function AboutPage() {
       subtitle="Transforming e-commerce customer support with AI voice technology"
     >
       {/* Mission Statement */}
-      <motion.div
+      <m.div
         className="text-center max-w-3xl mx-auto mb-24"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -133,10 +133,10 @@ export default function AboutPage() {
         <p className="body-large text-text-secondary">
           Barpel was founded on a simple observation: e-commerce merchants spend too much time and money on customer support that could be handled by AI. We are building the platform that lets any store offer instant, intelligent, 24/7 phone support without hiring a call center.
         </p>
-      </motion.div>
+      </m.div>
 
       {/* Company Story */}
-      <motion.div
+      <m.div
         className="mb-24"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -159,7 +159,7 @@ export default function AboutPage() {
             </div>
           </div>
           <div>
-            <motion.div
+            <m.div
               className="rounded-2xl bg-gradient-to-br from-teal-500 to-teal-400 p-8 aspect-square flex items-center justify-center relative overflow-hidden"
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.3 }}
@@ -172,13 +172,13 @@ export default function AboutPage() {
               </div>
               <div className="absolute -bottom-8 -right-8 w-40 h-40 border border-white/10 rounded-full" />
               <div className="absolute top-8 -left-4 w-24 h-24 border border-white/15 rounded-full" />
-            </motion.div>
+            </m.div>
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Timeline */}
-      <motion.div
+      <m.div
         className="mb-24"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -190,7 +190,7 @@ export default function AboutPage() {
           <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-slate-200 hidden md:block" />
           <div className="space-y-8">
             {milestones.map((milestone, index) => (
-              <motion.div
+              <m.div
                 key={`${milestone.year}-${milestone.title}`}
                 className={`flex flex-col md:flex-row items-center gap-4 ${
                   index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
@@ -211,14 +211,14 @@ export default function AboutPage() {
                 </div>
                 <div className="w-4 h-4 rounded-full bg-brand-teal border-4 border-white shadow-sm z-10 flex-shrink-0" />
                 <div className="md:w-5/12" />
-              </motion.div>
+              </m.div>
             ))}
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Values */}
-      <motion.div
+      <m.div
         className="mb-24"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -236,7 +236,7 @@ export default function AboutPage() {
 
         <div className="grid md:grid-cols-2 gap-6">
           {values.map((value, index) => (
-            <motion.div
+            <m.div
               key={value.title}
               className="card-feature flex gap-5"
               initial={{ opacity: 0, y: 20 }}
@@ -251,13 +251,13 @@ export default function AboutPage() {
                 <h3 className="heading-card text-brand-navy mb-2">{value.title}</h3>
                 <p className="text-sm text-text-secondary leading-relaxed">{value.description}</p>
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Team */}
-      <motion.div
+      <m.div
         className="mb-24"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -275,7 +275,7 @@ export default function AboutPage() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {team.map((member, index) => (
-            <motion.div
+            <m.div
               key={member.name}
               className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
               initial={{ opacity: 0, y: 20 }}
@@ -297,13 +297,13 @@ export default function AboutPage() {
                   <Twitter className="w-4 h-4" />
                 </a>
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Culture / Office */}
-      <motion.div
+      <m.div
         className="mb-24"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -337,7 +337,7 @@ export default function AboutPage() {
               ))}
             </div>
           </div>
-          <motion.div
+          <m.div
             className="rounded-2xl bg-gradient-to-br from-brand-navy to-slate-700 p-8 aspect-[4/3] flex items-center justify-center relative overflow-hidden"
             whileHover={{ scale: 1.02 }}
             transition={{ duration: 0.3 }}
@@ -350,12 +350,12 @@ export default function AboutPage() {
             <div className="absolute -bottom-6 -right-6 w-36 h-36 border border-white/10 rounded-full" />
             <div className="absolute top-6 -left-6 w-28 h-28 border border-teal-400/20 rounded-full" />
             <div className="absolute top-1/3 right-1/4 w-16 h-16 bg-teal-400/10 rounded-full blur-xl" />
-          </motion.div>
+          </m.div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Bottom CTAs */}
-      <motion.div
+      <m.div
         className="grid md:grid-cols-2 gap-6"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -384,7 +384,7 @@ export default function AboutPage() {
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
-      </motion.div>
+      </m.div>
     </ContentPageLayout>
   );
 }

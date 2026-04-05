@@ -2,6 +2,15 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAuthUser, unauthorizedResponse } from "@/lib/supabase/auth-guard";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+
+// Rate limit: 3 verification calls per 10 minutes per user (prevents phone call flooding)
+const ratelimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.fixedWindow(3, "600 s"),
+  analytics: true,
+});
 
 /**
  * POST /api/caller-id/start
@@ -15,6 +24,20 @@ export async function POST(request: Request) {
 
     const { user } = await getAuthUser(supabase, request);
   if (!user) return unauthorizedResponse();
+
+  // Rate limit per user — prevents phone call flooding
+  try {
+    const { success } = await ratelimit.limit(`caller-id:${user.id}`);
+    if (!success) {
+      return NextResponse.json(
+        { error: "Too many verification attempts. Please wait 10 minutes before trying again." },
+        { status: 429 }
+      );
+    }
+  } catch (err) {
+    console.error("[caller-id/start] Rate limit check failed:", err);
+    // Continue without rate limiting if Upstash is down (fail open)
+  }
 
   const { data: merchant } = await supabase
     .from("merchants")
@@ -67,6 +90,9 @@ export async function POST(request: Request) {
         PhoneNumber: phoneNumber,
         FriendlyName: "Barpel Caller ID Verification",
         CallDelay: "5",
+        ...(process.env.NEXT_PUBLIC_BASE_URL
+          ? { StatusCallback: `${process.env.NEXT_PUBLIC_BASE_URL}/api/caller-id/status` }
+          : {}),
       }),
     }
   );

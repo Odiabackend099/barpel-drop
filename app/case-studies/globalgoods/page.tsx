@@ -1,7 +1,7 @@
 "use client";
 
 import ContentPageLayout from '@/components/marketing/ContentPageLayout';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -89,7 +89,7 @@ export default function GlobalGoodsCaseStudy() {
       subtitle="How an international marketplace achieved true 24/7 multilingual support across 40+ countries with Barpel AI."
     >
       {/* Back Link */}
-      <motion.div {...fadeInUp} className="mb-8">
+      <m.div {...fadeInUp} className="mb-8">
         <Link
           href="/customer-stories"
           className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-teal-600 transition-colors"
@@ -97,10 +97,10 @@ export default function GlobalGoodsCaseStudy() {
           <ArrowLeft className="w-4 h-4" />
           Back to Customer Stories
         </Link>
-      </motion.div>
+      </m.div>
 
       {/* Company Overview */}
-      <motion.div {...fadeInUp} className="mb-16">
+      <m.div {...fadeInUp} className="mb-16">
         <div className="bg-gradient-to-br from-brand-mint to-emerald-500 rounded-2xl p-10">
           <div className="flex flex-col md:flex-row gap-8 items-center">
             <div className="flex-1">
@@ -123,10 +123,10 @@ export default function GlobalGoodsCaseStudy() {
             </div>
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* The Challenge */}
-      <motion.div {...fadeInUp} className="mb-16">
+      <m.div {...fadeInUp} className="mb-16">
         <h2 className="heading-section text-brand-navy mb-6">The Challenge</h2>
         <p className="body-large text-slate-600 leading-relaxed mb-4">
           GlobalGoods had grown rapidly from a US-only marketplace to serving customers in over 40 countries.
@@ -165,10 +165,10 @@ export default function GlobalGoodsCaseStudy() {
             ))}
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* The Solution */}
-      <motion.div {...fadeInUp} className="mb-16">
+      <m.div {...fadeInUp} className="mb-16">
         <h2 className="heading-section text-brand-navy mb-6">The Solution</h2>
         <p className="text-slate-600 leading-relaxed mb-8">
           GlobalGoods implemented Barpel AI to provide true 24/7 multilingual phone support.
@@ -210,14 +210,14 @@ export default function GlobalGoodsCaseStudy() {
             </p>
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Timeline */}
-      <motion.div {...fadeInUp} className="mb-16">
+      <m.div {...fadeInUp} className="mb-16">
         <h2 className="heading-section text-brand-navy mb-8">Implementation Timeline</h2>
         <div className="space-y-6">
           {timeline.map((item, index) => (
-            <motion.div
+            <m.div
               key={item.day}
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -233,13 +233,13 @@ export default function GlobalGoodsCaseStudy() {
                 <h3 className="text-sm font-semibold text-brand-navy mb-1">{item.title}</h3>
                 <p className="text-sm text-slate-600">{item.description}</p>
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Before & After */}
-      <motion.div {...fadeInUp} className="mb-16">
+      <m.div {...fadeInUp} className="mb-16">
         <h2 className="heading-section text-brand-navy mb-8">Before & After</h2>
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
@@ -252,7 +252,7 @@ export default function GlobalGoodsCaseStudy() {
             </thead>
             <tbody>
               {beforeAfter.map((item, index) => (
-                <motion.tr
+                <m.tr
                   key={item.category}
                   initial={{ opacity: 0 }}
                   whileInView={{ opacity: 1 }}
@@ -268,15 +268,15 @@ export default function GlobalGoodsCaseStudy() {
                       {item.after}
                     </div>
                   </td>
-                </motion.tr>
+                </m.tr>
               ))}
             </tbody>
           </table>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Quote */}
-      <motion.div {...fadeInUp} className="mb-16">
+      <m.div {...fadeInUp} className="mb-16">
         <div className="bg-gradient-to-br from-teal-50 to-emerald-50 rounded-2xl p-10">
           <Quote className="w-10 h-10 text-teal-300 mb-4" />
           <blockquote className="text-xl text-brand-navy font-medium leading-relaxed mb-6">
@@ -290,10 +290,10 @@ export default function GlobalGoodsCaseStudy() {
             <div className="text-sm text-slate-500">VP of Customer Experience, GlobalGoods</div>
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* CTA */}
-      <motion.div {...fadeInUp} className="text-center">
+      <m.div {...fadeInUp} className="text-center">
         <h2 className="heading-section text-brand-navy mb-4">
           Go global with AI support
         </h2>
@@ -313,7 +313,7 @@ export default function GlobalGoodsCaseStudy() {
             More customer stories
           </Link>
         </div>
-      </motion.div>
+      </m.div>
     </ContentPageLayout>
   );
 }

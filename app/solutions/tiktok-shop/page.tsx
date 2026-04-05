@@ -1,7 +1,7 @@
 "use client";
 
 import ContentPageLayout from '@/components/marketing/ContentPageLayout';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -119,7 +119,7 @@ export default function TikTokShopPage() {
       subtitle="Handle the volume, speed, and expectations of TikTok commerce with AI voice support that scales as fast as your videos go viral."
     >
       {/* Challenge Section */}
-      <motion.div {...fadeInUp} className="mb-20">
+      <m.div {...fadeInUp} className="mb-20">
         <div className="text-center mb-12">
           <h2 className="heading-section text-brand-navy mb-4">
             The TikTok Shop <span className="text-teal-500">challenge</span>
@@ -131,7 +131,7 @@ export default function TikTokShopPage() {
         </div>
         <div className="grid md:grid-cols-3 gap-8">
           {challenges.map((challenge, index) => (
-            <motion.div
+            <m.div
               key={challenge.title}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -144,17 +144,17 @@ export default function TikTokShopPage() {
               </div>
               <h3 className="text-lg font-semibold text-brand-navy mb-2">{challenge.title}</h3>
               <p className="text-slate-600 text-sm leading-relaxed">{challenge.description}</p>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Stats */}
-      <motion.div {...fadeInUp} className="mb-20">
+      <m.div {...fadeInUp} className="mb-20">
         <div className="bg-gradient-to-br from-brand-navy to-slate-800 rounded-2xl p-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
-              <motion.div
+              <m.div
                 key={stat.label}
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
@@ -164,14 +164,14 @@ export default function TikTokShopPage() {
               >
                 <div className="text-4xl md:text-5xl font-bold text-teal-400 mb-2">{stat.value}</div>
                 <div className="text-white/70 text-sm">{stat.label}</div>
-              </motion.div>
+              </m.div>
             ))}
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Features */}
-      <motion.div {...fadeInUp} className="mb-20">
+      <m.div {...fadeInUp} className="mb-20">
         <div className="text-center mb-12">
           <h2 className="heading-section text-brand-navy mb-4">
             Purpose-built for <span className="text-teal-500">TikTok Shop</span>
@@ -183,7 +183,7 @@ export default function TikTokShopPage() {
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
-            <motion.div
+            <m.div
               key={feature.title}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -196,13 +196,13 @@ export default function TikTokShopPage() {
               </div>
               <h3 className="text-lg font-semibold text-brand-navy mb-2">{feature.title}</h3>
               <p className="text-slate-600 text-sm leading-relaxed">{feature.description}</p>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Why Barpel for TikTok */}
-      <motion.div {...fadeInUp} className="mb-20">
+      <m.div {...fadeInUp} className="mb-20">
         <div className="bg-gradient-to-br from-slate-50 to-teal-50/30 rounded-2xl p-12">
           <div className="text-center mb-12">
             <h2 className="heading-section text-brand-navy mb-4">
@@ -211,7 +211,7 @@ export default function TikTokShopPage() {
           </div>
           <div className="grid md:grid-cols-2 gap-8">
             {whyBarpel.map((item, index) => (
-              <motion.div
+              <m.div
                 key={item.title}
                 initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -226,14 +226,14 @@ export default function TikTokShopPage() {
                   <h3 className="text-lg font-semibold text-brand-navy mb-2">{item.title}</h3>
                   <p className="text-slate-600 text-sm leading-relaxed">{item.description}</p>
                 </div>
-              </motion.div>
+              </m.div>
             ))}
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Viral Moment Scenario */}
-      <motion.div {...fadeInUp} className="mb-20">
+      <m.div {...fadeInUp} className="mb-20">
         <div className="text-center mb-12">
           <h2 className="heading-section text-brand-navy mb-4">
             When your product <span className="text-teal-500">goes viral</span>
@@ -260,7 +260,7 @@ export default function TikTokShopPage() {
               icon: HeadphonesIcon,
             },
           ].map((step, index) => (
-            <motion.div
+            <m.div
               key={step.time}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -274,13 +274,13 @@ export default function TikTokShopPage() {
               <div className="text-xs font-semibold text-teal-500 uppercase tracking-wide mb-2">{step.time}</div>
               <h3 className="text-lg font-semibold text-brand-navy mb-2">{step.title}</h3>
               <p className="text-slate-600 text-sm leading-relaxed">{step.description}</p>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Final CTA */}
-      <motion.div {...fadeInUp} className="text-center">
+      <m.div {...fadeInUp} className="text-center">
         <h2 className="heading-section text-brand-navy mb-4">
           Ready to scale your TikTok Shop support?
         </h2>
@@ -300,7 +300,7 @@ export default function TikTokShopPage() {
             Talk to sales
           </Link>
         </div>
-      </motion.div>
+      </m.div>
     </ContentPageLayout>
   );
 }

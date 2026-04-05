@@ -51,6 +51,7 @@ export interface MerchantData {
   vapi_agent_id: string;
   phone_number: string;
   support_phone?: string;
+  store_phone?: string;
   custom_prompt: string;
   provisioning_status?: string;
   provisioning_error?: string;

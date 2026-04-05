@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import { cn } from "@/lib/utils";
 
 interface AnimatedGradientBackgroundProps {
@@ -179,7 +179,7 @@ export function BeamsBackground({
                 style={{ filter: "blur(15px)" }}
             />
 
-            <motion.div
+            <m.div
                 className="absolute inset-0 bg-[#1B2A4A]/5"
                 animate={{
                     opacity: [0.05, 0.15, 0.05],
@@ -196,7 +196,7 @@ export function BeamsBackground({
 
             <div className="relative z-10 flex h-screen w-full items-center justify-center">
                 <div className="flex flex-col items-center justify-center gap-6 px-4 text-center">
-                    <motion.h1
+                    <m.h1
                         className="text-6xl md:text-7xl lg:text-8xl font-semibold text-white tracking-tighter"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -205,15 +205,15 @@ export function BeamsBackground({
                         Beams
                         <br />
                         Background
-                    </motion.h1>
-                    <motion.p
+                    </m.h1>
+                    <m.p
                         className="text-lg md:text-2xl lg:text-3xl text-white/70 tracking-tighter"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8 }}
                     >
                         For your pleasure
-                    </motion.p>
+                    </m.p>
                 </div>
             </div>
         </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import ContentPageLayout from '@/components/marketing/ContentPageLayout';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -113,7 +113,7 @@ export default function BlogPage() {
       showCTA={false}
     >
       {/* Featured Post */}
-      <motion.div {...fadeInUp} className="mb-20">
+      <m.div {...fadeInUp} className="mb-20">
         <Link href="/blog/ai-voice-support-transforming-ecommerce" className="block group">
           <div className="bg-gradient-to-br from-brand-navy to-slate-800 rounded-2xl p-10 md:p-14 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/10 rounded-full -translate-y-1/2 translate-x-1/2" />
@@ -143,16 +143,16 @@ export default function BlogPage() {
             </div>
           </div>
         </Link>
-      </motion.div>
+      </m.div>
 
       {/* Blog Grid */}
-      <motion.div {...fadeInUp} className="mb-20">
+      <m.div {...fadeInUp} className="mb-20">
         <div className="text-center mb-12">
           <h2 className="heading-section text-brand-navy mb-4">Latest articles</h2>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {blogPosts.map((post, index) => (
-            <motion.div
+            <m.div
               key={post.title}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -190,13 +190,13 @@ export default function BlogPage() {
                   </div>
                 </div>
               </Link>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Newsletter Signup */}
-      <motion.div {...fadeInUp}>
+      <m.div {...fadeInUp}>
         <div className="bg-gradient-to-br from-teal-50 to-emerald-50 rounded-2xl p-12 text-center">
           <Mail className="w-10 h-10 text-teal-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-brand-navy mb-4">
@@ -220,7 +220,7 @@ export default function BlogPage() {
             Join 5,000+ e-commerce professionals. Unsubscribe anytime.
           </p>
         </div>
-      </motion.div>
+      </m.div>
     </ContentPageLayout>
   );
 }

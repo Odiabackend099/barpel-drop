@@ -1,7 +1,7 @@
 "use client";
 
 import ContentPageLayout from '@/components/marketing/ContentPageLayout';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -150,10 +150,10 @@ export default function DeveloperToolsPage() {
       subtitle="Build on top of Barpel. Integrate AI voice support into your existing workflows with our API, webhooks, and SDKs."
     >
       {/* Overview */}
-      <motion.div {...fadeInUp} className="mb-20">
+      <m.div {...fadeInUp} className="mb-20">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {apiFeatures.map((feature, index) => (
-            <motion.div
+            <m.div
               key={feature.title}
               initial={{ opacity: 0, y: 15 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -164,13 +164,13 @@ export default function DeveloperToolsPage() {
               <feature.icon className="w-8 h-8 text-teal-500 mx-auto mb-3" />
               <h3 className="text-sm font-semibold text-brand-navy mb-1">{feature.title}</h3>
               <p className="text-xs text-slate-500">{feature.description}</p>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* REST API Section */}
-      <motion.div {...fadeInUp} className="mb-20">
+      <m.div {...fadeInUp} className="mb-20">
         <div className="flex flex-col lg:flex-row gap-12">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-4">
@@ -202,7 +202,7 @@ export default function DeveloperToolsPage() {
               </div>
               <div className="p-4 space-y-2">
                 {apiEndpoints.map((endpoint, index) => (
-                  <motion.div
+                  <m.div
                     key={endpoint.path}
                     initial={{ opacity: 0, x: -10 }}
                     whileInView={{ opacity: 1, x: 0 }}
@@ -215,16 +215,16 @@ export default function DeveloperToolsPage() {
                     </span>
                     <code className="text-sm text-teal-400 font-mono">{endpoint.path}</code>
                     <span className="text-xs text-slate-500 hidden md:inline">{endpoint.description}</span>
-                  </motion.div>
+                  </m.div>
                 ))}
               </div>
             </div>
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Webhooks Section */}
-      <motion.div {...fadeInUp} className="mb-20">
+      <m.div {...fadeInUp} className="mb-20">
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Webhook className="w-5 h-5 text-teal-500" />
@@ -245,7 +245,7 @@ export default function DeveloperToolsPage() {
             <h3 className="text-lg font-semibold text-brand-navy mb-4">Available Events</h3>
             <div className="space-y-3">
               {webhookEvents.map((item, index) => (
-                <motion.div
+                <m.div
                   key={item.event}
                   initial={{ opacity: 0, x: -10 }}
                   whileInView={{ opacity: 1, x: 0 }}
@@ -257,7 +257,7 @@ export default function DeveloperToolsPage() {
                     {item.event}
                   </code>
                   <span className="text-sm text-slate-600">{item.description}</span>
-                </motion.div>
+                </m.div>
               ))}
             </div>
           </div>
@@ -278,10 +278,10 @@ export default function DeveloperToolsPage() {
             </div>
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* SDKs Section */}
-      <motion.div {...fadeInUp} className="mb-20">
+      <m.div {...fadeInUp} className="mb-20">
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Package className="w-5 h-5 text-teal-500" />
@@ -297,7 +297,7 @@ export default function DeveloperToolsPage() {
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {sdks.map((sdk, index) => (
-            <motion.div
+            <m.div
               key={sdk.language}
               initial={{ opacity: 0, y: 15 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -313,13 +313,13 @@ export default function DeveloperToolsPage() {
               <div className="bg-slate-900 rounded-lg px-3 py-2">
                 <code className="text-xs text-teal-400 font-mono">{sdk.install}</code>
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Developer Community CTA */}
-      <motion.div {...fadeInUp}>
+      <m.div {...fadeInUp}>
         <div className="bg-gradient-to-br from-brand-navy to-slate-800 rounded-2xl p-12 text-center">
           <Users className="w-10 h-10 text-teal-400 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-white mb-4">
@@ -346,7 +346,7 @@ export default function DeveloperToolsPage() {
             </Link>
           </div>
         </div>
-      </motion.div>
+      </m.div>
     </ContentPageLayout>
   );
 }

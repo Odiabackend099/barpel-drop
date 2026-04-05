@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Star, Check, TrendingUp, CreditCard as CardIcon, Zap, XCircle, RefreshCw, ExternalLink } from "lucide-react";
 import {
   AreaChart,
@@ -188,8 +188,6 @@ export default function BillingPage() {
 
   useEffect(() => { setMounted(true); }, []);
 
-  // Handle return from Paystack redirect (trxref param on success).
-  // The webhook is the authoritative credit path; this is UI feedback only.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     window.history.replaceState({}, "", "/dashboard/billing");
@@ -208,7 +206,7 @@ export default function BillingPage() {
   }, [refreshBalance]);
 
   return (
-    <motion.div
+    <m.div
       className="space-y-6"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -313,15 +311,17 @@ export default function BillingPage() {
               <p className="text-lg font-bold text-slate-900 capitalize">{shopifyPlan} Plan · {shopifyBillingCycle ?? "monthly"}</p>
             </div>
           </div>
-          <a
-            href={shopifyAdminUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-900 bg-white border border-slate-200 rounded-lg hover:border-brand-600 hover:bg-brand-light transition-all"
-          >
-            <ExternalLink className="w-4 h-4" />
-            Manage in Shopify Admin
-          </a>
+          {appHandle && (
+            <a
+              href={shopifyAdminUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-900 bg-white border border-slate-200 rounded-lg hover:border-brand-600 hover:bg-brand-light transition-all"
+            >
+              <ExternalLink className="w-4 h-4" />
+              Manage Subscription
+            </a>
+          )}
           <p className="text-xs text-muted-foreground mt-3 font-sans">
             Your subscription is billed through Shopify. To upgrade, downgrade, or cancel, visit your Shopify Admin.
           </p>
@@ -521,6 +521,6 @@ export default function BillingPage() {
           </div>
         )
       )}
-    </motion.div>
+    </m.div>
   );
 }

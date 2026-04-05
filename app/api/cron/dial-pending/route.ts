@@ -24,6 +24,26 @@ export async function GET(request: NextRequest) {
 
   const supabase = createAdminClient();
 
+  // Reset stale "dialing" calls (older than 1 hour) back to pending so they can be retried.
+  // This handles cases where the Vapi call was initiated but the end-of-call webhook never fired.
+  // Only reset if last_attempted_at is set (exclude NULL values which indicate never attempted).
+  try {
+    const { data: resetCalls } = await supabase
+      .from("pending_outbound_calls")
+      .update({ status: "pending", error_message: "Stale dial reset — retrying" })
+      .eq("status", "dialing")
+      .lt("last_attempted_at", new Date(Date.now() - 60 * 60 * 1000).toISOString())
+      .not("last_attempted_at", "is", null)
+      .select("id");
+
+    if (resetCalls && resetCalls.length > 0) {
+      console.log(`[cron/dial-pending] Reset ${resetCalls.length} stale calls (no webhook received within 1 hour)`);
+    }
+  } catch (err) {
+    console.error("[cron/dial-pending] Failed to reset stale calls:", err);
+    // Don't throw — continue with pending dials even if cleanup fails
+  }
+
   // Fetch pending calls that are due now
   const { data: pendingCalls } = await supabase
     .from("pending_outbound_calls")

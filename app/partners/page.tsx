@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -139,7 +139,7 @@ export default function PartnersPage() {
       subtitle="Grow your business alongside Barpel. Earn recurring revenue, access exclusive resources, and bring AI voice support to your clients."
     >
       {/* Partner Stats */}
-      <motion.div
+      <m.div
         className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-20"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -152,7 +152,7 @@ export default function PartnersPage() {
           { value: '25%', label: 'Max Revenue Share' },
           { value: '< 24h', label: 'Application Review' },
         ].map((stat, index) => (
-          <motion.div
+          <m.div
             key={stat.label}
             className="text-center p-6 bg-off-white rounded-xl border border-light-mint"
             initial={{ opacity: 0, y: 15 }}
@@ -162,12 +162,12 @@ export default function PartnersPage() {
           >
             <div className="text-2xl font-bold text-brand-navy mb-1">{stat.value}</div>
             <div className="text-sm text-text-secondary">{stat.label}</div>
-          </motion.div>
+          </m.div>
         ))}
-      </motion.div>
+      </m.div>
 
       {/* Partner Benefits */}
-      <motion.div
+      <m.div
         className="mb-24"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -185,7 +185,7 @@ export default function PartnersPage() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {partnerBenefits.map((benefit, index) => (
-            <motion.div
+            <m.div
               key={benefit.title}
               className="card-feature"
               initial={{ opacity: 0, y: 20 }}
@@ -196,13 +196,13 @@ export default function PartnersPage() {
               <benefit.icon className="w-6 h-6 text-brand-teal mb-4" />
               <h3 className="heading-card text-brand-navy mb-2">{benefit.title}</h3>
               <p className="text-sm text-text-secondary leading-relaxed">{benefit.description}</p>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Partner Tiers */}
-      <motion.div
+      <m.div
         className="mb-24"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -220,7 +220,7 @@ export default function PartnersPage() {
 
         <div className="grid md:grid-cols-3 gap-6">
           {partnerTiers.map((tier, index) => (
-            <motion.div
+            <m.div
               key={tier.name}
               className={`relative bg-white rounded-2xl p-6 transition-all duration-300 ${
                 tier.popular
@@ -270,13 +270,13 @@ export default function PartnersPage() {
               >
                 {tier.cta}
               </a>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Application Process */}
-      <motion.div
+      <m.div
         className="mb-24"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -294,7 +294,7 @@ export default function PartnersPage() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {applicationSteps.map((step, index) => (
-            <motion.div
+            <m.div
               key={step.step}
               className="relative"
               initial={{ opacity: 0, y: 20 }}
@@ -308,13 +308,13 @@ export default function PartnersPage() {
               {index < applicationSteps.length - 1 && (
                 <ArrowRight className="w-5 h-5 text-slate-300 absolute top-4 -right-3 hidden lg:block" />
               )}
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* CTA */}
-      <motion.div
+      <m.div
         className="bg-gradient-to-br from-brand-navy via-slate-800 to-brand-navy rounded-2xl p-12 text-center"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -343,7 +343,7 @@ export default function PartnersPage() {
             Talk to our team
           </Link>
         </div>
-      </motion.div>
+      </m.div>
     </ContentPageLayout>
   );
 }

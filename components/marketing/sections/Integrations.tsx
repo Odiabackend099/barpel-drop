@@ -2,14 +2,14 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { ArrowRight, ExternalLink } from 'lucide-react';
 
 const integrations = [
   { name: 'Shopify', logo: '/logos/shopify.svg' },
-  { name: 'Twilio', logo: '/logos/twilio.svg' },
-  { name: 'Vapi AI', logo: '/logos/vapi.svg' },
-  { name: 'Supabase', logo: '/logos/supabase.svg' },
+  { name: 'WooCommerce', logo: '/logos/woocommerce.svg' },
+  { name: 'TikTok Shop', logo: '/logos/tiktok-shop.svg' },
+  { name: 'Amazon', logo: '/logos/amazon.svg' },
 ];
 
 const featuredIntegrations = [
@@ -19,9 +19,9 @@ const featuredIntegrations = [
     logo: '/logos/shopify.svg',
   },
   {
-    name: 'Voice & SMS',
-    description: 'Powered by Twilio and Vapi AI for crystal-clear voice calls and SMS notifications.',
-    logo: '/logos/twilio.svg',
+    name: 'Multi-Channel Sales',
+    description: 'Sell on WooCommerce, TikTok Shop, and Amazon. Barpel manages orders across all platforms.',
+    logo: '/logos/woocommerce.svg',
   },
 ];
 
@@ -49,7 +49,7 @@ export default function Integrations() {
       <div className="container-default">
         <div>
           {/* Section Header */}
-          <motion.div
+          <m.div
             className="max-w-2xl mb-12"
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -70,10 +70,10 @@ export default function Integrations() {
               View all integrations
               <ArrowRight className="w-4 h-4" />
             </Link>
-          </motion.div>
+          </m.div>
 
           {/* Integration Logos Grid */}
-          <motion.div
+          <m.div
             className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12"
             variants={gridVariants}
             initial="hidden"
@@ -81,29 +81,29 @@ export default function Integrations() {
             viewport={{ once: true }}
           >
             {integrations.map((integration) => (
-              <motion.div
+              <m.div
                 key={integration.name}
                 className="group flex flex-col items-center justify-center p-6 bg-off-white rounded-xl border border-light-mint transition-all duration-300 hover:bg-white hover:shadow-teal-md hover:-translate-y-1"
                 variants={cardVariants}
                 whileHover={{ y: -4 }}
                 title={integration.name}
               >
-                <motion.div
+                <m.div
                   className="mb-2"
                   whileHover={{ rotate: 5, scale: 1.15 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 15 }}
                 >
                   <Image src={integration.logo} alt={`Barpel AI integrates with ${integration.name}`} width={40} height={40} className="h-10 w-auto" />
-                </motion.div>
+                </m.div>
                 <span className="text-sm font-medium text-text-secondary group-hover:text-brand-navy transition-colors">
                   {integration.name}
                 </span>
-              </motion.div>
+              </m.div>
             ))}
-          </motion.div>
+          </m.div>
 
           {/* Featured Integration Cards */}
-          <motion.div
+          <m.div
             className="grid md:grid-cols-2 gap-6"
             variants={gridVariants}
             initial="hidden"
@@ -111,7 +111,7 @@ export default function Integrations() {
             viewport={{ once: true }}
           >
             {featuredIntegrations.map((integration) => (
-              <motion.a
+              <m.a
                 key={integration.name}
                 href="/integrations"
                 className="group flex items-start gap-4 p-6 bg-off-white rounded-xl border border-light-mint transition-all duration-300 hover:bg-white hover:shadow-teal-md hover:border-brand-teal/30"
@@ -131,9 +131,9 @@ export default function Integrations() {
                     {integration.description}
                   </p>
                 </div>
-              </motion.a>
+              </m.a>
             ))}
-          </motion.div>
+          </m.div>
         </div>
       </div>
     </section>

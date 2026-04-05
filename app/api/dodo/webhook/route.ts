@@ -3,6 +3,7 @@ import { Webhooks } from "@dodopayments/nextjs";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendReceiptEmail, sendPaymentFailedEmail } from "@/lib/email/client";
 import { CREDIT_PACKAGES } from "@/lib/constants";
+import { createConversion } from "@/lib/tapfiliate";
 
 /** Plan amounts for receipt emails — derived from CREDIT_PACKAGES (single source of truth). */
 const PLAN_AMOUNTS: Record<string, { monthlyAmount: number; annualAmount: number; credits: number }> = {};
@@ -143,6 +144,24 @@ function getWebhookHandler() {
       return;
     }
 
+    // Best-effort Tapfiliate conversion (affiliate commission tracking)
+    try {
+      const planAmount = billingCycle === "annual"
+        ? (PLAN_AMOUNTS[tx.plan]?.annualAmount ?? tx.amount)
+        : (PLAN_AMOUNTS[tx.plan]?.monthlyAmount ?? tx.amount);
+
+      const result = await createConversion({
+        customer_id: tx.merchant_id,
+        external_id: txRef,
+        amount: planAmount,
+      });
+      if (!result.ok) {
+        console.error("[dodo/webhook] Tapfiliate conversion failed:", result.error);
+      }
+    } catch (err) {
+      console.error("[dodo/webhook] Tapfiliate conversion error:", (err as Error).message);
+    }
+
     // Best-effort receipt email
     try {
       const { data: merchantRow } = await adminSupabase
@@ -252,18 +271,35 @@ function getWebhookHandler() {
     });
 
     // Insert billing_transactions record for renewal
+    const renewalTxRef = `dodo_renewal_${subId}_${Date.now()}`;
+    const renewalAmount = billingCycle === "annual"
+      ? (PLAN_AMOUNTS[merchant.dodo_plan]?.annualAmount ?? 0)
+      : (PLAN_AMOUNTS[merchant.dodo_plan]?.monthlyAmount ?? 0);
+
     await adminSupabase.from("billing_transactions").insert({
       merchant_id: merchant.id,
-      tx_ref:      `dodo_renewal_${subId}_${Date.now()}`,
+      tx_ref:      renewalTxRef,
       plan:        merchant.dodo_plan,
-      amount:      billingCycle === "annual"
-        ? (PLAN_AMOUNTS[merchant.dodo_plan]?.annualAmount ?? 0)
-        : (PLAN_AMOUNTS[merchant.dodo_plan]?.monthlyAmount ?? 0),
+      amount:      renewalAmount,
       currency:    "USD",
       status:      "completed",
       provider:    "dodo",
       billing_cycle: billingCycle,
     });
+
+    // Best-effort Tapfiliate conversion for recurring commission
+    try {
+      const result = await createConversion({
+        customer_id: merchant.id,
+        external_id: renewalTxRef,
+        amount: renewalAmount,
+      });
+      if (!result.ok) {
+        console.error("[dodo/webhook] Tapfiliate renewal conversion failed:", result.error);
+      }
+    } catch (err) {
+      console.error("[dodo/webhook] Tapfiliate renewal conversion error:", (err as Error).message);
+    }
 
     // Best-effort receipt email
     try {

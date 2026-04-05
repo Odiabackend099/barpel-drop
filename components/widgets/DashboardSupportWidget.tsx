@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import {
   HelpCircle,
   X,
@@ -41,7 +41,7 @@ function TypingDots() {
   return (
     <div className="flex items-center gap-1 px-4 py-3">
       {[0, 1, 2].map((i) => (
-        <motion.span
+        <m.span
           key={i}
           className="w-2 h-2 rounded-full bg-slate-300 block"
           animate={{ y: [0, -5, 0] }}
@@ -253,7 +253,7 @@ export default function DashboardSupportWidget() {
       {/* Panel */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div
+          <m.div
             key="support-panel"
             initial={{ scale: 0.85, y: 20, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
@@ -327,7 +327,7 @@ export default function DashboardSupportWidget() {
                       </p>
                     )}
                     {messages.map((msg) => (
-                      <motion.div
+                      <m.div
                         key={msg.id}
                         initial={{ y: 8, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
@@ -362,7 +362,7 @@ export default function DashboardSupportWidget() {
                             </button>
                           )}
                         </div>
-                      </motion.div>
+                      </m.div>
                     ))}
 
                     {isStreaming && messages[messages.length - 1]?.content === '' && (
@@ -435,7 +435,7 @@ export default function DashboardSupportWidget() {
                   }`}
                 >
                   {activeTab === tab && (
-                    <motion.div
+                    <m.div
                       layoutId="tab-indicator"
                       className="absolute top-0 left-0 right-0 h-0.5 bg-teal-600 rounded-full"
                     />
@@ -449,13 +449,13 @@ export default function DashboardSupportWidget() {
                 </button>
               ))}
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 
       {/* Trigger button */}
       {!isOpen && (
-        <motion.button
+        <m.button
           onClick={() => setIsOpen(true)}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -463,7 +463,7 @@ export default function DashboardSupportWidget() {
           aria-label="Open support"
         >
           <HelpCircle className="w-6 h-6" />
-        </motion.button>
+        </m.button>
       )}
     </div>
   )

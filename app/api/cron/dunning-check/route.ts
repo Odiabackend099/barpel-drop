@@ -196,5 +196,76 @@ export async function GET(req: Request) {
     }
   }
 
-  return NextResponse.json({ processed, total: overdue.length });
+  // Dodo dunning fallback — check Dodo subscribers who might have missed webhooks
+  const { data: dodoMerchants } = await supabase
+    .from("merchants")
+    .select("id, user_id, business_name, dodo_subscription_id, plan_status, dunning_email_count, support_phone, cancellation_attempted_at, billing_cycle")
+    .not("dodo_subscription_id", "is", null)
+    .neq("plan_status", "cancelled")
+    .is("deleted_at", null);
+
+  if (dodoMerchants?.length) {
+    const dodoApiKey = process.env.DODO_API_KEY;
+    if (!dodoApiKey) {
+      console.error("[dunning] DODO_API_KEY not configured — skipping Dodo dunning checks");
+    } else {
+      for (const merchant of dodoMerchants) {
+        try {
+          // Fetch current subscription status from Dodo API
+          const dodoRes = await fetch(
+            `https://api.dodopayments.com/subscriptions/${merchant.dodo_subscription_id}`,
+            {
+              headers: { Authorization: `Bearer ${dodoApiKey}` },
+            }
+          );
+
+          if (!dodoRes.ok) {
+            console.warn(`[dunning] Dodo API returned ${dodoRes.status} for merchant ${merchant.id}`);
+            continue;
+          }
+
+          const dodoSub = await dodoRes.json();
+          const status = dodoSub?.status?.toLowerCase();
+
+          // Only enter dunning if status is past_due or failed, and plan_status is still active
+          if ((status === "past_due" || status === "failed") && merchant.plan_status === "active") {
+            const updates: Record<string, unknown> = {};
+            updates.plan_status = "past_due";
+            updates.dunning_started_at = now.toISOString();
+            updates.dunning_email_count = 1;
+
+            // Get merchant email for notifications
+            let email: string | undefined;
+            try {
+              const { data: authData } = await supabase.auth.admin.getUserById(merchant.user_id);
+              email = authData?.user?.email ?? undefined;
+            } catch {
+              // Can't send email — continue with status updates only
+            }
+
+            if (email) {
+              try {
+                await sendPaymentFailedEmail(email, merchant.business_name);
+              } catch (err) {
+                console.error(`[dunning] Failed email for Dodo merchant ${merchant.id}:`, (err as Error).message);
+              }
+            }
+
+            // Apply updates
+            await supabase
+              .from("merchants")
+              .update(updates)
+              .eq("id", merchant.id)
+              .eq("plan_status", "active");
+
+            processed++;
+          }
+        } catch (err) {
+          console.error(`[dunning] Dodo check error for merchant ${merchant.id}:`, (err as Error).message);
+        }
+      }
+    }
+  }
+
+  return NextResponse.json({ processed, total: (overdue?.length ?? 0) + (dodoMerchants?.length ?? 0) });
 }

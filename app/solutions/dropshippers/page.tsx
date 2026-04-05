@@ -1,7 +1,7 @@
 "use client";
 
 import ContentPageLayout from '@/components/marketing/ContentPageLayout';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import Link from 'next/link';
 import {
   Package,
@@ -98,7 +98,7 @@ export default function DropshippersPage() {
       subtitle="Automate order tracking calls, handle returns, and provide 24/7 multilingual support — so you can focus on scaling your store."
     >
       {/* Pain Points Section */}
-      <motion.div {...fadeInUp} className="mb-20">
+      <m.div {...fadeInUp} className="mb-20">
         <div className="text-center mb-12">
           <h2 className="heading-section text-brand-navy mb-4">
             The dropshipping support <span className="text-teal-500">problem</span>
@@ -110,7 +110,7 @@ export default function DropshippersPage() {
         </div>
         <div className="grid md:grid-cols-3 gap-8">
           {painPoints.map((point, index) => (
-            <motion.div
+            <m.div
               key={point.title}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -123,17 +123,17 @@ export default function DropshippersPage() {
               </div>
               <h3 className="text-lg font-semibold text-brand-navy mb-2">{point.title}</h3>
               <p className="text-slate-600 text-sm leading-relaxed">{point.description}</p>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Stats Section */}
-      <motion.div {...fadeInUp} className="mb-20">
+      <m.div {...fadeInUp} className="mb-20">
         <div className="bg-gradient-to-br from-brand-navy to-slate-800 rounded-2xl p-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
-              <motion.div
+              <m.div
                 key={stat.label}
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
@@ -143,14 +143,14 @@ export default function DropshippersPage() {
               >
                 <div className="text-4xl md:text-5xl font-bold text-teal-400 mb-2">{stat.value}</div>
                 <div className="text-white/70 text-sm">{stat.label}</div>
-              </motion.div>
+              </m.div>
             ))}
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* How Barpel Solves It */}
-      <motion.div {...fadeInUp} className="mb-20">
+      <m.div {...fadeInUp} className="mb-20">
         <div className="text-center mb-12">
           <h2 className="heading-section text-brand-navy mb-4">
             How Barpel <span className="text-teal-500">solves it</span>
@@ -162,7 +162,7 @@ export default function DropshippersPage() {
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
-            <motion.div
+            <m.div
               key={feature.title}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -175,13 +175,13 @@ export default function DropshippersPage() {
               </div>
               <h3 className="text-lg font-semibold text-brand-navy mb-2">{feature.title}</h3>
               <p className="text-slate-600 text-sm leading-relaxed">{feature.description}</p>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* How It Works */}
-      <motion.div {...fadeInUp} className="mb-20">
+      <m.div {...fadeInUp} className="mb-20">
         <div className="text-center mb-12">
           <h2 className="heading-section text-brand-navy mb-4">
             Up and running in <span className="text-teal-500">minutes</span>
@@ -208,7 +208,7 @@ export default function DropshippersPage() {
                 'Forward your support number to Barpel. Your AI agent starts handling calls immediately with real-time order data.',
             },
           ].map((item, index) => (
-            <motion.div
+            <m.div
               key={item.step}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -219,13 +219,13 @@ export default function DropshippersPage() {
               <div className="text-6xl font-bold text-teal-100 mb-4">{item.step}</div>
               <h3 className="text-xl font-semibold text-brand-navy mb-2">{item.title}</h3>
               <p className="text-slate-600 leading-relaxed">{item.description}</p>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Customer Success */}
-      <motion.div {...fadeInUp} className="mb-20">
+      <m.div {...fadeInUp} className="mb-20">
         <div className="bg-gradient-to-br from-teal-50 to-emerald-50 rounded-2xl p-12">
           <div className="flex flex-col md:flex-row items-center gap-8">
             <div className="flex-1">
@@ -263,10 +263,10 @@ export default function DropshippersPage() {
             </div>
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Final CTA */}
-      <motion.div {...fadeInUp} className="text-center">
+      <m.div {...fadeInUp} className="text-center">
         <h2 className="heading-section text-brand-navy mb-4">
           Ready to automate your dropshipping support?
         </h2>
@@ -286,7 +286,7 @@ export default function DropshippersPage() {
             Book a demo
           </Link>
         </div>
-      </motion.div>
+      </m.div>
     </ContentPageLayout>
   );
 }

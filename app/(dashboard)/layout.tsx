@@ -1,10 +1,15 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import dynamic from 'next/dynamic';
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { Navbar } from "@/components/dashboard/Navbar";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import DashboardSupportWidget from "@/components/widgets/DashboardSupportWidget";
+
+const DashboardSupportWidget = dynamic(
+  () => import('@/components/widgets/DashboardSupportWidget'),
+  { ssr: false }
+);
 
 const COLLAPSED_KEY = "barpel_sidebar_collapsed";
 

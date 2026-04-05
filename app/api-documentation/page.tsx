@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -195,7 +195,7 @@ export default function ApiDocumentationPage() {
       subtitle="Build custom integrations with the Barpel REST API. Programmatic access to calls, orders, analytics, and more."
     >
       {/* Quick Links */}
-      <motion.div
+      <m.div
         className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -208,7 +208,7 @@ export default function ApiDocumentationPage() {
           { icon: Terminal, label: 'Endpoints', href: '#endpoints' },
           { icon: Zap, label: 'Rate Limits', href: '#rate-limits' },
         ].map((link, index) => (
-          <motion.a
+          <m.a
             key={link.label}
             href={link.href}
             className="flex items-center gap-3 p-4 bg-off-white rounded-xl border border-light-mint hover:shadow-teal-md hover:-translate-y-0.5 transition-all duration-200"
@@ -219,12 +219,12 @@ export default function ApiDocumentationPage() {
           >
             <link.icon className="w-5 h-5 text-brand-teal" />
             <span className="text-sm font-semibold text-brand-navy">{link.label}</span>
-          </motion.a>
+          </m.a>
         ))}
-      </motion.div>
+      </m.div>
 
       {/* Overview */}
-      <motion.section
+      <m.section
         id="overview"
         className="mb-16"
         initial={{ opacity: 0, y: 30 }}
@@ -255,10 +255,10 @@ export default function ApiDocumentationPage() {
             </div>
           </div>
         </div>
-      </motion.section>
+      </m.section>
 
       {/* Authentication */}
-      <motion.section
+      <m.section
         id="authentication"
         className="mb-16"
         initial={{ opacity: 0, y: 30 }}
@@ -297,10 +297,10 @@ export default function ApiDocumentationPage() {
             </p>
           </div>
         </div>
-      </motion.section>
+      </m.section>
 
       {/* Endpoints */}
-      <motion.section
+      <m.section
         id="endpoints"
         className="mb-16"
         initial={{ opacity: 0, y: 30 }}
@@ -315,7 +315,7 @@ export default function ApiDocumentationPage() {
 
         <div className="space-y-6">
           {endpoints.map((endpoint, index) => (
-            <motion.div
+            <m.div
               key={endpoint.path}
               className="bg-white rounded-xl border border-slate-100 overflow-hidden"
               initial={{ opacity: 0, y: 20 }}
@@ -351,13 +351,13 @@ export default function ApiDocumentationPage() {
                   ))}
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.section>
+      </m.section>
 
       {/* Code Examples */}
-      <motion.section
+      <m.section
         className="mb-16"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -396,10 +396,10 @@ export default function ApiDocumentationPage() {
           <h3 className="heading-card text-brand-navy mb-3">Response</h3>
           <CodeBlock code={responseExample} language="json" />
         </div>
-      </motion.section>
+      </m.section>
 
       {/* Rate Limits */}
-      <motion.section
+      <m.section
         id="rate-limits"
         className="mb-16"
         initial={{ opacity: 0, y: 30 }}
@@ -432,10 +432,10 @@ export default function ApiDocumentationPage() {
             </tbody>
           </table>
         </div>
-      </motion.section>
+      </m.section>
 
       {/* SDKs */}
-      <motion.div
+      <m.div
         className="bg-off-white rounded-2xl p-12 border border-light-mint text-center"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -461,7 +461,7 @@ export default function ApiDocumentationPage() {
           Get your API key
           <ArrowRight className="w-4 h-4" />
         </Link>
-      </motion.div>
+      </m.div>
     </ContentPageLayout>
   );
 }

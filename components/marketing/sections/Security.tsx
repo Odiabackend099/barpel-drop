@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 
 // Clean SVG representations of actual compliance certification marks
 function Soc2Badge() {
@@ -92,7 +92,7 @@ export default function Security() {
       <div className="container-default">
         <div className="text-center">
           {/* Section Header */}
-          <motion.div
+          <m.div
             className="max-w-3xl mx-auto mb-14"
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -114,12 +114,12 @@ export default function Security() {
               Learn more
               <ArrowRight className="w-4 h-4" />
             </Link>
-          </motion.div>
+          </m.div>
 
           {/* Badges */}
           <div className="flex flex-wrap justify-center gap-4 md:gap-6">
             {badges.map((badge, index) => (
-              <motion.div
+              <m.div
                 key={badge.label}
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -137,7 +137,7 @@ export default function Security() {
                     {badge.description}
                   </span>
                 </div>
-              </motion.div>
+              </m.div>
             ))}
           </div>
         </div>

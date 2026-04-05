@@ -198,6 +198,8 @@ export async function POST(request: Request) {
     }
 
     // Step 2: Import merchant's Twilio number into Vapi
+    // Auth: Bearer VAPI_PRIVATE_KEY. Twilio creds: Account SID + Auth Token.
+    // Per Vapi docs: https://docs.vapi.ai/phone-numbers/import-twilio
     const vapiKey = process.env.VAPI_PRIVATE_KEY;
     if (!vapiKey) throw new Error("Missing VAPI_PRIVATE_KEY");
 

@@ -132,11 +132,11 @@ export const CALL_FORWARDING_CODES: Record<
   },
   US: {
     "AT&T": {
-      forwardAll: "**21*{AI_NUMBER}#",
-      forwardNoAnswer: "**61*{AI_NUMBER}*11*30#",
-      forwardBusy: "**67*{AI_NUMBER}#",
-      forwardUnreachable: "**62*{AI_NUMBER}#",
-      cancel: "##21#",
+      forwardAll: "*21*{AI_NUMBER}#",
+      forwardNoAnswer: "*61*{AI_NUMBER}*11*30#",
+      forwardBusy: "*67*{AI_NUMBER}#",
+      forwardUnreachable: "*62*{AI_NUMBER}#",
+      cancel: "#21#",
       verify: "*#21#",
     },
     "T-Mobile": {

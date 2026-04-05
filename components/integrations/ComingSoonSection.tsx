@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { TikTokIcon } from "@/components/brand/TikTokIcon";
 import { WooCommerceIcon } from "@/components/brand/WooCommerceIcon";
 
@@ -34,26 +34,26 @@ export function ComingSoonSection() {
       <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider font-sans">
         Coming Soon
       </h3>
-      <motion.div
+      <m.div
         className="grid grid-cols-1 sm:grid-cols-2 gap-4"
         initial="hidden"
         animate="visible"
         variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
       >
         {cards.map((card, i) => (
-          <motion.div
+          <m.div
             key={card.name}
             className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm cursor-not-allowed pointer-events-none opacity-50"
             variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 0.5, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}
           >
             <div className="flex items-start gap-4">
-              <motion.div
+              <m.div
                 className={`w-12 h-12 rounded-lg flex items-center justify-center ${card.iconBg}`}
                 animate={{ y: [0, -3, 0] }}
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: i * 0.5 }}
               >
                 <card.Icon size={24} />
-              </motion.div>
+              </m.div>
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <h3 className="font-bold text-slate-900 font-sans">{card.name}</h3>
@@ -64,9 +64,9 @@ export function ComingSoonSection() {
                 </p>
               </div>
             </div>
-          </motion.div>
+          </m.div>
         ))}
-      </motion.div>
+      </m.div>
     </div>
   );
 }

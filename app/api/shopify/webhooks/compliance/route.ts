@@ -79,8 +79,9 @@ export async function POST(req: NextRequest) {
           );
 
           const { error } = await supabase
-            .from('shopify_integrations')
+            .from('integrations')
             .delete()
+            .eq('platform', 'shopify')
             .eq('shop_domain', shopDomain);
 
           if (error) {

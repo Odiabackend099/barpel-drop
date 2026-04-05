@@ -1,7 +1,7 @@
 "use client";
 
 import ContentPageLayout from '@/components/marketing/ContentPageLayout';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import Link from 'next/link';
 import {
   ShoppingBag,
@@ -113,11 +113,11 @@ export default function ShopifyStoresPage() {
       subtitle="One-click installation. Instant order sync. AI-powered phone support that knows your store inside and out."
     >
       {/* Stats Banner */}
-      <motion.div {...fadeInUp} className="mb-20">
+      <m.div {...fadeInUp} className="mb-20">
         <div className="bg-gradient-to-br from-[#96bf48] to-[#5a8a17] rounded-2xl p-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
-              <motion.div
+              <m.div
                 key={stat.label}
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
@@ -127,14 +127,14 @@ export default function ShopifyStoresPage() {
               >
                 <div className="text-4xl md:text-5xl font-bold text-white mb-2">{stat.value}</div>
                 <div className="text-white/80 text-sm">{stat.label}</div>
-              </motion.div>
+              </m.div>
             ))}
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* How It Works with Shopify */}
-      <motion.div {...fadeInUp} className="mb-20">
+      <m.div {...fadeInUp} className="mb-20">
         <div className="text-center mb-12">
           <h2 className="heading-section text-brand-navy mb-4">
             Seamless <span className="text-teal-500">Shopify integration</span>
@@ -146,7 +146,7 @@ export default function ShopifyStoresPage() {
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {integrationSteps.map((step, index) => (
-            <motion.div
+            <m.div
               key={step.title}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -162,13 +162,13 @@ export default function ShopifyStoresPage() {
               </div>
               <h3 className="text-lg font-semibold text-brand-navy mb-2">{step.title}</h3>
               <p className="text-slate-600 text-sm leading-relaxed">{step.description}</p>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Features Grid */}
-      <motion.div {...fadeInUp} className="mb-20">
+      <m.div {...fadeInUp} className="mb-20">
         <div className="text-center mb-12">
           <h2 className="heading-section text-brand-navy mb-4">
             Everything your Shopify store <span className="text-teal-500">needs</span>
@@ -180,7 +180,7 @@ export default function ShopifyStoresPage() {
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
-            <motion.div
+            <m.div
               key={feature.title}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -193,13 +193,13 @@ export default function ShopifyStoresPage() {
               </div>
               <h3 className="text-lg font-semibold text-brand-navy mb-2">{feature.title}</h3>
               <p className="text-slate-600 text-sm leading-relaxed">{feature.description}</p>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Shopify Benefits Checklist */}
-      <motion.div {...fadeInUp} className="mb-20">
+      <m.div {...fadeInUp} className="mb-20">
         <div className="bg-gradient-to-br from-slate-50 to-teal-50/30 rounded-2xl p-12">
           <div className="flex flex-col lg:flex-row gap-12 items-center">
             <div className="flex-1">
@@ -212,7 +212,7 @@ export default function ShopifyStoresPage() {
               </p>
               <div className="grid sm:grid-cols-2 gap-3">
                 {shopifyBenefits.map((benefit, index) => (
-                  <motion.div
+                  <m.div
                     key={benefit}
                     initial={{ opacity: 0, x: -10 }}
                     whileInView={{ opacity: 1, x: 0 }}
@@ -222,7 +222,7 @@ export default function ShopifyStoresPage() {
                   >
                     <CheckCircle2 className="w-5 h-5 text-teal-500 flex-shrink-0 mt-0.5" />
                     <span className="text-sm text-slate-700">{benefit}</span>
-                  </motion.div>
+                  </m.div>
                 ))}
               </div>
             </div>
@@ -242,10 +242,10 @@ export default function ShopifyStoresPage() {
             </div>
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Case Study Highlight */}
-      <motion.div {...fadeInUp} className="mb-20">
+      <m.div {...fadeInUp} className="mb-20">
         <div className="bg-gradient-to-br from-teal-50 to-emerald-50 rounded-2xl p-12">
           <div className="flex items-center gap-2 mb-4">
             <BarChart3 className="w-5 h-5 text-teal-500" />
@@ -280,10 +280,10 @@ export default function ShopifyStoresPage() {
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Final CTA */}
-      <motion.div {...fadeInUp} className="text-center">
+      <m.div {...fadeInUp} className="text-center">
         <h2 className="heading-section text-brand-navy mb-4">
           Install Barpel on your Shopify store today
         </h2>
@@ -303,7 +303,7 @@ export default function ShopifyStoresPage() {
             Schedule a demo
           </Link>
         </div>
-      </motion.div>
+      </m.div>
     </ContentPageLayout>
   );
 }

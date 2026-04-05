@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Sparkles, Check, Mic, AlertTriangle, Play, Pause as PauseIcon, ChevronDown, Volume2, PauseCircle, PlayCircle } from "lucide-react";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import Vapi from "@vapi-ai/web";
@@ -304,7 +304,7 @@ export default function VoicePage() {
   }
 
   return (
-    <motion.div
+    <m.div
       className="space-y-6"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -729,6 +729,6 @@ export default function VoicePage() {
           </a>
         </p>
       </div>
-    </motion.div>
+    </m.div>
   );
 }

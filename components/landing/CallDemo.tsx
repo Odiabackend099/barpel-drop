@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { Phone, Bot, User } from "lucide-react";
 
 const DEMO_ORDERS = ['#4521', '#7834', '#2109', '#6452', '#3891', '#5023'];
@@ -65,7 +65,7 @@ export function CallDemo() {
         <div className="p-4 space-y-3 min-h-[320px] max-h-[400px] overflow-y-auto bg-[#F0F9F8]">
           <AnimatePresence>
             {conversation.slice(0, visibleMessages).map((msg, i) => (
-              <motion.div
+              <m.div
                 key={i}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -98,7 +98,7 @@ export function CallDemo() {
                     <User className="w-4 h-4 text-white" />
                   </div>
                 )}
-              </motion.div>
+              </m.div>
             ))}
           </AnimatePresence>
         </div>
@@ -106,14 +106,14 @@ export function CallDemo() {
 
       {/* Replay button */}
       {visibleMessages >= conversation.length && (
-        <motion.button
+        <m.button
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           onClick={() => setVisibleMessages(0)}
           className="mt-4 mx-auto block text-sm text-teal hover:underline"
         >
           Replay demo
-        </motion.button>
+        </m.button>
       )}
     </div>
   );

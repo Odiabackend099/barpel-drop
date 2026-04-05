@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import {
   ArrowRight,
   Download,
@@ -74,7 +74,7 @@ function ColorSwatch({ color }: { color: typeof brandColors[0] }) {
   };
 
   return (
-    <motion.div
+    <m.div
       className="bg-white rounded-xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
       whileHover={{ y: -2 }}
     >
@@ -96,7 +96,7 @@ function ColorSwatch({ color }: { color: typeof brandColors[0] }) {
         <div className="text-xs font-mono text-brand-teal mb-1">{color.hex}</div>
         <div className="text-xs text-text-secondary">{color.usage}</div>
       </div>
-    </motion.div>
+    </m.div>
   );
 }
 
@@ -107,7 +107,7 @@ export default function PressKitPage() {
       subtitle="Brand assets, company information, and media resources for press and partners."
     >
       {/* Brand Assets */}
-      <motion.div
+      <m.div
         className="mb-24"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -125,7 +125,7 @@ export default function PressKitPage() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Logo on Light */}
-          <motion.div
+          <m.div
             className="bg-white rounded-xl border border-slate-100 overflow-hidden shadow-sm"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -154,10 +154,10 @@ export default function PressKitPage() {
                 Download
               </a>
             </div>
-          </motion.div>
+          </m.div>
 
           {/* Logo on Dark */}
-          <motion.div
+          <m.div
             className="bg-white rounded-xl border border-slate-100 overflow-hidden shadow-sm"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -186,10 +186,10 @@ export default function PressKitPage() {
                 Download
               </a>
             </div>
-          </motion.div>
+          </m.div>
 
           {/* Icon Only */}
-          <motion.div
+          <m.div
             className="bg-white rounded-xl border border-slate-100 overflow-hidden shadow-sm"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -215,12 +215,12 @@ export default function PressKitPage() {
                 Download
               </a>
             </div>
-          </motion.div>
+          </m.div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Brand Colors */}
-      <motion.div
+      <m.div
         className="mb-24"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -238,7 +238,7 @@ export default function PressKitPage() {
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {brandColors.map((color, index) => (
-            <motion.div
+            <m.div
               key={color.hex}
               initial={{ opacity: 0, y: 15 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -246,13 +246,13 @@ export default function PressKitPage() {
               transition={{ delay: index * 0.05, duration: 0.4 }}
             >
               <ColorSwatch color={color} />
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Company Facts */}
-      <motion.div
+      <m.div
         className="mb-24"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -266,7 +266,7 @@ export default function PressKitPage() {
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {companyFacts.map((fact, index) => (
-            <motion.div
+            <m.div
               key={fact.label}
               className="bg-off-white rounded-xl p-5 border border-light-mint text-center"
               initial={{ opacity: 0, y: 15 }}
@@ -277,7 +277,7 @@ export default function PressKitPage() {
               <fact.icon className="w-5 h-5 text-brand-teal mx-auto mb-2" />
               <div className="text-lg font-bold text-brand-navy mb-0.5">{fact.value}</div>
               <div className="text-xs text-text-secondary">{fact.label}</div>
-            </motion.div>
+            </m.div>
           ))}
         </div>
 
@@ -287,10 +287,10 @@ export default function PressKitPage() {
             Barpel AI is an AI-powered voice support platform for e-commerce. Founded in 2024 and headquartered in San Francisco, Barpel enables online stores to automate customer phone support with conversational AI that handles order tracking, returns, product questions, and cart recovery in 30+ languages. Over 500 merchants trust Barpel to deliver 24/7 voice support, reducing costs while improving customer satisfaction. The company is backed by leading investors and has processed over 2 million AI-handled calls since launch.
           </p>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Press Releases */}
-      <motion.div
+      <m.div
         className="mb-24"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -304,7 +304,7 @@ export default function PressKitPage() {
 
         <div className="space-y-6">
           {pressReleases.map((release, index) => (
-            <motion.div
+            <m.div
               key={release.title}
               className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 group"
               initial={{ opacity: 0, y: 20 }}
@@ -329,13 +329,13 @@ export default function PressKitPage() {
                 Read full release
                 <ExternalLink className="w-3 h-3" />
               </a>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Press Contact */}
-      <motion.div
+      <m.div
         className="bg-off-white rounded-2xl p-12 border border-light-mint"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -372,7 +372,7 @@ export default function PressKitPage() {
             </div>
           </div>
         </div>
-      </motion.div>
+      </m.div>
     </ContentPageLayout>
   );
 }

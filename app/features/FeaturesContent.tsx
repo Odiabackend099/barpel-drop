@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import Link from 'next/link';
 import {
   Package,
@@ -119,7 +119,7 @@ export default function FeaturesPage() {
       subtitle="Everything your customers need, handled by AI. From order tracking to multilingual support, Barpel covers it all."
     >
       {/* Stats Bar */}
-      <motion.div
+      <m.div
         className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-20"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -127,7 +127,7 @@ export default function FeaturesPage() {
         transition={{ duration: 0.5 }}
       >
         {stats.map((stat, index) => (
-          <motion.div
+          <m.div
             key={stat.label}
             className="text-center p-6 bg-off-white rounded-xl border border-light-mint"
             initial={{ opacity: 0, y: 20 }}
@@ -138,14 +138,14 @@ export default function FeaturesPage() {
             <stat.icon className="w-6 h-6 text-brand-teal mx-auto mb-3" />
             <div className="text-2xl font-bold text-brand-navy mb-1">{stat.value}</div>
             <div className="text-sm text-text-secondary">{stat.label}</div>
-          </motion.div>
+          </m.div>
         ))}
-      </motion.div>
+      </m.div>
 
       {/* Feature Sections */}
       <div className="space-y-24">
         {features.map((feature, index) => (
-          <motion.div
+          <m.div
             key={feature.title}
             className={`grid lg:grid-cols-2 gap-12 items-center ${
               index % 2 === 1 ? 'lg:flex-row-reverse' : ''
@@ -157,19 +157,19 @@ export default function FeaturesPage() {
           >
             {/* Text Content */}
             <div className={index % 2 === 1 ? 'lg:order-2' : ''}>
-              <motion.div
+              <m.div
                 className={`inline-flex items-center justify-center w-14 h-14 rounded-xl ${feature.bgColor} mb-6`}
                 whileHover={{ scale: 1.1, rotate: 5 }}
               >
                 <feature.icon className="w-7 h-7 text-slate-700" />
-              </motion.div>
+              </m.div>
 
               <h2 className="heading-section text-brand-navy mb-4">{feature.title}</h2>
               <p className="body-large text-text-secondary mb-6">{feature.description}</p>
 
               <ul className="space-y-4 mb-8">
                 {feature.details.map((detail, detailIndex) => (
-                  <motion.li
+                  <m.li
                     key={detailIndex}
                     className="flex items-start gap-3"
                     initial={{ opacity: 0, x: -20 }}
@@ -179,7 +179,7 @@ export default function FeaturesPage() {
                   >
                     <CheckCircle2 className="w-5 h-5 text-brand-teal flex-shrink-0 mt-0.5" />
                     <span className="text-sm text-text-secondary">{detail}</span>
-                  </motion.li>
+                  </m.li>
                 ))}
               </ul>
 
@@ -194,7 +194,7 @@ export default function FeaturesPage() {
 
             {/* Visual Placeholder */}
             <div className={index % 2 === 1 ? 'lg:order-1' : ''}>
-              <motion.div
+              <m.div
                 className={`relative rounded-2xl overflow-hidden aspect-[4/3] bg-gradient-to-br ${feature.color} p-8 flex items-center justify-center`}
                 whileHover={{ scale: 1.02 }}
                 transition={{ duration: 0.3 }}
@@ -208,14 +208,14 @@ export default function FeaturesPage() {
                 <div className="absolute top-6 right-6 w-24 h-24 border border-white/20 rounded-full" />
                 <div className="absolute bottom-8 left-8 w-32 h-32 border border-white/10 rounded-full" />
                 <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-white/10 rounded-full blur-xl" />
-              </motion.div>
+              </m.div>
             </div>
-          </motion.div>
+          </m.div>
         ))}
       </div>
 
       {/* Additional Capabilities */}
-      <motion.div
+      <m.div
         className="mt-24"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -264,7 +264,7 @@ export default function FeaturesPage() {
               desc: 'Build multi-step automations for returns, exchanges, warranty claims, and subscription management.',
             },
           ].map((item, index) => (
-            <motion.div
+            <m.div
               key={item.title}
               className="card-feature"
               initial={{ opacity: 0, y: 20 }}
@@ -277,13 +277,13 @@ export default function FeaturesPage() {
               </div>
               <h3 className="heading-card text-brand-navy mb-2">{item.title}</h3>
               <p className="text-sm text-text-secondary">{item.desc}</p>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Bottom CTA */}
-      <motion.div
+      <m.div
         className="mt-20 text-center bg-off-white rounded-2xl p-12 border border-light-mint"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -305,7 +305,7 @@ export default function FeaturesPage() {
             View pricing
           </Link>
         </div>
-      </motion.div>
+      </m.div>
     </ContentPageLayout>
   );
 }

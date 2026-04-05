@@ -28,7 +28,7 @@ import {
 import { TestCallModal } from "@/components/dashboard/TestCallModal";
 import { OutboundCallModal } from "@/components/dashboard/OutboundCallModal";
 import { BYOCModal } from "@/components/integrations/BYOCModal";
-import { getCarriersForCountry } from "@/lib/carriers";
+import { getCarriersForCountry, getUssdCode } from "@/lib/callForwarding/ussdCodes";
 import type { MerchantData } from "@/lib/mockApi";
 
 interface PhoneLineSectionProps {
@@ -98,13 +98,18 @@ export function PhoneLineSection({
   const [byocOpen, setBYOCOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [pausing, setPausing] = useState(false);
+  const [storePhone, setStorePhone] = useState(merchant?.store_phone ?? "");
+  const [storePhoneSaving, setStorePhoneSaving] = useState(false);
+  const [storePhoneSaved, setStorePhoneSaved] = useState(false);
+  const [storePhoneError, setStorePhoneError] = useState("");
 
   const phoneNumber = merchant?.support_phone || null;
   const provisioningStatus = merchant?.provisioning_status ?? "pending";
   const isSuspended = provisioningStatus === "suspended";
   const isActive =
     (provisioningStatus === "active" || isSuspended) && phoneNumber;
-  const carriers = getCarriersForCountry(merchant?.country);
+  const countryCode = merchant?.country ?? "";
+  const carrierNames = getCarriersForCountry(countryCode);
 
   const handleCopy = () => {
     if (!phoneNumber) return;
@@ -378,7 +383,7 @@ export function PhoneLineSection({
         )}
 
         {/* Call forwarding subsection — active/suspended only */}
-        {isActive && carriers.length > 0 && (
+        {isActive && carrierNames.length > 0 && (
           <div className="mt-4 border-t border-white/20 pt-4">
             <button
               onClick={() => setForwardingOpen(!forwardingOpen)}
@@ -400,27 +405,83 @@ export function PhoneLineSection({
                   Barpel&apos;s AI answers automatically.
                 </p>
 
-                <Tabs defaultValue={carriers[0]?.name} className="w-full">
+                {/* Store phone capture */}
+                <div className="space-y-1.5">
+                  <p className="text-xs font-medium text-white/90">Your current store phone number</p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={storePhone}
+                      onChange={(e) => { setStorePhone(e.target.value); setStorePhoneSaved(false); setStorePhoneError(""); }}
+                      placeholder="+12125551234 or +447911123456 (E.164)"
+                      className="flex-1 px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-white text-xs placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-white/40"
+                    />
+                    <button
+                      disabled={storePhoneSaving}
+                      onClick={async () => {
+                        setStorePhoneError("");
+                        setStorePhoneSaved(false);
+
+                        // Validate E.164: +[1-9] followed by 6-14 digits
+                        const e164Regex = /^\+[1-9]\d{6,14}$/;
+                        if (!e164Regex.test(storePhone)) {
+                          setStorePhoneError("Invalid format. Use E.164 (e.g., +12125551234)");
+                          return;
+                        }
+
+                        setStorePhoneSaving(true);
+                        try {
+                          const res = await fetch("/api/merchant/forwarding", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ store_phone: storePhone, forwarding_enabled: true }),
+                            signal: AbortSignal.timeout(30000),
+                          });
+
+                          if (!res.ok) {
+                            const err = await res.json().catch(() => ({}));
+                            setStorePhoneError(err.error || "Failed to save");
+                            return;
+                          }
+
+                          setStorePhoneSaved(true);
+                        } catch (err) {
+                          const msg = err instanceof Error ? err.message : "Network error";
+                          setStorePhoneError(msg);
+                        } finally {
+                          setStorePhoneSaving(false);
+                        }
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white text-xs font-medium disabled:opacity-50 transition-colors"
+                    >
+                      {storePhoneSaving ? "Saving…" : storePhoneSaved ? "Saved ✓" : "Save"}
+                    </button>
+                  </div>
+                  {storePhoneError && <p className="text-[10px] text-red-300">{storePhoneError}</p>}
+                  <p className="text-[10px] text-white/50">Saves your number for call forwarding. Still need to dial the USSD code to enable.</p>
+                </div>
+
+                <Tabs defaultValue={carrierNames[0]} className="w-full">
                   <TabsList className="bg-white/10 flex-wrap h-auto gap-1 p-1">
-                    {carriers.map((carrier) => (
+                    {carrierNames.map((name) => (
                       <TabsTrigger
-                        key={carrier.name}
-                        value={carrier.name}
+                        key={name}
+                        value={name}
                         className="text-xs text-white/80 data-[state=active]:bg-white/20 data-[state=active]:text-white"
                       >
-                        {carrier.name}
+                        {name}
                       </TabsTrigger>
                     ))}
                   </TabsList>
-                  {carriers.map((carrier) => (
+                  {carrierNames.map((name) => (
                     <TabsContent
-                      key={carrier.name}
-                      value={carrier.name}
+                      key={name}
+                      value={name}
                       className="mt-3"
                     >
                       <div className="bg-white/10 rounded-lg p-3">
                         <p className="text-sm font-mono text-white">
-                          {carrier.getInstructions(cleanNumber)}
+                          Dial {getUssdCode(countryCode, name, "forwardAll", cleanNumber)} then press call
                         </p>
                       </div>
                     </TabsContent>
@@ -428,8 +489,8 @@ export function PhoneLineSection({
                 </Tabs>
 
                 <p className="text-xs opacity-60 font-sans">
-                  These codes may vary by region. Contact your carrier if they
-                  don&apos;t work.
+                  Codes may vary by region or plan. If a code doesn&apos;t work,
+                  contact your carrier&apos;s support or use their app to set up call forwarding.
                 </p>
               </div>
             )}

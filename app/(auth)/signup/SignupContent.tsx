@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, CheckCircle2, Sparkles, Eye, EyeOff, Check } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import Logo from '@/components/marketing/Logo';
 import { createClient } from '@/lib/supabase/client';
 
@@ -82,6 +82,10 @@ export default function SignupContent() {
       });
       if (signInError) throw signInError;
 
+      if (data.userId && window.tap) {
+        window.tap('customer', data.userId);
+      }
+
       router.push('/onboarding');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'An error occurred';
@@ -129,7 +133,7 @@ export default function SignupContent() {
 
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center py-12 px-4">
-        <motion.div
+        <m.div
           className="w-full max-w-4xl grid lg:grid-cols-2 gap-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -137,14 +141,14 @@ export default function SignupContent() {
         >
           {/* Form Card */}
           <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-200/60">
-            <motion.div
+            <m.div
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
               transition={{ type: 'spring', stiffness: 200 }}
               className="flex justify-center mb-4 lg:hidden"
             >
               <Logo size="lg" showText={false} />
-            </motion.div>
+            </m.div>
 
             <div className="mb-6">
               <h1 className="text-xl font-semibold text-slate-900 mb-2 tracking-tight">
@@ -156,7 +160,7 @@ export default function SignupContent() {
             </div>
 
             {error && (
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600"
@@ -167,12 +171,12 @@ export default function SignupContent() {
                     Sign in instead
                   </Link>
                 )}
-              </motion.div>
+              </m.div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Email */}
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 }}
@@ -192,10 +196,10 @@ export default function SignupContent() {
                   placeholder="you@company.com"
                   required
                 />
-              </motion.div>
+              </m.div>
 
               {/* Password */}
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.15 }}
@@ -228,7 +232,7 @@ export default function SignupContent() {
                 {password.length > 0 && (
                   <div className="mt-2">
                     <div className="h-1 bg-slate-100 rounded-full overflow-hidden">
-                      <motion.div
+                      <m.div
                         className={`h-full ${strength.color} rounded-full`}
                         initial={{ width: '0%' }}
                         animate={{ width: strength.width }}
@@ -238,10 +242,10 @@ export default function SignupContent() {
                     <p className="text-xs text-slate-500 mt-1">{strength.label}</p>
                   </div>
                 )}
-              </motion.div>
+              </m.div>
 
               {/* Confirm Password */}
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2 }}
@@ -276,10 +280,10 @@ export default function SignupContent() {
                     </button>
                   </div>
                 </div>
-              </motion.div>
+              </m.div>
 
               {/* Submit Button */}
-              <motion.button
+              <m.button
                 type="submit"
                 disabled={isLoading}
                 className="w-full py-3 px-4 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
@@ -290,7 +294,7 @@ export default function SignupContent() {
                 transition={{ delay: 0.25 }}
               >
                 {isLoading ? (
-                  <motion.div
+                  <m.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                     className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
@@ -301,11 +305,11 @@ export default function SignupContent() {
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
-              </motion.button>
+              </m.button>
             </form>
 
             {/* Divider */}
-            <motion.div
+            <m.div
               className="relative my-6"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -317,16 +321,16 @@ export default function SignupContent() {
               <div className="relative flex justify-center text-xs">
                 <span className="px-3 bg-white text-slate-400">Or</span>
               </div>
-            </motion.div>
+            </m.div>
 
             {/* Social Login */}
-            <motion.div
+            <m.div
               className="space-y-3"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
             >
-              <motion.button
+              <m.button
                 type="button"
                 onClick={handleGoogleSignup}
                 disabled={isGoogleLoading}
@@ -335,7 +339,7 @@ export default function SignupContent() {
                 whileTap={{ scale: 0.99 }}
               >
                 {isGoogleLoading ? (
-                  <motion.div
+                  <m.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                     className="w-4 h-4 border-2 border-slate-300 border-t-slate-600 rounded-full"
@@ -351,8 +355,8 @@ export default function SignupContent() {
                     Continue with Google
                   </>
                 )}
-              </motion.button>
-            </motion.div>
+              </m.button>
+            </m.div>
 
             <p className="text-xs text-slate-400 mt-4 text-center">
               By creating an account, you agree to our{' '}
@@ -362,7 +366,7 @@ export default function SignupContent() {
             </p>
 
             {/* Login Link */}
-            <motion.p
+            <m.p
               className="text-center mt-6 text-sm text-slate-500"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -373,11 +377,11 @@ export default function SignupContent() {
                 Log In
                 <ArrowRight className="w-3 h-3" />
               </Link>
-            </motion.p>
+            </m.p>
           </div>
 
           {/* Trial Benefits Card */}
-          <motion.div
+          <m.div
             className="hidden lg:block"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -391,7 +395,7 @@ export default function SignupContent() {
               </div>
 
               <div className="relative">
-                <motion.div
+                <m.div
                   className="flex items-center gap-2 mb-6"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -401,25 +405,25 @@ export default function SignupContent() {
                   <span className="text-xs font-medium bg-white/20 px-3 py-1 rounded-full">
                     Start free — no card required
                   </span>
-                </motion.div>
+                </m.div>
 
-                <motion.h2
+                <m.h2
                   className="text-2xl font-semibold mb-4 tracking-tight"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 }}
                 >
                   Get 5 free credits — no card needed
-                </motion.h2>
+                </m.h2>
 
-                <motion.ul
+                <m.ul
                   className="space-y-3 mb-8"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.6 }}
                 >
                   {trialBenefits.map((benefit, i) => (
-                    <motion.li
+                    <m.li
                       key={benefit}
                       className="flex items-center gap-3"
                       initial={{ opacity: 0, x: -10 }}
@@ -428,11 +432,11 @@ export default function SignupContent() {
                     >
                       <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
                       <span className="text-sm">{benefit}</span>
-                    </motion.li>
+                    </m.li>
                   ))}
-                </motion.ul>
+                </m.ul>
 
-                <motion.div
+                <m.div
                   className="border-t border-white/20 pt-6"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -443,7 +447,7 @@ export default function SignupContent() {
                   </p>
                   <div className="flex flex-wrap gap-4">
                     {trustedLogos.map((logo, i) => (
-                      <motion.span
+                      <m.span
                         key={logo}
                         className="text-white/50 font-semibold text-sm"
                         initial={{ opacity: 0 }}
@@ -451,14 +455,14 @@ export default function SignupContent() {
                         transition={{ delay: 0.9 + i * 0.05 }}
                       >
                         {logo}
-                      </motion.span>
+                      </m.span>
                     ))}
                   </div>
-                </motion.div>
+                </m.div>
               </div>
             </div>
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       </main>
     </div>
   );

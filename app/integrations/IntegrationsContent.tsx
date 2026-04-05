@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -125,7 +125,7 @@ export default function IntegrationsPage() {
       subtitle="Barpel connects to the tools you already use. Plug in your store, your phone system, and your data layer in minutes."
     >
       {/* Integration Overview Grid */}
-      <motion.div
+      <m.div
         className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-20"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -133,7 +133,7 @@ export default function IntegrationsPage() {
         transition={{ duration: 0.5 }}
       >
         {integrations.map((integration, index) => (
-          <motion.a
+          <m.a
             key={integration.name}
             href={`#${integration.name.toLowerCase().replace(/\s+/g, '-')}`}
             className={`flex flex-col items-center justify-center p-6 ${integration.bgColor} rounded-xl border border-light-mint transition-all duration-300 hover:shadow-teal-md hover:-translate-y-1`}
@@ -144,14 +144,14 @@ export default function IntegrationsPage() {
           >
             <integration.icon className="w-8 h-8 mb-3" style={{ color: integration.color }} />
             <span className="text-sm font-semibold text-brand-navy text-center">{integration.name}</span>
-          </motion.a>
+          </m.a>
         ))}
-      </motion.div>
+      </m.div>
 
       {/* Detailed Integration Cards */}
       <div className="space-y-16">
         {integrations.map((integration) => (
-          <motion.div
+          <m.div
             key={integration.name}
             id={integration.name.toLowerCase().replace(/\s+/g, '-')}
             className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-teal-sm"
@@ -198,7 +198,7 @@ export default function IntegrationsPage() {
                   <h3 className="heading-card text-brand-navy mb-4">Key Capabilities</h3>
                   <div className="space-y-3">
                     {integration.features.slice(0, expandedCard === integration.name ? undefined : 4).map((feature, featureIndex) => (
-                      <motion.div
+                      <m.div
                         key={feature.label}
                         className="flex items-start gap-3"
                         initial={{ opacity: 0, x: -10 }}
@@ -211,7 +211,7 @@ export default function IntegrationsPage() {
                           <div className="text-sm font-semibold text-brand-navy">{feature.label}</div>
                           <div className="text-xs text-text-secondary">{feature.desc}</div>
                         </div>
-                      </motion.div>
+                      </m.div>
                     ))}
                   </div>
 
@@ -223,23 +223,23 @@ export default function IntegrationsPage() {
                       className="mt-4 flex items-center gap-1 text-sm font-medium text-brand-teal hover:underline"
                     >
                       {expandedCard === integration.name ? 'Show less' : `Show all ${integration.features.length} capabilities`}
-                      <motion.div
+                      <m.div
                         animate={{ rotate: expandedCard === integration.name ? 180 : 0 }}
                         transition={{ duration: 0.2 }}
                       >
                         <ChevronDown className="w-4 h-4" />
-                      </motion.div>
+                      </m.div>
                     </button>
                   )}
                 </div>
               </div>
             </div>
-          </motion.div>
+          </m.div>
         ))}
       </div>
 
       {/* Coming Soon / API */}
-      <motion.div
+      <m.div
         className="mt-24"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -273,7 +273,7 @@ export default function IntegrationsPage() {
               desc: 'Scoped API keys with fine-grained permissions for secure third-party access.',
             },
           ].map((item, index) => (
-            <motion.div
+            <m.div
               key={item.title}
               className="card-feature text-center"
               initial={{ opacity: 0, y: 20 }}
@@ -284,7 +284,7 @@ export default function IntegrationsPage() {
               <item.icon className="w-8 h-8 text-brand-teal mx-auto mb-4" />
               <h3 className="heading-card text-brand-navy mb-2">{item.title}</h3>
               <p className="text-sm text-text-secondary">{item.desc}</p>
-            </motion.div>
+            </m.div>
           ))}
         </div>
 
@@ -297,10 +297,10 @@ export default function IntegrationsPage() {
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Bottom CTA */}
-      <motion.div
+      <m.div
         className="mt-20 text-center bg-off-white rounded-2xl p-12 border border-light-mint"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -322,7 +322,7 @@ export default function IntegrationsPage() {
             Request a custom integration
           </Link>
         </div>
-      </motion.div>
+      </m.div>
     </ContentPageLayout>
   );
 }

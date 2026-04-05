@@ -1,7 +1,12 @@
 import { Metadata } from "next";
+import dynamic from 'next/dynamic';
 import Navigation from "@/components/marketing/Navigation";
-import HomepageChatWidget from "@/components/widgets/HomepageChatWidget";
 import Hero from "@/components/marketing/sections/Hero";
+
+const HomepageChatWidget = dynamic(
+  () => import('@/components/widgets/HomepageChatWidget'),
+  { ssr: false }
+);
 import LogoCloud from "@/components/marketing/sections/LogoCloud";
 import Features from "@/components/marketing/sections/Features";
 import HowItWorks from "@/components/marketing/sections/HowItWorks";

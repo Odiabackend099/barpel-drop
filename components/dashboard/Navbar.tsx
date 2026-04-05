@@ -1,7 +1,7 @@
 "use client";
 
 import { Menu } from "lucide-react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { CreditBadge } from "@/components/dashboard/CreditBadge";
 import { useMerchant } from "@/hooks/useMerchant";
 import { useCredits } from "@/hooks/useCredits";
@@ -22,7 +22,7 @@ export function Navbar({ onMenuToggle }: NavbarProps) {
   const { balance, loading: creditsLoading } = useCredits();
 
   return (
-    <motion.nav
+    <m.nav
       className="sticky top-0 z-40 backdrop-blur-md bg-white/80 border-b border-white/20 px-4 sm:px-6 py-3"
       initial={{ y: -10, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
@@ -49,6 +49,6 @@ export function Navbar({ onMenuToggle }: NavbarProps) {
           </span>
         </div>
       </div>
-    </motion.nav>
+    </m.nav>
   );
 }

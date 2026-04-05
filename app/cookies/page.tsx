@@ -1,7 +1,7 @@
 "use client";
 
 import ContentPageLayout from '@/components/marketing/ContentPageLayout';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import {
   Cookie,
   Shield,
@@ -116,7 +116,7 @@ export default function CookiePolicyPage() {
       showCTA={false}
     >
       {/* Introduction */}
-      <motion.div {...fadeInUp} className="mb-12">
+      <m.div {...fadeInUp} className="mb-12">
         <div className="flex items-start gap-4 mb-6">
           <Cookie className="w-8 h-8 text-teal-500 flex-shrink-0 mt-1" />
           <div>
@@ -134,10 +134,10 @@ export default function CookiePolicyPage() {
             </p>
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Essential Cookies */}
-      <motion.div {...fadeInUp} className="mb-12">
+      <m.div {...fadeInUp} className="mb-12">
         <div className="flex items-center gap-3 mb-6">
           <Shield className="w-6 h-6 text-teal-500" />
           <h2 className="heading-section text-brand-navy">Essential Cookies</h2>
@@ -149,7 +149,7 @@ export default function CookiePolicyPage() {
         </p>
         <div className="space-y-4">
           {essentialCookies.map((cookie, index) => (
-            <motion.div
+            <m.div
               key={cookie.name}
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -167,13 +167,13 @@ export default function CookiePolicyPage() {
                 </div>
               </div>
               <p className="text-sm text-slate-600">{cookie.purpose}</p>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Analytics Cookies */}
-      <motion.div {...fadeInUp} className="mb-12">
+      <m.div {...fadeInUp} className="mb-12">
         <div className="flex items-center gap-3 mb-6">
           <BarChart3 className="w-6 h-6 text-teal-500" />
           <h2 className="heading-section text-brand-navy">Analytics Cookies</h2>
@@ -185,7 +185,7 @@ export default function CookiePolicyPage() {
         </p>
         <div className="space-y-4">
           {analyticsCookies.map((cookie, index) => (
-            <motion.div
+            <m.div
               key={cookie.name}
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -203,13 +203,13 @@ export default function CookiePolicyPage() {
                 </div>
               </div>
               <p className="text-sm text-slate-600">{cookie.purpose}</p>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Preference Cookies */}
-      <motion.div {...fadeInUp} className="mb-12">
+      <m.div {...fadeInUp} className="mb-12">
         <div className="flex items-center gap-3 mb-6">
           <Settings className="w-6 h-6 text-teal-500" />
           <h2 className="heading-section text-brand-navy">Preference Cookies</h2>
@@ -221,7 +221,7 @@ export default function CookiePolicyPage() {
         </p>
         <div className="space-y-4">
           {preferenceCookies.map((cookie, index) => (
-            <motion.div
+            <m.div
               key={cookie.name}
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -239,13 +239,13 @@ export default function CookiePolicyPage() {
                 </div>
               </div>
               <p className="text-sm text-slate-600">{cookie.purpose}</p>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Third-Party Cookies */}
-      <motion.div {...fadeInUp} className="mb-12">
+      <m.div {...fadeInUp} className="mb-12">
         <div className="flex items-center gap-3 mb-6">
           <Globe className="w-6 h-6 text-teal-500" />
           <h2 className="heading-section text-brand-navy">Third-Party Cookies</h2>
@@ -257,7 +257,7 @@ export default function CookiePolicyPage() {
         </p>
         <div className="space-y-4">
           {thirdPartyCookies.map((item, index) => (
-            <motion.div
+            <m.div
               key={item.provider}
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -278,13 +278,13 @@ export default function CookiePolicyPage() {
               >
                 View {item.provider}&apos;s Privacy Policy
               </a>
-            </motion.div>
+            </m.div>
           ))}
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Managing Cookies */}
-      <motion.div {...fadeInUp} className="mb-12">
+      <m.div {...fadeInUp} className="mb-12">
         <div className="flex items-center gap-3 mb-6">
           <Eye className="w-6 h-6 text-teal-500" />
           <h2 className="heading-section text-brand-navy">How to Manage Cookies</h2>
@@ -302,7 +302,7 @@ export default function CookiePolicyPage() {
           <h3 className="text-sm font-semibold text-brand-navy mb-4">Browser-Specific Instructions</h3>
           <div className="space-y-4">
             {browserInstructions.map((item, index) => (
-              <motion.div
+              <m.div
                 key={item.browser}
                 initial={{ opacity: 0, x: -10 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -317,14 +317,14 @@ export default function CookiePolicyPage() {
                   <div className="text-sm font-semibold text-brand-navy">{item.browser}</div>
                   <div className="text-xs text-slate-500 mt-0.5">{item.steps}</div>
                 </div>
-              </motion.div>
+              </m.div>
             ))}
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Cookie Retention */}
-      <motion.div {...fadeInUp} className="mb-12">
+      <m.div {...fadeInUp} className="mb-12">
         <div className="flex items-center gap-3 mb-6">
           <Clock className="w-6 h-6 text-teal-500" />
           <h2 className="heading-section text-brand-navy">Cookie Retention Periods</h2>
@@ -350,7 +350,7 @@ export default function CookiePolicyPage() {
                 { category: 'Preferences', retention: '6 to 12 months', disabled: 'Yes' },
                 { category: 'Third-Party', retention: 'Varies by provider', disabled: 'Yes' },
               ].map((item, index) => (
-                <motion.tr
+                <m.tr
                   key={item.category}
                   initial={{ opacity: 0 }}
                   whileInView={{ opacity: 1 }}
@@ -361,15 +361,15 @@ export default function CookiePolicyPage() {
                   <td className="p-4 text-sm font-medium text-slate-900">{item.category}</td>
                   <td className="p-4 text-sm text-slate-600">{item.retention}</td>
                   <td className="p-4 text-sm text-slate-600">{item.disabled}</td>
-                </motion.tr>
+                </m.tr>
               ))}
             </tbody>
           </table>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Updates to This Policy */}
-      <motion.div {...fadeInUp} className="mb-12">
+      <m.div {...fadeInUp} className="mb-12">
         <div className="flex items-center gap-3 mb-6">
           <AlertCircle className="w-6 h-6 text-teal-500" />
           <h2 className="heading-section text-brand-navy">Updates to This Policy</h2>
@@ -383,10 +383,10 @@ export default function CookiePolicyPage() {
           If we make significant changes to this policy, we will notify you by posting a prominent
           notice on our platform or by sending you an email notification.
         </p>
-      </motion.div>
+      </m.div>
 
       {/* Contact */}
-      <motion.div {...fadeInUp} className="mb-8">
+      <m.div {...fadeInUp} className="mb-8">
         <div className="bg-gradient-to-br from-teal-50 to-emerald-50 rounded-2xl p-8">
           <div className="flex items-start gap-4">
             <Mail className="w-6 h-6 text-teal-500 flex-shrink-0 mt-1" />
@@ -407,14 +407,14 @@ export default function CookiePolicyPage() {
             </div>
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Last Updated */}
-      <motion.div {...fadeInUp} className="text-center">
+      <m.div {...fadeInUp} className="text-center">
         <p className="text-xs text-slate-400">
           Last updated: March 2026
         </p>
-      </motion.div>
+      </m.div>
     </ContentPageLayout>
   );
 }

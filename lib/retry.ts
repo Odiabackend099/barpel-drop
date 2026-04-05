@@ -23,7 +23,24 @@ export async function withRetry<T>(
 ): Promise<T> {
   for (let i = 0; i < attempts; i++) {
     try {
-      return await fn();
+      const result = await fn();
+
+      // If result is a Response, check for retryable HTTP errors
+      if (result instanceof Response && !result.ok) {
+        const status = result.status;
+        // 4xx errors (except 429) are permanent — don't retry
+        if (status >= 400 && status < 500 && status !== 429) {
+          return result;
+        }
+        // 429 (rate limit) and 5xx (server error) are transient — retry
+        if ((status === 429 || status >= 500) && i < attempts - 1) {
+          const delay = DEFAULT_DELAYS[i] ?? DEFAULT_DELAYS[DEFAULT_DELAYS.length - 1];
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          continue;
+        }
+      }
+
+      return result;
     } catch (err) {
       if (i === attempts - 1) {
         throw err;

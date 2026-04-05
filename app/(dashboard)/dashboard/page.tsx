@@ -1,17 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import dynamic from 'next/dynamic';
+import { m } from "framer-motion";
 import { Phone, Clock, CreditCard as CardIcon, TrendingUp, Info } from "lucide-react";
 import Link from "next/link";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { CallLogTable } from "@/components/dashboard/CallLogTable";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -25,12 +18,19 @@ import {
 import { format, subDays } from "date-fns";
 import type { CallLog } from "@/lib/mockApi";
 
+const CallVolumeChart = dynamic(
+  () => import('@/components/dashboard/CallVolumeChart'),
+  {
+    ssr: false,
+    loading: () => <Skeleton className="h-64 w-full rounded" />,
+  }
+);
+
 // Stable fallback data for dev (not imported from mockApi directly to avoid prod guard)
 const chartData = Array.from({ length: 14 }, (_, i) => ({
   date: format(subDays(new Date(), 13 - i), "MMM dd"),
   count: 0,
 }));
-const emptyRecentCalls: CallLog[] = [];
 
 const useMock = process.env.NEXT_PUBLIC_USE_MOCK_API === "true";
 
@@ -40,6 +40,7 @@ interface DashboardStats {
   avg_handle_time: number;
   chart_data: Array<{ date: string; count: number }>;
   call_types: Record<string, number>;
+  recent_calls?: CallLog[];
 }
 
 function Badge({ color, children }: { color: string; children: React.ReactNode }) {
@@ -81,12 +82,8 @@ const breakdownColors: Record<string, string> = {
 };
 
 export default function DashboardPage() {
-  const [expandedId] = useState<string | null>(null);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -147,21 +144,21 @@ export default function DashboardPage() {
       {/* Stats */}
       {(stats?.total_calls ?? 0) > 0 && (
         <>
-          <motion.div
+          <m.div
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
             initial="hidden"
             animate="visible"
             variants={{ visible: { transition: { staggerChildren: 0.06 } } }}
           >
-            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
+            <m.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
             <StatCard
               icon={Phone}
               label="Total Calls (30d)"
               value={(stats?.total_calls ?? 0).toString()}
               color="#00A99D"
             />
-            </motion.div>
-            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
+            </m.div>
+            <m.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
             <StatCard
               icon={Clock}
               label="Credits Remaining"
@@ -170,8 +167,8 @@ export default function DashboardPage() {
               progress
               progressValue={((stats?.credits_remaining ?? 0) / 6000) * 100}
             />
-            </motion.div>
-            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
+            </m.div>
+            <m.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
             <StatCard
               icon={CardIcon}
               label={
@@ -192,19 +189,19 @@ export default function DashboardPage() {
               value={`$${moneySaved.toFixed(2)}`}
               color="#1B2A4A"
             />
-            </motion.div>
-            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
+            </m.div>
+            <m.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
             <StatCard
               icon={TrendingUp}
               label="Avg Handle Time"
               value={`${Math.floor((stats?.avg_handle_time ?? 0) / 60)}m ${(stats?.avg_handle_time ?? 0) % 60}s`}
               color="#F5A623"
             />
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
 
           {/* Charts */}
-          <motion.div
+          <m.div
             className="grid grid-cols-1 lg:grid-cols-3 gap-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -215,36 +212,7 @@ export default function DashboardPage() {
                 <h3 className="text-sm font-bold text-slate-900 font-sans">Call volume, last 2 weeks</h3>
               </div>
               <div className="h-64">
-                {mounted && (
-                  <ResponsiveContainer width="100%" height={256}>
-                    <AreaChart data={stats?.chart_data ?? chartData}>
-                      <defs>
-                        <linearGradient id="colorCalls" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#00A99D" stopOpacity={0.2} />
-                          <stop offset="95%" stopColor="#00A99D" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: "#8AADA6", fontSize: 11 }} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fill: "#8AADA6", fontSize: 11 }} />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: "#FFFFFF",
-                          border: "1px solid #D0EDE8",
-                          borderRadius: "8px",
-                          boxShadow: "0 4px 20px rgba(0,169,157,0.15)",
-                        }}
-                      />
-                      <Area
-                        type="monotone"
-                        dataKey="count"
-                        stroke="#00A99D"
-                        strokeWidth={2}
-                        fillOpacity={1}
-                        fill="url(#colorCalls)"
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                )}
+                <CallVolumeChart data={stats?.chart_data ?? chartData} />
               </div>
             </div>
 
@@ -271,12 +239,12 @@ export default function DashboardPage() {
                 })}
               </div>
             </div>
-          </motion.div>
+          </m.div>
 
           {/* Recent Calls */}
           <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
             <h3 className="text-sm font-bold text-slate-900 mb-4 font-sans">Recent Calls</h3>
-            <CallLogTable calls={emptyRecentCalls.slice(0, 5)} expandedId={expandedId} onToggle={() => {}} />
+            <CallLogTable calls={stats?.recent_calls?.slice(0, 5) ?? []} expandedId={null} onToggle={() => {}} />
           </div>
         </>
       )}

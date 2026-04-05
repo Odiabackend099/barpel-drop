@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import Link from 'next/link';
 import {
   Plug,
@@ -99,7 +99,7 @@ export default function HowItWorksPage() {
       subtitle="Three simple steps to AI-powered customer support. Get up and running in under 10 minutes."
     >
       {/* Timeline Overview */}
-      <motion.div
+      <m.div
         className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 mb-20"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -122,12 +122,12 @@ export default function HowItWorksPage() {
             )}
           </div>
         ))}
-      </motion.div>
+      </m.div>
 
       {/* Detailed Steps */}
       <div className="space-y-32">
         {steps.map((step, index) => (
-          <motion.div
+          <m.div
             key={step.number}
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -164,7 +164,7 @@ export default function HowItWorksPage() {
                 </h3>
                 <div className="grid sm:grid-cols-2 gap-4">
                   {step.syncs.map((sync, syncIndex) => (
-                    <motion.div
+                    <m.div
                       key={sync.label}
                       className="card-feature"
                       initial={{ opacity: 0, y: 20 }}
@@ -175,7 +175,7 @@ export default function HowItWorksPage() {
                       <sync.icon className="w-5 h-5 text-brand-teal mb-3" />
                       <div className="text-sm font-semibold text-brand-navy mb-1">{sync.label}</div>
                       <div className="text-xs text-text-secondary">{sync.desc}</div>
-                    </motion.div>
+                    </m.div>
                   ))}
                 </div>
               </div>
@@ -195,7 +195,7 @@ export default function HowItWorksPage() {
 
                 <ul className="space-y-3">
                   {step.details.map((detail, detailIndex) => (
-                    <motion.li
+                    <m.li
                       key={detailIndex}
                       className="flex items-start gap-3"
                       initial={{ opacity: 0, x: -20 }}
@@ -205,17 +205,17 @@ export default function HowItWorksPage() {
                     >
                       <CheckCircle2 className="w-5 h-5 text-brand-teal flex-shrink-0 mt-0.5" />
                       <span className="text-sm text-text-secondary">{detail}</span>
-                    </motion.li>
+                    </m.li>
                   ))}
                 </ul>
               </div>
             </div>
-          </motion.div>
+          </m.div>
         ))}
       </div>
 
       {/* Total Setup Time */}
-      <motion.div
+      <m.div
         className="mt-24 text-center"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -228,10 +228,10 @@ export default function HowItWorksPage() {
             Total setup time: under 10 minutes
           </span>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Trust Section */}
-      <motion.div
+      <m.div
         className="mt-8 bg-off-white rounded-2xl p-12 border border-light-mint"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -252,10 +252,10 @@ export default function HowItWorksPage() {
             <div className="text-sm text-text-secondary">First-call resolution</div>
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Bottom CTA */}
-      <motion.div
+      <m.div
         className="mt-16 text-center"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -277,7 +277,7 @@ export default function HowItWorksPage() {
             Talk to sales
           </Link>
         </div>
-      </motion.div>
+      </m.div>
     </ContentPageLayout>
   );
 }
