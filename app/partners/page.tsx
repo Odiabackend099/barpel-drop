@@ -7,138 +7,109 @@ import {
   CheckCircle2,
   DollarSign,
   Users,
-  Megaphone,
-  Headphones,
-  Handshake,
-  Zap,
   BarChart3,
-  BookOpen,
-  Star,
+  Megaphone,
+  MessageSquare,
   TrendingUp,
-  Gift,
+  Handshake,
+  RefreshCw,
 } from 'lucide-react';
 import ContentPageLayout from '@/components/marketing/ContentPageLayout';
 
-const partnerBenefits = [
+const TAPFILIATE_SIGNUP_URL = 'https://barpelai.tapfiliate.com/programs/barpel-ai/signup/';
+
+const programStats = [
+  { value: '20%', label: 'Recurring commission' },
+  { value: '90 days', label: 'Cookie window' },
+  { value: 'Lifetime', label: 'Commission duration' },
+  { value: 'Monthly', label: 'Payout schedule' },
+];
+
+const benefits = [
   {
-    icon: DollarSign,
-    title: 'Revenue Share',
+    icon: RefreshCw,
+    title: 'Recurring for life',
     description:
-      'Earn recurring commissions on every customer you refer or manage. Our competitive revenue share model rewards partners who help us grow.',
-  },
-  {
-    icon: Megaphone,
-    title: 'Co-Marketing',
-    description:
-      'Access co-branded content, joint webinars, case studies, and placement on our partner directory to amplify your reach.',
-  },
-  {
-    icon: Headphones,
-    title: 'Technical Support',
-    description:
-      'Get priority access to our engineering team, dedicated partner Slack channel, and advanced documentation for complex integrations.',
-  },
-  {
-    icon: BookOpen,
-    title: 'Training & Certification',
-    description:
-      'Complete our partner certification program to become a Barpel expert. Certified partners get premium placement and higher revenue share.',
-  },
-  {
-    icon: Gift,
-    title: 'Demo Environment',
-    description:
-      'Full-featured sandbox accounts for demos and testing. Show prospects exactly how Barpel works without touching production data.',
+      'You earn 20% of every monthly subscription your referral pays — not just the first month. As long as they stay a customer, you keep earning.',
   },
   {
     icon: BarChart3,
-    title: 'Partner Dashboard',
+    title: 'Real-time dashboard',
     description:
-      'Track referrals, commissions, customer health, and pipeline in a dedicated partner portal with real-time analytics.',
+      'Track every click, signup, and conversion in your Tapfiliate dashboard. See exactly what is earning and what is not, in real time.',
   },
-];
-
-const partnerTiers = [
   {
-    name: 'Referral',
+    icon: DollarSign,
+    title: 'Upgrade to 25% at 25 referrals',
+    description:
+      'Refer 25 paying customers and you automatically upgrade to Gold tier — 25% recurring, lifetime. No application, no negotiation.',
+  },
+  {
     icon: Users,
-    color: 'from-blue-500 to-blue-400',
-    description: 'Perfect for agencies, consultants, and influencers who recommend tools to their audience.',
-    benefits: [
-      '15% recurring revenue share for 12 months',
-      'Unique referral link with real-time tracking',
-      'Co-branded landing page for your audience',
-      'Monthly performance reports',
-      'Access to partner marketing materials',
-    ],
-    ideal: 'Shopify consultants, e-commerce bloggers, agency owners',
-    cta: 'Join as Referral Partner',
+    title: '90-day cookie window',
+    description:
+      'If someone clicks your link today and signs up 60 days later, you still get credit. Most programs give 30 days. We give 90.',
   },
   {
-    name: 'Reseller',
-    icon: TrendingUp,
-    color: 'from-teal-500 to-teal-400',
-    description: 'For agencies and service providers who want to offer Barpel as part of their own service packages.',
-    benefits: [
-      '25% recurring revenue share, no cap',
-      'White-label options for your brand',
-      'Dedicated partner success manager',
-      'Priority feature requests',
-      'Joint sales calls and deal support',
-      'Access to beta features',
-    ],
-    ideal: 'E-commerce agencies, Shopify Plus partners, managed service providers',
-    cta: 'Apply as Reseller',
-    popular: true,
+    icon: Megaphone,
+    title: 'Marketing materials',
+    description:
+      'Email swipe copy, social media templates, and talking points ready to use. Drop in your referral link and go.',
   },
   {
-    name: 'Technology',
-    icon: Zap,
-    color: 'from-purple-500 to-purple-400',
-    description: 'For SaaS platforms, tools, and infrastructure providers who want to integrate with Barpel.',
-    benefits: [
-      'API access for native integration development',
-      'Co-engineering support for joint solutions',
-      'Marketplace listing on Barpel integrations page',
-      'Joint go-to-market campaigns',
-      'Shared customer insights and feedback',
-      'Early access to new APIs and features',
-    ],
-    ideal: 'E-commerce platforms, helpdesk tools, CRM providers, shipping solutions',
-    cta: 'Explore Technology Partnership',
+    icon: MessageSquare,
+    title: 'Direct support',
+    description:
+      'Questions about your dashboard, commissions, or tracking? Post in our affiliate Slack channel and get a real answer fast.',
   },
 ];
 
-const applicationSteps = [
+const earningsTable = [
+  { referrals: 5, plan: 'Growth ($79/mo)', monthly: '$79', annual: '$948' },
+  { referrals: 10, plan: 'Growth ($79/mo)', monthly: '$158', annual: '$1,896' },
+  { referrals: 25, plan: 'Growth ($79/mo)', monthly: '$395', annual: '$4,740' },
+  { referrals: 50, plan: 'Growth ($79/mo)', monthly: '$987', annual: '$11,844', gold: true },
+];
+
+const howItWorks = [
   {
     step: '01',
-    title: 'Apply Online',
-    description: 'Fill out the partner application form with details about your business and audience. Takes about 5 minutes.',
+    title: 'Sign up in 60 seconds',
+    description: 'Create your affiliate account on Tapfiliate. No approval process. You get your unique tracking link immediately.',
   },
   {
     step: '02',
-    title: 'Discovery Call',
-    description: 'Our partnerships team will schedule a 30-minute call to learn about your goals and discuss how we can work together.',
+    title: 'Share your link',
+    description: 'Post it in your YouTube description, newsletter, social posts, or blog. Add sub-IDs to track which content converts best.',
   },
   {
     step: '03',
-    title: 'Onboarding',
-    description: 'Get access to your partner portal, marketing materials, demo environment, and training resources.',
+    title: 'Earn recurring commissions',
+    description: 'Every time someone signs up through your link and becomes a paying customer, you earn 20% of their monthly subscription — every month, for life.',
   },
   {
     step: '04',
-    title: 'Start Earning',
-    description: 'Begin referring customers, close deals, or integrate with our platform. Commissions are paid monthly via Stripe.',
+    title: 'Get paid monthly',
+    description: 'Commissions are paid on the 15th of each month (Net-30). Minimum payout is $50. Payments via bank transfer or Wise.',
   },
+];
+
+const whoItsFor = [
+  'Dropshipping YouTubers and educators',
+  'Shopify consultants and coaches',
+  'E-commerce bloggers and newsletter writers',
+  'Agency owners and managed service providers',
+  'Course creators with a Shopify/dropshipping audience',
+  'Anyone who recommends tools to online store owners',
 ];
 
 export default function PartnersPage() {
   return (
     <ContentPageLayout
-      title="Partner Program"
-      subtitle="Grow your business alongside Barpel. Earn recurring revenue, access exclusive resources, and bring AI voice support to your clients."
+      title="Affiliate Program"
+      subtitle="Earn 20% recurring commission for every Shopify store owner you refer to Barpel. Lifetime. No caps. Paid monthly."
     >
-      {/* Partner Stats */}
+      {/* Program Stats */}
       <m.div
         className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-20"
         initial={{ opacity: 0, y: 20 }}
@@ -146,12 +117,7 @@ export default function PartnersPage() {
         viewport={{ once: true }}
         transition={{ duration: 0.5 }}
       >
-        {[
-          { value: '120+', label: 'Active Partners' },
-          { value: '$2.4M', label: 'Partner Earnings (2025)' },
-          { value: '25%', label: 'Max Revenue Share' },
-          { value: '< 24h', label: 'Application Review' },
-        ].map((stat, index) => (
+        {programStats.map((stat, index) => (
           <m.div
             key={stat.label}
             className="text-center p-6 bg-off-white rounded-xl border border-light-mint"
@@ -166,7 +132,59 @@ export default function PartnersPage() {
         ))}
       </m.div>
 
-      {/* Partner Benefits */}
+      {/* Who It's For */}
+      <m.div
+        className="mb-24"
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+      >
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div>
+            <h2 className="heading-section text-brand-navy mb-4">
+              Built for <span className="text-brand-teal">e-commerce creators</span>
+            </h2>
+            <p className="body-large text-text-secondary mb-8">
+              If your audience runs Shopify stores, you are sitting on a natural fit. Barpel handles customer calls for dropshippers — WISMO calls, cart recovery, returns. Your audience already needs this.
+            </p>
+            <ul className="space-y-3">
+              {whoItsFor.map((item) => (
+                <li key={item} className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-brand-teal flex-shrink-0 mt-0.5" />
+                  <span className="text-text-secondary">{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="bg-off-white rounded-2xl p-8 border border-light-mint">
+            <h3 className="heading-card text-brand-navy mb-2">What you are promoting</h3>
+            <p className="text-sm text-text-secondary mb-6">
+              Barpel is an AI phone agent for Shopify stores. It picks up customer calls in 2 seconds, resolves 78% without a human, and recovers abandoned carts automatically. Plans start at $29/month.
+            </p>
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center gap-2 text-text-secondary">
+                <CheckCircle2 className="w-4 h-4 text-brand-teal flex-shrink-0" />
+                2.3-second average response time
+              </div>
+              <div className="flex items-center gap-2 text-text-secondary">
+                <CheckCircle2 className="w-4 h-4 text-brand-teal flex-shrink-0" />
+                78% call resolution rate without a human
+              </div>
+              <div className="flex items-center gap-2 text-text-secondary">
+                <CheckCircle2 className="w-4 h-4 text-brand-teal flex-shrink-0" />
+                4.2x improvement in cart recovery
+              </div>
+              <div className="flex items-center gap-2 text-text-secondary">
+                <CheckCircle2 className="w-4 h-4 text-brand-teal flex-shrink-0" />
+                Setup in under 5 minutes
+              </div>
+            </div>
+          </div>
+        </div>
+      </m.div>
+
+      {/* What You Earn */}
       <m.div
         className="mb-24"
         initial={{ opacity: 0, y: 30 }}
@@ -176,15 +194,69 @@ export default function PartnersPage() {
       >
         <div className="text-center mb-12">
           <h2 className="heading-section text-brand-navy mb-4">
-            Partner <span className="text-brand-teal">Benefits</span>
+            What you <span className="text-brand-teal">actually earn</span>
           </h2>
           <p className="body-large text-text-secondary max-w-2xl mx-auto">
-            Everything you need to succeed as a Barpel partner
+            20% of every monthly subscription, recurring for the lifetime of the customer. Here is what that looks like at different referral volumes.
           </p>
         </div>
 
+        <div className="overflow-x-auto rounded-2xl border border-light-mint">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-off-white border-b border-light-mint">
+                <th className="text-left p-4 font-semibold text-brand-navy">Paying referrals</th>
+                <th className="text-left p-4 font-semibold text-brand-navy">Avg plan</th>
+                <th className="text-left p-4 font-semibold text-brand-navy">Monthly commission</th>
+                <th className="text-left p-4 font-semibold text-brand-navy">Annual commission</th>
+                <th className="text-left p-4 font-semibold text-brand-navy">Tier</th>
+              </tr>
+            </thead>
+            <tbody>
+              {earningsTable.map((row) => (
+                <tr
+                  key={row.referrals}
+                  className={`border-b border-light-mint last:border-0 ${row.gold ? 'bg-teal-50' : 'bg-white'}`}
+                >
+                  <td className="p-4 font-semibold text-brand-navy">{row.referrals}</td>
+                  <td className="p-4 text-text-secondary">{row.plan}</td>
+                  <td className="p-4 font-semibold text-brand-teal">{row.monthly}/mo</td>
+                  <td className="p-4 font-semibold text-brand-teal">{row.annual}/yr</td>
+                  <td className="p-4">
+                    {row.gold ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-brand-teal text-white text-xs font-semibold rounded-full">
+                        <TrendingUp className="w-3 h-3" /> Gold 25%
+                      </span>
+                    ) : (
+                      <span className="text-text-secondary text-xs">Standard 20%</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-xs text-text-secondary mt-3 text-center">
+          Gold tier (25%) unlocks automatically when you reach 25 paying referrals. No application required.
+        </p>
+      </m.div>
+
+      {/* Benefits */}
+      <m.div
+        className="mb-24"
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+      >
+        <div className="text-center mb-12">
+          <h2 className="heading-section text-brand-navy mb-4">
+            What you <span className="text-brand-teal">get</span>
+          </h2>
+        </div>
+
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {partnerBenefits.map((benefit, index) => (
+          {benefits.map((benefit, index) => (
             <m.div
               key={benefit.title}
               className="card-feature"
@@ -201,7 +273,7 @@ export default function PartnersPage() {
         </div>
       </m.div>
 
-      {/* Partner Tiers */}
+      {/* How It Works */}
       <m.div
         className="mb-24"
         initial={{ opacity: 0, y: 30 }}
@@ -211,89 +283,15 @@ export default function PartnersPage() {
       >
         <div className="text-center mb-12">
           <h2 className="heading-section text-brand-navy mb-4">
-            Choose Your <span className="text-brand-teal">Tier</span>
+            How it <span className="text-brand-teal">works</span>
           </h2>
           <p className="body-large text-text-secondary max-w-2xl mx-auto">
-            Three partnership models designed for different business types
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-6">
-          {partnerTiers.map((tier, index) => (
-            <m.div
-              key={tier.name}
-              className={`relative bg-white rounded-2xl p-6 transition-all duration-300 ${
-                tier.popular
-                  ? 'shadow-teal-lg border-2 border-brand-teal'
-                  : 'shadow-teal-sm border border-light-mint hover:shadow-teal-md hover:-translate-y-1'
-              }`}
-              initial={{ opacity: 0, y: 25 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1, duration: 0.5 }}
-            >
-              {tier.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-brand-teal text-white text-xs font-semibold rounded-full flex items-center gap-1">
-                  <Star className="w-3 h-3" />
-                  Most Popular
-                </div>
-              )}
-
-              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${tier.color} flex items-center justify-center mb-4`}>
-                <tier.icon className="w-6 h-6 text-white" />
-              </div>
-
-              <h3 className="text-lg font-bold text-brand-navy mb-1">{tier.name} Partner</h3>
-              <p className="text-sm text-text-secondary mb-6">{tier.description}</p>
-
-              <ul className="space-y-3 mb-6">
-                {tier.benefits.map((benefit) => (
-                  <li key={benefit} className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-brand-teal flex-shrink-0 mt-0.5" />
-                    <span className="text-sm text-text-secondary">{benefit}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="mb-6 p-3 bg-slate-50 rounded-lg">
-                <div className="text-xs font-semibold text-brand-navy mb-1">Ideal for</div>
-                <div className="text-xs text-text-secondary">{tier.ideal}</div>
-              </div>
-
-              <a
-                href="mailto:partners@barpel.ai?subject=Partner Application - ${tier.name}"
-                className={`block w-full py-3 px-4 text-center font-semibold rounded-lg transition-all duration-200 ${
-                  tier.popular
-                    ? 'bg-brand-teal text-white hover:bg-[#008F85] hover:-translate-y-0.5 hover:shadow-teal-glow'
-                    : 'bg-off-white text-brand-navy hover:bg-brand-teal hover:text-white'
-                }`}
-              >
-                {tier.cta}
-              </a>
-            </m.div>
-          ))}
-        </div>
-      </m.div>
-
-      {/* Application Process */}
-      <m.div
-        className="mb-24"
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6 }}
-      >
-        <div className="text-center mb-12">
-          <h2 className="heading-section text-brand-navy mb-4">
-            How to <span className="text-brand-teal">Apply</span>
-          </h2>
-          <p className="body-large text-text-secondary max-w-2xl mx-auto">
-            Getting started as a Barpel partner is straightforward
+            Sign up, share your link, get paid. No approval process. No waiting.
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {applicationSteps.map((step, index) => (
+          {howItWorks.map((step, index) => (
             <m.div
               key={step.step}
               className="relative"
@@ -305,12 +303,39 @@ export default function PartnersPage() {
               <div className="text-4xl font-bold text-teal-100 mb-3">{step.step}</div>
               <h3 className="heading-card text-brand-navy mb-2">{step.title}</h3>
               <p className="text-sm text-text-secondary leading-relaxed">{step.description}</p>
-              {index < applicationSteps.length - 1 && (
+              {index < howItWorks.length - 1 && (
                 <ArrowRight className="w-5 h-5 text-slate-300 absolute top-4 -right-3 hidden lg:block" />
               )}
             </m.div>
           ))}
         </div>
+      </m.div>
+
+      {/* Payment Terms */}
+      <m.div
+        className="mb-24 bg-off-white rounded-2xl p-8 border border-light-mint"
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+      >
+        <h2 className="heading-card text-brand-navy mb-6">Payment terms</h2>
+        <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6 text-sm">
+          {[
+            { label: 'Payout date', value: '15th of each month' },
+            { label: 'Net terms', value: 'Net-30 (March earnings paid April 15th)' },
+            { label: 'Minimum payout', value: '$50 USD' },
+            { label: 'Payment method', value: 'Bank transfer or Wise' },
+          ].map((item) => (
+            <div key={item.label}>
+              <div className="text-xs font-semibold text-brand-teal uppercase tracking-wide mb-1">{item.label}</div>
+              <div className="text-text-secondary">{item.value}</div>
+            </div>
+          ))}
+        </div>
+        <p className="text-xs text-text-secondary mt-6 pt-6 border-t border-light-mint">
+          Commissions have a 30-day hold after conversion to account for refunds. If a referred customer refunds within 30 days, that commission is not paid out. All commissions are in USD.
+        </p>
       </m.div>
 
       {/* CTA */}
@@ -323,24 +348,29 @@ export default function PartnersPage() {
       >
         <Handshake className="w-12 h-12 text-brand-teal mx-auto mb-6" />
         <h2 className="heading-subsection text-white mb-4">
-          Ready to grow together?
+          Start earning today
         </h2>
-        <p className="body-large text-white/70 mb-8 max-w-xl mx-auto">
-          Apply to the Barpel Partner Program today and start earning recurring revenue while bringing AI voice support to your clients.
+        <p className="body-large text-white/70 mb-2 max-w-xl mx-auto">
+          Sign up takes 60 seconds. Your tracking link is ready immediately.
+        </p>
+        <p className="text-sm text-white/50 mb-8 max-w-xl mx-auto">
+          20% recurring commission. 90-day cookie. Lifetime duration. Paid monthly.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <a
-            href="mailto:partners@barpel.ai?subject=Partner Program Application"
+            href={TAPFILIATE_SIGNUP_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-brand-teal font-semibold rounded-lg transition-all duration-200 hover:bg-off-white hover:-translate-y-0.5 hover:shadow-lg"
           >
-            Apply now
+            Join the affiliate program
             <ArrowRight className="w-4 h-4" />
           </a>
           <Link
             href="/contact"
             className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-transparent border-2 border-white text-white font-semibold rounded-lg transition-all duration-200 hover:bg-white/10"
           >
-            Talk to our team
+            Questions? Talk to us
           </Link>
         </div>
       </m.div>
