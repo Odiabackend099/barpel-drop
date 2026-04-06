@@ -65,7 +65,9 @@ const benefits = [
 ];
 
 const earningsTable = [
+  { referrals: 5, plan: 'Starter ($29/mo)', monthly: '$29', annual: '$348' },
   { referrals: 5, plan: 'Growth ($79/mo)', monthly: '$79', annual: '$948' },
+  { referrals: 10, plan: 'Starter ($29/mo)', monthly: '$58', annual: '$696' },
   { referrals: 10, plan: 'Growth ($79/mo)', monthly: '$158', annual: '$1,896' },
   { referrals: 25, plan: 'Growth ($79/mo)', monthly: '$395', annual: '$4,740' },
   { referrals: 50, plan: 'Growth ($79/mo)', monthly: '$987', annual: '$11,844', gold: true },
@@ -238,6 +240,10 @@ export default function PartnersPage() {
         </div>
         <p className="text-xs text-text-secondary mt-3 text-center">
           Gold tier (25%) unlocks automatically when you reach 25 paying referrals. No application required.
+        </p>
+        <p className="text-xs text-text-secondary mt-1 text-center">
+          Commissions are earned for as long as the referred customer remains on an active paid plan. Subject to{' '}
+          <Link href="/terms" className="underline hover:text-brand-teal">program terms</Link>.
         </p>
       </m.div>
 
