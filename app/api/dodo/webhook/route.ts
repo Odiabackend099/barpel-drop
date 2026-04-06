@@ -144,6 +144,15 @@ function getWebhookHandler() {
       return;
     }
 
+    // Fetch merchant's auth user_id — needed for Tapfiliate attribution and receipt email.
+    // merchants.id != auth.users.id (verified from live DB: ids_match=false for all rows).
+    // tap('customer', userId) on signup uses auth.users.id, so conversion must use the same.
+    const { data: merchantRow } = await adminSupabase
+      .from("merchants")
+      .select("user_id")
+      .eq("id", tx.merchant_id)
+      .single();
+
     // Best-effort Tapfiliate conversion (affiliate commission tracking)
     try {
       const planAmount = billingCycle === "annual"
@@ -151,7 +160,7 @@ function getWebhookHandler() {
         : (PLAN_AMOUNTS[tx.plan]?.monthlyAmount ?? tx.amount);
 
       const result = await createConversion({
-        customer_id: tx.merchant_id,
+        customer_id: merchantRow?.user_id ?? tx.merchant_id,
         external_id: txRef,
         amount: planAmount,
       });
@@ -164,12 +173,6 @@ function getWebhookHandler() {
 
     // Best-effort receipt email
     try {
-      const { data: merchantRow } = await adminSupabase
-        .from("merchants")
-        .select("user_id")
-        .eq("id", tx.merchant_id)
-        .single();
-
       if (merchantRow) {
         const { data: authData } = await adminSupabase.auth.admin.getUserById(merchantRow.user_id);
         const planInfo = PLAN_AMOUNTS[tx.plan];
@@ -290,7 +293,7 @@ function getWebhookHandler() {
     // Best-effort Tapfiliate conversion for recurring commission
     try {
       const result = await createConversion({
-        customer_id: merchant.id,
+        customer_id: merchant.user_id ?? merchant.id,
         external_id: renewalTxRef,
         amount: renewalAmount,
       });
