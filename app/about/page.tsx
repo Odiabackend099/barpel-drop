@@ -57,54 +57,46 @@ const values = [
 
 const team = [
   {
-    name: 'Alex Chen',
-    role: 'Co-Founder & CEO',
-    bio: 'Former VP of Product at a leading Shopify analytics company. Obsessed with making e-commerce support effortless.',
-    avatar: 'AC',
+    name: 'Rafael',
+    role: 'CEO & Co-Founder',
+    bio: 'Leads the vision and business strategy at Barpel. Passionate about making enterprise-grade AI accessible to every e-commerce store.',
+    avatar: 'RA',
     gradient: 'from-teal-400 to-teal-600',
   },
   {
-    name: 'Sarah Mitchell',
+    name: 'Austyn',
     role: 'Co-Founder & CTO',
-    bio: 'Ex-Google AI researcher with a PhD in natural language processing. Architected the Barpel voice engine from scratch.',
-    avatar: 'SM',
+    bio: 'Architects the Barpel platform end-to-end. Focused on building voice AI infrastructure that is fast, reliable, and scalable.',
+    avatar: 'AU',
     gradient: 'from-blue-400 to-blue-600',
   },
   {
-    name: 'Marcus Johnson',
-    role: 'Head of Engineering',
-    bio: 'Previously led infrastructure at Twilio. Ensures every Barpel call is crystal clear and lightning fast.',
-    avatar: 'MJ',
+    name: 'Barbara',
+    role: 'Secretary',
+    bio: 'Keeps the organisation running smoothly. Manages operations, communications, and ensures every team member has what they need.',
+    avatar: 'BA',
     gradient: 'from-purple-400 to-purple-600',
   },
   {
-    name: 'Priya Patel',
-    role: 'Head of Product',
-    bio: 'Former Shopify product lead. Translates merchant feedback into features that actually move the needle.',
-    avatar: 'PP',
+    name: 'Susan',
+    role: 'Client Success Officer',
+    bio: 'The first point of contact for Barpel merchants. Guides new stores through onboarding and ensures they get results fast.',
+    avatar: 'SU',
     gradient: 'from-orange-400 to-orange-600',
   },
   {
-    name: 'David Kim',
-    role: 'Head of AI Research',
-    bio: 'Published researcher in conversational AI. Leads the team that makes Barpel sound more human every day.',
-    avatar: 'DK',
-    gradient: 'from-green-400 to-green-600',
-  },
-  {
-    name: 'Elena Rodriguez',
-    role: 'Head of Customer Success',
-    bio: 'Spent five years scaling support at a top DTC brand. Knows firsthand what merchants need to grow.',
-    avatar: 'ER',
-    gradient: 'from-pink-400 to-pink-600',
+    name: 'Vanessa',
+    role: 'Customer Support Agent',
+    bio: 'Handles day-to-day merchant support with care and speed. Turns every support interaction into a positive experience.',
+    avatar: 'VA',
+    gradient: 'from-emerald-400 to-emerald-600',
   },
 ];
 
 const milestones = [
-  { year: '2024', title: 'Founded', desc: 'Barpel AI is founded with the vision of AI-first customer service for e-commerce.' },
-  { year: '2025', title: 'Public Launch', desc: 'Launched publicly with Shopify integration and multilingual voice support in 30+ languages.' },
-  { year: '2025', title: 'Early Access', desc: 'Opened early access to merchants. Abandoned cart recovery, WISMO, and returns all live.' },
-  { year: '2026', title: 'Growing', desc: 'Expanding merchant base and building toward full public availability.' },
+  { year: '2025', title: 'Founded', desc: 'Barpel AI is founded by Rafael and Austyn with the vision of AI-first customer support for e-commerce.' },
+  { year: '2025', title: 'Early Access', desc: 'Launched in early access with Shopify integration, abandoned cart recovery, WISMO, and returns all live.' },
+  { year: '2026', title: 'Growing', desc: 'Expanding merchant base, adding team members, and building toward full public availability.' },
 ];
 
 export default function AboutPage() {
@@ -147,10 +139,10 @@ export default function AboutPage() {
             <h2 className="heading-section text-brand-navy mb-6">Our Story</h2>
             <div className="space-y-4 text-text-secondary">
               <p className="body-large">
-                Barpel started in 2024 when our founders, Alex and Sarah, saw the same problem from two different angles. Alex had spent years helping Shopify merchants grow, and kept hearing the same complaint: customer support was their biggest bottleneck. Sarah had been building conversational AI at Google and knew the technology was finally ready to handle real business conversations.
+                Barpel started in 2025 when co-founders Rafael and Austyn identified the same problem from two angles. Merchants were spending too much time and money on repetitive customer support — order tracking, returns, abandoned carts — tasks that AI could handle instantly and around the clock.
               </p>
               <p className="body-large">
-                They joined forces with a clear goal: build an AI voice assistant so good that customers cannot tell the difference, and so simple that any merchant can set it up in minutes. Within months, they had a prototype handling real calls for a handful of Shopify stores. The results were immediate. Resolution rates climbed, support costs dropped, and customer satisfaction actually improved.
+                Rafael took on the CEO role to drive the business and product vision. Austyn, as CTO, built the technical infrastructure from the ground up — connecting Shopify stores to AI voice agents that answer calls, check orders, and recover abandoned carts automatically.
               </p>
               <p className="body-large">
                 Today, Barpel is live and handling real customer calls for e-commerce brands in 30+ languages. We are in early access and just getting started.
@@ -165,8 +157,8 @@ export default function AboutPage() {
             >
               <div className="absolute inset-0 bg-white/5" />
               <div className="relative z-10 text-center">
-                <div className="text-6xl font-bold text-white mb-2">2024</div>
-                <div className="text-white/80 text-lg font-medium">Founded in San Francisco</div>
+                <div className="text-6xl font-bold text-white mb-2">2025</div>
+                <div className="text-white/80 text-lg font-medium">Founded by Rafael & Austyn</div>
                 <div className="mt-6 text-white/60 text-sm">With a mission to democratize AI customer support</div>
               </div>
               <div className="absolute -bottom-8 -right-8 w-40 h-40 border border-white/10 rounded-full" />
@@ -316,18 +308,18 @@ export default function AboutPage() {
             </h2>
             <div className="space-y-4 text-text-secondary">
               <p className="body-large">
-                We are a remote-first company with team members across North America, Europe, and Asia. We believe great work happens when talented people have the freedom to work from wherever they do their best thinking.
+                We are a remote-first team. We believe great work happens when talented people have the freedom to work from wherever they do their best thinking — whether that is a home office, a co-working space, or anywhere in between.
               </p>
               <p className="body-large">
-                We gather quarterly for team offsites where we hack on new ideas, share learnings, and strengthen the bonds that make remote work effective. Our culture values ownership, transparency, and a bias toward action.
+                Our culture values ownership, transparency, and a bias toward action. We are a small, focused team building something we genuinely believe in.
               </p>
             </div>
             <div className="grid grid-cols-2 gap-4 mt-8">
               {[
                 { icon: Globe, label: 'Remote-First' },
-                { icon: Users, label: '30+ Team Members' },
-                { icon: MapPin, label: '8 Countries' },
-                { icon: Award, label: 'Quarterly Offsites' },
+                { icon: Users, label: 'Small & Focused' },
+                { icon: MapPin, label: 'Distributed Team' },
+                { icon: Award, label: 'Mission-Driven' },
               ].map((item) => (
                 <div key={item.label} className="flex items-center gap-2">
                   <item.icon className="w-4 h-4 text-brand-teal" />
@@ -344,7 +336,7 @@ export default function AboutPage() {
             <div className="relative z-10 text-center">
               <Users className="w-16 h-16 text-teal-400 mx-auto mb-4" />
               <div className="text-white text-lg font-semibold mb-2">Remote-First Team</div>
-              <div className="text-white/60 text-sm">Working across 8 countries, united by mission</div>
+              <div className="text-white/60 text-sm">Distributed team, united by mission</div>
             </div>
             <div className="absolute -bottom-6 -right-6 w-36 h-36 border border-white/10 rounded-full" />
             <div className="absolute top-6 -left-6 w-28 h-28 border border-teal-400/20 rounded-full" />

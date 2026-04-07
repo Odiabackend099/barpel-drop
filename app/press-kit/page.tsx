@@ -28,7 +28,7 @@ const brandColors = [
 ];
 
 const companyFacts = [
-  { icon: Building2, label: 'Founded', value: '2024' },
+  { icon: Building2, label: 'Founded', value: '2025' },
   { icon: Globe, label: 'Headquarters', value: 'San Francisco, CA' },
   { icon: Award, label: 'Languages Supported', value: '30+' },
   { icon: BarChart3, label: 'Stage', value: 'Early Access' },
@@ -255,7 +255,7 @@ export default function PressKitPage() {
         <div className="mt-8 bg-white rounded-xl p-6 border border-slate-100">
           <h3 className="heading-card text-brand-navy mb-3">Boilerplate</h3>
           <p className="text-sm text-text-secondary leading-relaxed">
-            Barpel AI is an AI-powered voice support platform for e-commerce. Founded in 2024 and headquartered in San Francisco, Barpel enables online stores to automate customer phone support with conversational AI that handles order tracking, returns, product questions, and cart recovery in 30+ languages. The platform integrates with Shopify, TikTok Shop, WooCommerce, and Amazon, and is currently available in early access.
+            Barpel AI is an AI-powered voice support platform for e-commerce. Founded in 2025 by Rafael (CEO) and Austyn (CTO), Barpel enables online stores to automate customer phone support with conversational AI that handles order tracking, returns, product questions, and cart recovery in 30+ languages. The platform integrates with Shopify, TikTok Shop, WooCommerce, and Amazon, and is currently available in early access.
           </p>
         </div>
       </m.div>
