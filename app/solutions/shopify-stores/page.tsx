@@ -140,7 +140,7 @@ export default function ShopifyStoresPage() {
             Seamless <span className="text-teal-500">Shopify integration</span>
           </h2>
           <p className="body-large text-slate-600 max-w-2xl mx-auto">
-            Install Barpel from the Shopify App Store and start handling customer calls
+            Connect your Shopify store and start handling customer calls
             with AI in under five minutes. No technical setup required.
           </p>
         </div>
@@ -228,15 +228,11 @@ export default function ShopifyStoresPage() {
             </div>
             <div className="flex-shrink-0">
               <div className="w-64 h-64 bg-white rounded-2xl shadow-xl flex items-center justify-center border border-slate-100">
-                <div className="text-center">
+                <div className="text-center p-6">
                   <ShoppingBag className="w-16 h-16 text-[#96bf48] mx-auto mb-4" />
-                  <div className="text-sm font-semibold text-slate-900">Shopify App Store</div>
-                  <div className="flex items-center justify-center gap-1 mt-2">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                    ))}
-                  </div>
-                  <div className="text-xs text-slate-500 mt-1">4.9 / 5 rating</div>
+                  <div className="text-sm font-semibold text-slate-900">Shopify Integration</div>
+                  <div className="text-xs text-slate-500 mt-2">One-click OAuth connect</div>
+                  <div className="text-xs text-teal-600 font-medium mt-1">No App Store required</div>
                 </div>
               </div>
             </div>
