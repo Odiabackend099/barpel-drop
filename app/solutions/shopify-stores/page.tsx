@@ -13,7 +13,6 @@ import {
   BarChart3,
   Phone,
   Settings,
-  Star,
   Package,
   CreditCard,
   Shield,
