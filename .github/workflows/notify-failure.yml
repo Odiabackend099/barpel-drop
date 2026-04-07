@@ -9,12 +9,56 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    permissions:
+      issues: write
 
     steps:
-      - name: Log failure details
-        run: |
-          echo "Pipeline failed"
-          echo "Branch: ${{ github.event.workflow_run.head_branch }}"
-          echo "Commit: ${{ github.event.workflow_run.head_sha }}"
-          echo "Logs: ${{ github.event.workflow_run.html_url }}"
-          # Add Slack/email notification here when ready
+      - name: Ensure ci-failure label exists
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              await github.rest.issues.getLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: "ci-failure",
+              });
+            } catch (e) {
+              if (e.status === 404) {
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: "ci-failure",
+                  color: "d93f0b",
+                  description: "Auto-opened when CI/CD pipeline fails",
+                });
+              }
+            }
+
+      - name: Open failure issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branch  = context.payload.workflow_run.head_branch;
+            const sha     = context.payload.workflow_run.head_sha.substring(0, 7);
+            const logsUrl = context.payload.workflow_run.html_url;
+            const runNum  = context.payload.workflow_run.run_number;
+            const runAt   = context.payload.workflow_run.updated_at;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: "CI/CD Failed — " + branch + " @ " + sha,
+              body: [
+                "## Pipeline Failure",
+                "",
+                "- **Branch:** `" + branch + "`",
+                "- **Commit:** `" + sha + "`",
+                "- **Run:** #" + runNum,
+                "- **Failed at:** " + runAt,
+                "- **Logs:** [View full logs](" + logsUrl + ")",
+                "",
+                "> Auto-created by Notify on Failure. Close once fixed.",
+              ].join("\n"),
+              labels: ["ci-failure"],
+            });
