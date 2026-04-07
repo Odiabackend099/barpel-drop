@@ -98,6 +98,11 @@ jobs:
           COUNT=$(ls .next/server/app | wc -l)
           echo "App route entries in build: $COUNT"
 
+      - name: Bundle analysis (informational — does not fail build)
+        run: ANALYZE=true npm run build 2>&1 | grep -E "First Load JS|chunks/" | head -20 || true
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
@@ -105,12 +110,11 @@ jobs:
           path: .next
           retention-days: 1
 
-  # ── JOB 3: CONTRACT TESTS ──────────────────────────────────────────
+  # ── JOB 3: CONTRACT & UNIT TESTS ───────────────────────────────────
   contracts:
     name: Contract Tests
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/main'
     timeout-minutes: 10
 
     steps:
@@ -126,18 +130,23 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Contract tests (against production)
+      - name: USSD code unit tests
+        run: npx tsx scripts/test-ussd-codes.ts
+
+      - name: Contract tests (against production — main branch only)
+        # Contract tests hit live production endpoints; run only on main pushes
+        # to avoid hammering production from every PR branch.
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: npx tsx scripts/full-contract-test.ts
         env:
           NEXT_PUBLIC_BASE_URL: https://dropship.barpel.ai
 
-      - name: USSD code unit tests
-        run: npx tsx scripts/test-ussd-codes.ts
-
       - name: Install Playwright browsers
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: npx playwright install chromium --with-deps
 
-      - name: Onboarding smoke tests
+      - name: Onboarding smoke tests (main branch only)
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: npx playwright test tests/onboarding-smoke.spec.ts --project=chromium
         env:
           BASE_URL: https://dropship.barpel.ai
@@ -179,6 +188,7 @@ jobs:
           echo "Deployed to: $DEPLOY_URL"
 
       - name: Post-deploy health check
+        id: health
         run: |
           sleep 15
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://dropship.barpel.ai/api/health)
@@ -187,6 +197,13 @@ jobs:
             exit 1
           fi
           echo "Production health check passed"
+
+      - name: Rollback on health check failure
+        if: failure() && steps.health.outcome == 'failure'
+        run: |
+          echo "Health check failed — initiating automatic rollback"
+          vercel rollback --token=${{ secrets.VERCEL_TOKEN }} --yes
+          echo "Rollback complete"
 
   # ── JOB 5: PREVIEW DEPLOY (PRs only) ───────────────────────────────
   deploy-preview:

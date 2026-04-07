@@ -102,10 +102,9 @@ const team = [
 
 const milestones = [
   { year: '2024', title: 'Founded', desc: 'Barpel AI is founded with the vision of AI-first customer service for e-commerce.' },
-  { year: '2024', title: 'Seed Funding', desc: 'Raised $4.2M seed round led by top-tier commerce and AI investors.' },
-  { year: '2025', title: 'Public Launch', desc: 'Launched publicly with Shopify integration and multilingual voice support.' },
-  { year: '2025', title: '100+ Merchants', desc: 'Crossed 100 active merchants and growing rapidly.' },
-  { year: '2026', title: 'Series A', desc: 'Raised $18M Series A to expand the platform and enter new markets.' },
+  { year: '2025', title: 'Public Launch', desc: 'Launched publicly with Shopify integration and multilingual voice support in 30+ languages.' },
+  { year: '2025', title: 'Early Access', desc: 'Opened early access to merchants. Abandoned cart recovery, WISMO, and returns all live.' },
+  { year: '2026', title: 'Growing', desc: 'Expanding merchant base and building toward full public availability.' },
 ];
 
 export default function AboutPage() {
@@ -154,7 +153,7 @@ export default function AboutPage() {
                 They joined forces with a clear goal: build an AI voice assistant so good that customers cannot tell the difference, and so simple that any merchant can set it up in minutes. Within months, they had a prototype handling real calls for a handful of Shopify stores. The results were immediate. Resolution rates climbed, support costs dropped, and customer satisfaction actually improved.
               </p>
               <p className="body-large">
-                Today, Barpel powers voice support for 100+ e-commerce brands, handling customer interactions in 30+ languages. We are just getting started.
+                Today, Barpel is live and handling real customer calls for e-commerce brands in 30+ languages. We are in early access and just getting started.
               </p>
             </div>
           </div>
@@ -290,10 +289,10 @@ export default function AboutPage() {
               <p className="text-sm text-brand-teal font-medium mb-3">{member.role}</p>
               <p className="text-sm text-text-secondary leading-relaxed">{member.bio}</p>
               <div className="flex gap-2 mt-4">
-                <a href="#" className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-brand-teal hover:text-white transition-all duration-200">
+                <a href="https://www.linkedin.com/company/barpel-ai" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-brand-teal hover:text-white transition-all duration-200">
                   <Linkedin className="w-4 h-4" />
                 </a>
-                <a href="#" className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-brand-teal hover:text-white transition-all duration-200">
+                <a href="https://x.com/barpelai" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-brand-teal hover:text-white transition-all duration-200">
                   <Twitter className="w-4 h-4" />
                 </a>
               </div>

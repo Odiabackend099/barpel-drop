@@ -10,7 +10,7 @@ export async function GET(request: Request) {
 
     const { data: merchant, error } = await supabase
       .from("merchants")
-      .select("id, credit_balance, flw_plan, flw_subscription_id, paystack_plan, paystack_subscription_id, dodo_plan, dodo_subscription_id, shopify_plan, shopify_subscription_id, shopify_billing_cycle, plan_status, billing_cycle")
+      .select("id, credit_balance, dodo_plan, dodo_subscription_id, shopify_plan, shopify_subscription_id, shopify_billing_cycle, plan_status, billing_cycle")
       .eq("user_id", user.id)
       .is("deleted_at", null)
       .single();
@@ -26,26 +26,17 @@ export async function GET(request: Request) {
       .order("created_at", { ascending: false })
       .limit(20);
 
-    // Derive billing_source from existing subscription columns — never stored as a column
-    // to avoid sync inconsistency between sources.
+    // Derive billing_source at runtime — never stored as a column
     const billing_source: "shopify" | "dodo" | "free_trial" = merchant.shopify_plan
       ? "shopify"
-      : (merchant.dodo_plan ?? merchant.flw_plan ?? merchant.paystack_plan)
+      : merchant.dodo_plan
       ? "dodo"
       : "free_trial";
 
-    const activePlan =
-      merchant.shopify_plan ??
-      merchant.dodo_plan ??
-      merchant.flw_plan ??
-      merchant.paystack_plan ??
-      null;
+    const activePlan = merchant.shopify_plan ?? merchant.dodo_plan ?? null;
 
     const hasSubscription = !!(
-      merchant.shopify_subscription_id ??
-      merchant.paystack_subscription_id ??
-      merchant.flw_subscription_id ??
-      merchant.dodo_subscription_id
+      merchant.shopify_subscription_id ?? merchant.dodo_subscription_id
     );
 
     return NextResponse.json({
@@ -55,9 +46,6 @@ export async function GET(request: Request) {
       has_subscription: hasSubscription,
       billing_source,
       billing_cycle: merchant.shopify_billing_cycle ?? merchant.billing_cycle ?? "monthly",
-      // Provider-specific fields for callers that need them
-      flw_plan: merchant.flw_plan ?? null,
-      paystack_plan: merchant.paystack_plan ?? null,
       dodo_plan: merchant.dodo_plan ?? null,
       shopify_plan: merchant.shopify_plan ?? null,
       shopify_subscription_id: merchant.shopify_subscription_id ?? null,

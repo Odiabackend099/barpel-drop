@@ -1,4 +1,3 @@
-import { getSafeCallForwardingMessage } from "./callForwarding/ussdVerification";
 
 export interface CarrierInfo {
   name: string;

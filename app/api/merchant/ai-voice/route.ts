@@ -283,6 +283,12 @@ export async function DELETE(request: Request) {
     );
   }
 
+  // Suspend immediately — closes race window where new calls start on a line being deleted
+  await supabase
+    .from("merchants")
+    .update({ provisioning_status: "suspended" })
+    .eq("id", merchant.id);
+
   const vapiErrors: string[] = [];
 
   // Step 1: Delete Vapi phone number FIRST (stops billing)

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { m } from "framer-motion";
 import { Phone, Download, ChevronLeft, ChevronRight, PhoneOff } from "lucide-react";
 import { format } from "date-fns";
@@ -43,6 +44,7 @@ export default function CallsPage() {
       URL.revokeObjectURL(a.href);
     } catch (err) {
       console.error("CSV export error:", err);
+      toast.error("Export failed. Please try again.");
     } finally {
       setExporting(false);
     }

@@ -68,6 +68,12 @@ export async function POST(req: NextRequest) {
     case 'shop/redact': {
       // Merchant has uninstalled the app. Shopify fires this 48 hours after uninstall.
       // Delete all Shopify integration data for this shop.
+      //
+      // Safety note: We delete by (platform, shop_domain). Shopify enforces that
+      // myshopify domains are globally unique and immutable — no two stores can
+      // share the same domain, so domain-only matching is unambiguous. shop_id
+      // is not stored as a column in the integrations table, so it cannot be
+      // used as a filter here; it is logged for audit purposes only.
       const shopDomain = payload.myshopify_domain as string | undefined;
       const shopId = payload.shop_id as number | undefined;
 
@@ -78,6 +84,14 @@ export async function POST(req: NextRequest) {
             process.env.SUPABASE_SERVICE_KEY!
           );
 
+          // Fetch the integration first so we can log the merchant_id for audit.
+          const { data: integration } = await supabase
+            .from('integrations')
+            .select('merchant_id')
+            .eq('platform', 'shopify')
+            .eq('shop_domain', shopDomain)
+            .maybeSingle();
+
           const { error } = await supabase
             .from('integrations')
             .delete()
@@ -87,7 +101,7 @@ export async function POST(req: NextRequest) {
           if (error) {
             console.error('[Shopify Compliance] shop/redact — DB error:', error);
           } else {
-            console.log(`[Shopify Compliance] shop/redact — deleted integration for ${shopDomain} (shop_id: ${shopId})`);
+            console.log(`[Shopify Compliance] shop/redact — deleted integration for ${shopDomain} (shop_id: ${shopId}, merchant_id: ${integration?.merchant_id ?? 'not found'})`);
           }
         } catch (err) {
           console.error('[Shopify Compliance] shop/redact — unexpected error:', err);

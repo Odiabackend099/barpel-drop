@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
 
 /**
  * Auth callback route — exchanges the code from Supabase for a session.
@@ -8,12 +8,32 @@ import { NextResponse } from "next/server";
  * otherwise redirects to /dashboard.
  *
  * onboarded_at is the single source of truth for onboarding completion.
- * NULL = needs onboarding. NOT NULL = onboarding done or dismissed.
+ * NULL = needs onboarding. NOT NULL = onboarding done.
  */
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/dashboard";
+
+  // AU-004: Validate next param — only allow relative paths to prevent open redirect
+  const rawNext = searchParams.get("next") ?? "/dashboard";
+  const next =
+    rawNext.startsWith("/") && !rawNext.includes("://") && !rawNext.startsWith("//")
+      ? rawNext
+      : "/dashboard";
+
+  // AU-003: Rate limit by IP — 10 attempts per minute per IP, fail-open if Redis down
+  try {
+    const ip =
+      request.headers.get("cf-connecting-ip") ??
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+      "unknown";
+    const limited = await rateLimit(`rl:auth:callback:${ip}`, 10, 60);
+    if (limited) {
+      return NextResponse.redirect(`${origin}/login?error=too_many_requests`);
+    }
+  } catch {
+    // Redis unavailable — fail open
+  }
 
   if (!code) {
     return NextResponse.redirect(`${origin}/login?error=missing_code`);
@@ -33,23 +53,15 @@ export async function GET(request: Request) {
   if (user) {
     const { data: merchant } = await supabase
       .from("merchants")
-      .select("onboarded_at, onboarding_step")
+      .select("onboarded_at")
       .eq("user_id", user.id)
       .is("deleted_at", null)
       .maybeSingle();
 
-    // New user or incomplete onboarding → ensure onboarded_at is NULL and redirect
-    if (!merchant || !merchant.onboarded_at || (merchant.onboarding_step ?? 0) < 4) {
-      // Reset onboarded_at to NULL in case the column DEFAULT set it automatically.
-      // This ensures middleware correctly gates /dashboard until onboarding is done.
-      if (merchant?.onboarded_at && (merchant.onboarding_step ?? 0) < 4) {
-        const admin = createAdminClient();
-        await admin
-          .from("merchants")
-          .update({ onboarded_at: null })
-          .eq("user_id", user.id);
-      }
-      return NextResponse.redirect(`${origin}/onboarding`);
+    // onboarded_at is the single gating signal — NULL means onboarding incomplete
+    if (!merchant?.onboarded_at) {
+      // new_oauth=1 tells the onboarding page to fire tap('customer', userId)
+      return NextResponse.redirect(`${origin}/onboarding?new_oauth=1`);
     }
   }
 

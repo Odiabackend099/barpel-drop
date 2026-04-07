@@ -13,9 +13,8 @@ export async function GET() {
   try {
     const supabase = createAdminClient();
     const { error } = await supabase
-      .from("credit_packages")
-      .select("id")
-      .limit(1);
+      .from("merchants")
+      .select("id", { count: "exact", head: true });
 
     if (error) {
       dbStatus = "unreachable";

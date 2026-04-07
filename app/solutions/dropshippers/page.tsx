@@ -231,35 +231,15 @@ export default function DropshippersPage() {
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-4">
                 <BarChart3 className="w-5 h-5 text-teal-500" />
-                <span className="text-sm font-semibold text-teal-600 uppercase tracking-wide">Case Study</span>
+                <span className="text-sm font-semibold text-teal-600 uppercase tracking-wide">Case Studies</span>
               </div>
               <h3 className="text-2xl font-bold text-brand-navy mb-4">
-                DropshipDirect automated support with 24/7 AI coverage
+                Merchant case studies coming soon
               </h3>
               <p className="text-slate-600 mb-6 leading-relaxed">
-                With over 10,000 monthly orders and 3 full-time support agents costing $8K per month,
-                DropshipDirect was drowning in &quot;Where is my order?&quot; calls. After implementing
-                Barpel AI, they automated routine calls around the clock and saved $5.8K monthly.
+                We are in early access and working with dropshipping merchants to document real results.
+                Start your free trial today and be among the first stores featured.
               </p>
-              <div className="flex flex-wrap gap-4 mb-6">
-                {[
-                  { label: 'Response time', value: '< 3s' },
-                  { label: 'Monthly savings', value: '$5.8K' },
-                  { label: 'Setup time', value: '1 day' },
-                ].map((metric) => (
-                  <div key={metric.label} className="bg-white rounded-lg px-4 py-3 shadow-sm">
-                    <div className="text-xl font-bold text-teal-500">{metric.value}</div>
-                    <div className="text-xs text-slate-500">{metric.label}</div>
-                  </div>
-                ))}
-              </div>
-              <Link
-                href="/case-studies/dropship-direct"
-                className="inline-flex items-center gap-2 text-teal-600 font-semibold hover:gap-3 transition-all duration-200"
-              >
-                Read the full story
-                <ArrowRight className="w-4 h-4" />
-              </Link>
             </div>
           </div>
         </div>

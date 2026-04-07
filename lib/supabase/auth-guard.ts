@@ -25,7 +25,10 @@ export async function getAuthUser(supabase: SupabaseClient, request?: Request) {
         const token = authHeader.slice(7);
         const { data: { user: tokenUser }, error: tokenError } =
           await supabase.auth.getUser(token);
-        if (!tokenError && tokenUser) return { user: tokenUser, error: null };
+        // Only accept authenticated user access tokens — reject refresh tokens / service role
+        if (!tokenError && tokenUser && tokenUser.role === "authenticated") {
+          return { user: tokenUser, error: null };
+        }
       }
     }
 

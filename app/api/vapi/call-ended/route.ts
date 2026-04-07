@@ -6,5 +6,8 @@ import { NextResponse } from "next/server";
  * to send end-of-call events here.
  */
 export async function POST() {
-  return NextResponse.json({ ok: true, deprecated: true });
+  return NextResponse.json(
+    { error: "This endpoint is deprecated. Use /api/vapi/webhook instead." },
+    { status: 410 }
+  );
 }

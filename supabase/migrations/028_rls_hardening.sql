@@ -9,6 +9,13 @@ ALTER TABLE oauth_states ALTER COLUMN shop_domain DROP NOT NULL;
 -- Enable RLS on admin-only tables so anon/authenticated roles cannot access
 -- them directly via PostgREST. The service role (admin client) bypasses RLS
 -- automatically, so no policies are needed — backend operation is unaffected.
+--
+-- INTENTIONAL: No RLS policies are created for webhook_events, oauth_states,
+-- or leads. These tables are accessed exclusively via the service role (admin
+-- client) in server-side API routes. The service role bypasses RLS entirely,
+-- so adding policies would be redundant. Enabling RLS with zero policies
+-- effectively blocks all anon/authenticated PostgREST access, which is the
+-- desired behaviour for these admin-only tables.
 
 ALTER TABLE webhook_events ENABLE ROW LEVEL SECURITY;
 

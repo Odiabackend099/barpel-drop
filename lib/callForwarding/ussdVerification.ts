@@ -107,7 +107,7 @@ export function getVerificationReport() {
   const total = Object.keys(USSD_VERIFICATIONS).length;
   const unverified = Object.entries(USSD_VERIFICATIONS)
     .filter(([, v]) => !v.verified)
-    .map(([k, v]) => `${v.carrier} (${v.country}): ${v.notes}`);
+    .map(([, v]) => `${v.carrier} (${v.country}): ${v.notes}`);
 
   return {
     verified,

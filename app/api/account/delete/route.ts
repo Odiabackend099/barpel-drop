@@ -14,9 +14,7 @@ import DodoPayments from "dodopayments";
  * Call logs are anonymised (PII removed, credits_charged retained for audit).
  *
  * Deletion order matters:
- *   1. Cancel Flutterwave subscription (stop billing first)
- *  1b. Cancel Dodo subscription
- *  1c. Cancel Paystack subscription
+ *   1. Cancel Dodo subscription (stop billing first)
  *   2. Release Vapi phone number (holds reference to assistant)
  *   3. Delete Vapi assistant
  *   4. Delete Vault secrets (Shopify tokens, BYOC Twilio creds)
@@ -51,7 +49,7 @@ export async function DELETE(request: Request) {
   const { data: merchant, error: merchantError } = await supabase
     .from("merchants")
     .select(
-      "id, user_id, business_name, flw_subscription_id, dodo_subscription_id, paystack_subscription_id, vapi_agent_id, vapi_phone_id, provisioning_mode"
+      "id, user_id, business_name, dodo_subscription_id, vapi_agent_id, vapi_phone_id, provisioning_mode"
     )
     .eq("user_id", user.id)
     .is("deleted_at", null)
@@ -65,25 +63,7 @@ export async function DELETE(request: Request) {
   const errors: string[] = [];
   const merchantEmail = user.email;
 
-  // Step 1: Cancel Flutterwave subscription
-  if (merchant.flw_subscription_id) {
-    try {
-      await fetch(
-        `https://api.flutterwave.com/v3/subscriptions/${merchant.flw_subscription_id}/cancel`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${process.env.FLW_SECRET_KEY}`,
-          },
-        }
-      );
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      errors.push(`FLW cancel: ${msg}`);
-    }
-  }
-
-  // Step 1b: Cancel Dodo subscription
+  // Step 1: Cancel Dodo subscription
   if (merchant.dodo_subscription_id) {
     try {
       const dodo = new DodoPayments({
@@ -98,31 +78,6 @@ export async function DELETE(request: Request) {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       errors.push(`Dodo cancel: ${msg}`);
-    }
-  }
-
-  // Step 1c: Cancel Paystack subscription (legacy subscribers)
-  if (merchant.paystack_subscription_id && process.env.PAYSTACK_SECRET_KEY) {
-    try {
-      const subRes = await fetch(
-        `https://api.paystack.co/subscription/${merchant.paystack_subscription_id}`,
-        { headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}` } }
-      );
-      if (subRes.ok) {
-        const subData = await subRes.json();
-        const emailToken: string = subData.data.email_token;
-        await fetch("https://api.paystack.co/subscription/disable", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ code: merchant.paystack_subscription_id, token: emailToken }),
-        });
-      }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      errors.push(`Paystack cancel: ${msg}`);
     }
   }
 

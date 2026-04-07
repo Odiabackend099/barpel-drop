@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, CheckCircle2, Sparkles, Eye, EyeOff, Check } from 'lucide-react';
@@ -41,6 +41,12 @@ export default function SignupContent() {
   const [error, setError] = useState('');
   const router = useRouter();
 
+  // Persist affiliate ref from URL so it survives both email signup and OAuth redirect
+  useEffect(() => {
+    const ref = new URLSearchParams(window.location.search).get('ref');
+    if (ref) sessionStorage.setItem('tap_ref', ref);
+  }, []);
+
   const strength = getPasswordStrength(password);
   const passwordsMatch = password.length > 0 && confirmPassword.length > 0 && password === confirmPassword;
 
@@ -59,10 +65,11 @@ export default function SignupContent() {
 
     setIsLoading(true);
     try {
+      const ref = sessionStorage.getItem('tap_ref') ?? undefined;
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, ref }),
       });
 
       const data = await res.json();
@@ -98,6 +105,8 @@ export default function SignupContent() {
   const handleGoogleSignup = async () => {
     setIsGoogleLoading(true);
     setError('');
+    // Signal that tap('customer') needs to fire after OAuth redirect
+    sessionStorage.setItem('tap_pending', '1');
     try {
       const supabase = createClient();
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
@@ -108,6 +117,7 @@ export default function SignupContent() {
       });
       if (oauthError) throw oauthError;
     } catch (err: unknown) {
+      sessionStorage.removeItem('tap_pending');
       const message = err instanceof Error ? err.message : 'An error occurred';
       setError(message);
       setIsGoogleLoading(false);

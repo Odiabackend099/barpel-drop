@@ -77,7 +77,9 @@ async function notifySlack(lead: {
 export async function POST(req: NextRequest) {
   // 1. Rate limit — 1 per IP per 10 min, cross-instance via Redis
   const ip =
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+    req.headers.get("cf-connecting-ip") ??
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    "unknown";
   try {
     if (await rateLimit(`rl:contact:${ip}`, 1, 10 * 60)) {
       return NextResponse.json(

@@ -16,6 +16,8 @@ function LoginForm() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [showMagicLink, setShowMagicLink] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordSent, setForgotPasswordSent] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -48,7 +50,7 @@ function LoginForm() {
           } else if (signInError.message.includes('Invalid login credentials')) {
             setError('Invalid email or password. Please try again.');
           } else {
-            setError(signInError.message);
+            setError('Invalid email or password. Please try again.');
           }
           return;
         }
@@ -81,6 +83,53 @@ function LoginForm() {
       setIsGoogleLoading(false);
     }
   };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) { setError('Please enter your email address.'); return; }
+    setError('');
+    setIsLoading(true);
+    try {
+      const supabase = createClient();
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+        redirectTo: `${window.location.origin}/update-password`,
+      });
+      if (resetError) throw resetError;
+      setForgotPasswordSent(true);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (forgotPasswordSent) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col">
+        <header className="bg-white border-b border-slate-200">
+          <div className="max-w-6xl mx-auto px-4 py-4">
+            <Link href="/"><Logo size="md" showText={true} /></Link>
+          </div>
+        </header>
+        <main className="flex-1 flex items-center justify-center py-12 px-4">
+          <m.div className="w-full max-w-md" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+            <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-200/60 text-center">
+              <m.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 200 }} className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Mail className="w-8 h-8 text-teal-600" />
+              </m.div>
+              <h1 className="text-xl font-semibold text-slate-900 mb-2 tracking-tight">Check your email</h1>
+              <p className="text-sm text-slate-500 mb-6">
+                We sent a password reset link to <strong>{email}</strong>. Click the link to set a new password.
+              </p>
+              <button onClick={() => { setForgotPasswordSent(false); setShowForgotPassword(false); }} className="text-sm text-teal-600 font-medium hover:text-teal-700 transition-colors">
+                Back to sign in
+              </button>
+            </div>
+          </m.div>
+        </main>
+      </div>
+    );
+  }
 
   if (magicLinkSent) {
     return (
@@ -175,7 +224,7 @@ function LoginForm() {
               </m.div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={showForgotPassword ? handleForgotPassword : handleSubmit} className="space-y-5">
               {/* Email */}
               <m.div
                 initial={{ opacity: 0, x: -10 }}
@@ -199,8 +248,8 @@ function LoginForm() {
                 />
               </m.div>
 
-              {/* Password (hidden when magic link mode) */}
-              {!showMagicLink && (
+              {/* Password (hidden when magic link mode or forgot password mode) */}
+              {!showMagicLink && !showForgotPassword && (
                 <m.div
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -248,12 +297,13 @@ function LoginForm() {
                   {showMagicLink ? 'Use password instead' : 'Send magic link instead'}
                 </button>
                 {!showMagicLink && (
-                  <Link
-                    href="#"
+                  <button
+                    type="button"
+                    onClick={() => { setShowForgotPassword(!showForgotPassword); setError(''); }}
                     className="text-sm text-teal-600 hover:text-teal-700 transition-colors"
                   >
-                    Forgot password?
-                  </Link>
+                    {showForgotPassword ? 'Back to sign in' : 'Forgot password?'}
+                  </button>
                 )}
               </m.div>
 
@@ -274,6 +324,8 @@ function LoginForm() {
                     transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                     className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
                   />
+                ) : showForgotPassword ? (
+                  'Send reset link'
                 ) : showMagicLink ? (
                   'Send magic link'
                 ) : (

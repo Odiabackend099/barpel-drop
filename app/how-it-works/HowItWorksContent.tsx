@@ -240,16 +240,16 @@ export default function HowItWorksPage() {
       >
         <div className="grid md:grid-cols-3 gap-8 text-center">
           <div>
-            <div className="text-3xl font-bold text-brand-navy mb-2">100+</div>
-            <div className="text-sm text-text-secondary">Stores connected</div>
+            <div className="text-3xl font-bold text-brand-navy mb-2">30+</div>
+            <div className="text-sm text-text-secondary">Languages supported</div>
           </div>
           <div>
-            <div className="text-3xl font-bold text-brand-navy mb-2">2M+</div>
-            <div className="text-sm text-text-secondary">Calls handled</div>
+            <div className="text-3xl font-bold text-brand-navy mb-2">24/7</div>
+            <div className="text-sm text-text-secondary">Always-on coverage</div>
           </div>
           <div>
-            <div className="text-3xl font-bold text-brand-navy mb-2">94%</div>
-            <div className="text-sm text-text-secondary">First-call resolution</div>
+            <div className="text-3xl font-bold text-brand-navy mb-2">5 min</div>
+            <div className="text-sm text-text-secondary">Setup time</div>
           </div>
         </div>
       </m.div>

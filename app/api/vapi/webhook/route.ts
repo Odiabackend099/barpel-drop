@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifyVapiSecret } from "@/lib/security";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { rateLimit } from "@/lib/rate-limit";
 import { lookupOrder } from "@/lib/shopify/client";
 import { searchProducts } from "@/lib/shopify/productSearch";
 import { getTracking, formatTrackingMessage, isAfterShipEnabled } from "@/lib/aftership/client";
@@ -8,6 +9,35 @@ import { sendSms } from "@/lib/twilio/client";
 import { withRetry } from "@/lib/retry";
 
 const LOW_BALANCE_THRESHOLD_SECS = 600; // 10 minutes — warn earlier so merchant can act
+
+// SE-004: Allow only characters that appear in real order numbers — max 50 chars.
+// Strips anything that could cause path traversal, SMS injection, or GraphQL filter abuse.
+function sanitizeOrderNumber(raw: unknown): string {
+  return String(raw ?? "")
+    .replace(/[^a-zA-Z0-9#\-/ ]/g, "")
+    .trim()
+    .slice(0, 50);
+}
+
+// SE-002: Strip control characters from merchant custom_prompt before sending to Vapi.
+// Caps at 2000 chars — no valid store policy needs more, prevents prompt-stuffing attacks.
+function sanitizeCustomPrompt(raw: string): string {
+  return raw
+    .replace(/[\x00-\x1F\x7F]/g, " ")
+    .trim()
+    .slice(0, 2000);
+}
+
+// SE-001: Strip control characters (SMS/header injection vectors) and cap length.
+// Returns null so the product search falls back to a general listing.
+function sanitizeSearchTerm(raw: unknown): string | null {
+  if (raw == null) return null;
+  const clean = String(raw)
+    .replace(/[\x00-\x1F\x7F]/g, "")
+    .trim()
+    .slice(0, 100);
+  return clean || null;
+}
 const LOW_BALANCE_THROTTLE_HOURS = 24;
 const SHORT_CALL_THRESHOLD_SECS = 15;
 const FAILED_LOOKUP_THROTTLE_HOURS = 1;
@@ -78,6 +108,16 @@ export async function POST(request: Request) {
 
   // Handle end-of-call-report: save everything to golden call_logs table
   if (type === "end-of-call-report") {
+    // BE-009: Rate limit end-of-call events per merchant (20/min) — prevents DB write flood
+    const endCallMerchantId = call?.assistantId
+      ? (await supabase.from("merchants").select("id").eq("vapi_agent_id", call.assistantId).single()).data?.id
+      : (call?.metadata?.merchant_id as string | undefined);
+    if (endCallMerchantId) {
+      try {
+        const limited = await rateLimit(`rl:vapi:end-of-call:${endCallMerchantId}`, 20, 60);
+        if (limited) return NextResponse.json({ ok: true });
+      } catch { /* Redis unavailable — fail open */ }
+    }
     return handleEndOfCallReport(msg, supabase);
   }
 
@@ -86,16 +126,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true });
   }
 
-  let merchantId: string | undefined = call?.metadata?.merchant_id;
+  // BE-004: Always resolve merchantId via assistantId — never trust call.metadata.merchant_id alone.
+  // metadata is set by us but not signed; an attacker who knows a merchant_id could spoof it.
+  // assistantId is the authoritative key: it maps 1:1 to merchants.vapi_agent_id in our DB.
+  let merchantId: string | undefined;
 
-  // Fallback: look up merchant by assistantId (same strategy as end-of-call handler)
-  if (!merchantId && call?.assistantId) {
-    const { data: fallbackMerchant } = await supabase
+  if (call?.assistantId) {
+    const { data: verifiedMerchant } = await supabase
       .from("merchants")
       .select("id")
       .eq("vapi_agent_id", call.assistantId)
       .single();
-    merchantId = fallbackMerchant?.id;
+    merchantId = verifiedMerchant?.id;
+  } else if (call?.metadata?.merchant_id) {
+    // No assistantId present — use metadata as last resort (e.g. test/inbound calls without assistant)
+    merchantId = call.metadata.merchant_id as string;
   }
 
   if (!merchantId) {
@@ -105,6 +150,21 @@ export async function POST(request: Request) {
         "I apologize, but I'm unable to assist at the moment. Please try again later.",
     }));
     return NextResponse.json({ results: fallbackResults });
+  }
+
+  // SE-003: Per-merchant rate limit — 60 tool-calls/min to prevent credit drain attacks.
+  // Fail-open: if Redis is unavailable, allow the call through.
+  try {
+    const limited = await rateLimit(`rl:vapi:tool:${merchantId}`, 60, 60);
+    if (limited) {
+      const rateLimitedResults = toolCallList.map((tc: { id: string }) => ({
+        toolCallId: tc.id,
+        result: "I'm receiving too many requests right now. Please stay on the line and I'll be with you shortly.",
+      }));
+      return NextResponse.json({ results: rateLimitedResults });
+    }
+  } catch {
+    // Redis unavailable — fail open, allow tool-calls to proceed
   }
 
   // Zero-balance and suspended guard: if merchant has no credits or line is
@@ -180,14 +240,14 @@ export async function POST(request: Request) {
 
       switch (name) {
         case "lookup_order": {
-          result = await handleLookupOrder(supabase, merchantId, args.order_number);
+          result = await handleLookupOrder(supabase, merchantId, sanitizeOrderNumber(args.order_number));
           break;
         }
         case "initiate_return": {
           result = await handleInitiateReturn(
             supabase,
             merchantId,
-            args.order_number,
+            sanitizeOrderNumber(args.order_number),
             args.reason,
             args.customer_phone,
             call?.id
@@ -199,7 +259,7 @@ export async function POST(request: Request) {
           break;
         }
         case "search_products": {
-          result = await handleSearchProducts(supabase, merchantId, args.search_term ?? null);
+          result = await handleSearchProducts(supabase, merchantId, sanitizeSearchTerm(args.search_term));
           break;
         }
         default:
@@ -378,7 +438,7 @@ async function handleInitiateReturn(
 
     // Send SMS with return instructions
     if (customerPhone) {
-      const returnLink = `${process.env.NEXT_PUBLIC_BASE_URL}/return/${orderNumber}`;
+      const returnLink = `${process.env.NEXT_PUBLIC_BASE_URL}/return/${encodeURIComponent(orderNumber)}`;
       await sendSms(
         customerPhone,
         `Your return request for order ${orderNumber} has been initiated. Please upload photos of the item here: ${returnLink}`
@@ -410,7 +470,7 @@ async function handleGetStorePolicy(
       .single();
 
     if (merchant?.custom_prompt) {
-      return merchant.custom_prompt;
+      return sanitizeCustomPrompt(merchant.custom_prompt);
     }
 
     return "Our standard return policy allows returns within 30 days of delivery for items in original condition. Refunds are processed within 5-7 business days after we receive the returned item.";

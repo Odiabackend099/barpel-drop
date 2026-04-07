@@ -2,17 +2,9 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAuthUser, unauthorizedResponse } from "@/lib/supabase/auth-guard";
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
+import { rateLimit } from "@/lib/rate-limit";
 
 const E164_REGEX = /^\+[1-9]\d{6,14}$/;
-
-// Rate limit: 10 updates per minute per merchant
-const ratelimit = new Ratelimit({
-  redis: Redis.fromEnv(),
-  limiter: Ratelimit.fixedWindow(10, "60 s"),
-  analytics: true,
-});
 
 /**
  * POST /api/merchant/forwarding
@@ -27,10 +19,10 @@ export async function POST(request: Request) {
   const { user } = await getAuthUser(supabase, request);
   if (!user) return unauthorizedResponse();
 
-  // Rate limit per user
+  // Rate limit: 10 updates per minute per user — fail open if Redis unavailable
   try {
-    const { success } = await ratelimit.limit(user.id);
-    if (!success) {
+    const limited = await rateLimit(`rl:forwarding:${user.id}`, 10, 60);
+    if (limited) {
       return NextResponse.json(
         { error: "Too many requests. Please wait before trying again." },
         { status: 429 }
@@ -38,7 +30,6 @@ export async function POST(request: Request) {
     }
   } catch (err) {
     console.error("[forwarding] Rate limit check failed:", err);
-    // Continue without rate limiting if Upstash is down (fail open)
   }
 
   const { data: merchant } = await supabase

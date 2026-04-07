@@ -116,12 +116,39 @@ export async function POST(request: Request) {
     );
   }
 
-  // Store validation code temporarily in merchant row (overwritten on each attempt)
+  // Store validation code in Vault (not plaintext in merchants table).
+  // Name is scoped to merchant.id so no collisions across merchants.
+  // Upsert: update if entry already exists (retry attempt), create otherwise.
   const adminSupabase = createAdminClient();
-  await adminSupabase
-    .from("merchants")
-    .update({ caller_id_validation_code: validationCode })
-    .eq("id", merchant.id);
+  const secretName = `caller-id-code-${merchant.id}`;
+  try {
+    const { data: existingRows } = await adminSupabase.rpc("vault_lookup_secret_by_name", {
+      p_name: secretName,
+    });
+    const existingId =
+      Array.isArray(existingRows) && existingRows[0]?.id
+        ? (existingRows[0].id as string)
+        : null;
+
+    if (existingId) {
+      await adminSupabase.rpc("vault_update_secret", {
+        p_id: existingId,
+        p_secret: validationCode,
+      });
+    } else {
+      await adminSupabase.rpc("vault_create_secret", {
+        p_secret: validationCode,
+        p_name: secretName,
+        p_description: `Temp caller ID verification code for merchant ${merchant.id}`,
+      });
+    }
+  } catch (vaultErr) {
+    console.error("[caller-id/start] Failed to store code in Vault:", vaultErr);
+    return NextResponse.json(
+      { error: "Failed to store verification code. Please try again." },
+      { status: 500 }
+    );
+  }
 
   return NextResponse.json({
     message: "A call is being placed to your number. Enter the code you hear.",

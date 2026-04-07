@@ -6,7 +6,10 @@ export default defineConfig({
   fullyParallel: false, // Run sequentially to avoid rate limit conflicts
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : 1, // Single worker to avoid IP-based rate limit issues
+  // workers: 1 — intentional. Vapi and Shopify sandbox APIs have strict rate limits.
+  // Running tests in parallel triggers 429s and causes flaky results.
+  // Do not increase without adding per-test delays or using separate sandbox API keys.
+  workers: process.env.CI ? 1 : 1,
   reporter: [
     ['html', { outputFolder: 'test-results/html' }],
     ['json', { outputFile: 'test-results/results.json' }],

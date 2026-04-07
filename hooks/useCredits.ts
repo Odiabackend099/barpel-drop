@@ -13,10 +13,6 @@ export function useCredits() {
   const [transactions, setTransactions] = useState<CreditTransaction[]>([]);
   const [usageData, setUsageData] = useState<{ date: string; credits: number }[]>([]);
   const [loading, setLoading] = useState(true);
-  const [flwPlan, setFlwPlan] = useState<string | null>(null);
-  const [flwSubscriptionId, setFlwSubscriptionId] = useState<string | null>(null);
-  const [paystackPlan, setPaystackPlan] = useState<string | null>(null);
-  const [paystackSubscriptionId, setPaystackSubscriptionId] = useState<string | null>(null);
   const [planStatus, setPlanStatus] = useState<string | null>(null);
   const [dodoPlan, setDodoPlan] = useState<string | null>(null);
   const [dodoSubscriptionId, setDodoSubscriptionId] = useState<string | null>(null);
@@ -67,7 +63,7 @@ export function useCredits() {
 
         const { data, error: dbError } = await supabase
           .from("merchants")
-          .select("credit_balance, flw_plan, flw_subscription_id, paystack_plan, paystack_subscription_id, plan_status, dodo_plan, dodo_subscription_id, dodo_customer_id, shopify_plan, shopify_subscription_id, shopify_billing_cycle")
+          .select("credit_balance, plan_status, dodo_plan, dodo_subscription_id, dodo_customer_id, shopify_plan, shopify_subscription_id, shopify_billing_cycle")
           .eq("user_id", user.id)
           .single();
 
@@ -75,10 +71,6 @@ export function useCredits() {
 
         if (data) {
           setBalance(data.credit_balance ?? 0);
-          setFlwPlan(data.flw_plan ?? null);
-          setFlwSubscriptionId(data.flw_subscription_id ?? null);
-          setPaystackPlan(data.paystack_plan ?? null);
-          setPaystackSubscriptionId(data.paystack_subscription_id ?? null);
           setPlanStatus(data.plan_status ?? null);
           setDodoPlan(data.dodo_plan ?? null);
           setDodoSubscriptionId(data.dodo_subscription_id ?? null);
@@ -120,10 +112,6 @@ export function useCredits() {
           if (payload.new && userIdRef.current && payload.new.user_id === userIdRef.current) {
             const row = payload.new as Record<string, unknown>;
             setBalance((row.credit_balance as number) ?? 0);
-            if ("flw_plan" in row) setFlwPlan((row.flw_plan as string) ?? null);
-            if ("flw_subscription_id" in row) setFlwSubscriptionId((row.flw_subscription_id as string) ?? null);
-            if ("paystack_plan" in row) setPaystackPlan((row.paystack_plan as string) ?? null);
-            if ("paystack_subscription_id" in row) setPaystackSubscriptionId((row.paystack_subscription_id as string) ?? null);
             if ("plan_status" in row) setPlanStatus((row.plan_status as string) ?? null);
             if ("dodo_plan" in row) setDodoPlan((row.dodo_plan as string) ?? null);
             if ("dodo_subscription_id" in row) setDodoSubscriptionId((row.dodo_subscription_id as string) ?? null);
@@ -146,5 +134,5 @@ export function useCredits() {
   const credits = Math.floor(balance / 60);
   const usagePercent = totalCapacity > 0 ? (balance / totalCapacity) * 100 : 0;
 
-  return { balance, balanceMinutes, balanceSeconds, credits, totalCapacity, usagePercent, transactions, usageData, loading, refreshBalance, flwPlan, flwSubscriptionId, paystackPlan, paystackSubscriptionId, planStatus, dodoPlan, dodoSubscriptionId, dodoCustomerId, shopifyPlan, shopifySubscriptionId, shopifyBillingCycle };
+  return { balance, balanceMinutes, balanceSeconds, credits, totalCapacity, usagePercent, transactions, usageData, loading, refreshBalance, planStatus, dodoPlan, dodoSubscriptionId, dodoCustomerId, shopifyPlan, shopifySubscriptionId, shopifyBillingCycle };
 }

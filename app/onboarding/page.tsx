@@ -242,6 +242,32 @@ function OnboardingContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // AF-001: Fire tap('customer', userId) for Google OAuth signups that arrive via /onboarding?new_oauth=1
+  // AF-002: Save ?ref= code to merchants table (first-touch) via /api/affiliate/track
+  useEffect(() => {
+    const isPending = sessionStorage.getItem("tap_pending");
+    if (!isPending) return;
+    sessionStorage.removeItem("tap_pending");
+
+    const ref = sessionStorage.getItem("tap_ref");
+    if (ref) sessionStorage.removeItem("tap_ref");
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session?.user) return;
+      if (typeof window !== "undefined" && (window as Window & { tap?: (...args: unknown[]) => void }).tap) {
+        (window as Window & { tap?: (...args: unknown[]) => void }).tap!("customer", session.user.id);
+      }
+      if (ref) {
+        fetch("/api/affiliate/track", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ref_code: ref }),
+        }).catch(() => {});
+      }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Supabase Realtime subscription for provisioning updates
   useEffect(() => {
     if (!userId) return;
@@ -1317,7 +1343,7 @@ function OnboardingContent() {
                                     <div className="space-y-3">
                                       <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
                                         <p className="text-xs font-medium text-amber-800">
-                                          Twilio is calling {callerIdPhone} now. When you answer, you'll hear a 6-digit code. Confirm it matches the code below, then click Verify:
+                                          Twilio is calling {callerIdPhone} now. When you answer, you&apos;ll hear a 6-digit code. Confirm it matches the code below, then click Verify:
                                         </p>
                                         <p className="text-2xl font-mono font-bold text-amber-900 mt-1 tracking-widest">
                                           {callerIdCode}

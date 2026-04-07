@@ -146,6 +146,7 @@ function DodoPlanCard({ pkg, billingCycle, currentBalance }: { pkg: typeof CREDI
 export default function BillingPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const [cancelLoading, setCancelLoading] = useState(false);
+  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
   const [mounted, setMounted] = useState(false);
   const { balance, credits, transactions, usageData, loading, refreshBalance, planStatus, dodoPlan, dodoSubscriptionId, dodoCustomerId, shopifyPlan, shopifySubscriptionId, shopifyBillingCycle } = useCredits();
@@ -206,6 +207,7 @@ export default function BillingPage() {
   }, [refreshBalance]);
 
   return (
+    <>
     <m.div
       className="space-y-6"
       initial={{ opacity: 0 }}
@@ -406,33 +408,7 @@ export default function BillingPage() {
 
             <button
               disabled={cancelLoading}
-              onClick={async () => {
-                const ok = window.confirm(
-                  "Cancel your USD subscription?\n\n" +
-                  "You'll keep your remaining credits until the end of the current billing period.\n" +
-                  "Note: Annual plans are non-refundable."
-                );
-                if (!ok) return;
-                setCancelLoading(true);
-                try {
-                  const res = await fetch("/api/billing/dodo/cancel", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ subscription_id: dodoSubscriptionId }),
-                  });
-                  const data = await res.json().catch(() => ({}));
-                  if (res.ok) {
-                    setSuccessMessage(data.message ?? "Subscription cancelled.");
-                    setTimeout(() => setSuccessMessage(""), 10000);
-                  } else {
-                    alert(data.error ?? "Failed to cancel. Please try again.");
-                  }
-                } catch {
-                  alert("Network error — please try again.");
-                } finally {
-                  setCancelLoading(false);
-                }
-              }}
+              onClick={() => setCancelConfirmOpen(true)}
               className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#E74C3C] bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-all disabled:opacity-50"
             >
               <XCircle className={`w-4 h-4 ${cancelLoading ? "animate-spin" : ""}`} />
@@ -522,5 +498,74 @@ export default function BillingPage() {
         )
       )}
     </m.div>
+
+    {/* FE-002: Cancel subscription confirmation modal — replaces window.confirm() */}
+    {cancelConfirmOpen && (
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cancel-modal-title"
+        onKeyDown={(e) => { if (e.key === "Escape") setCancelConfirmOpen(false); }}
+      >
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-red-50">
+              <XCircle className="w-5 h-5 text-[#E74C3C]" />
+            </div>
+            <h2 id="cancel-modal-title" className="text-base font-bold text-slate-900 font-sans">
+              Cancel Subscription?
+            </h2>
+          </div>
+          <p className="text-sm text-slate-600 font-sans mb-2">
+            Your remaining credits stay active until the end of the current billing period.
+          </p>
+          <p className="text-xs text-slate-400 font-sans mb-6">
+            Annual plans are non-refundable.
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setCancelConfirmOpen(false)}
+              disabled={cancelLoading}
+              className="flex-1 px-4 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all disabled:opacity-50"
+            >
+              Keep Subscription
+            </button>
+            <button
+              disabled={cancelLoading}
+              onClick={async () => {
+                setCancelLoading(true);
+                try {
+                  const res = await fetch("/api/billing/dodo/cancel", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ subscription_id: dodoSubscriptionId }),
+                  });
+                  const data = await res.json().catch(() => ({}));
+                  if (res.ok) {
+                    setCancelConfirmOpen(false);
+                    setSuccessMessage(data.message ?? "Subscription cancelled.");
+                    setTimeout(() => setSuccessMessage(""), 10000);
+                  } else {
+                    setCancelConfirmOpen(false);
+                    setSuccessMessage("");
+                    alert(data.error ?? "Failed to cancel. Please try again.");
+                  }
+                } catch {
+                  setCancelConfirmOpen(false);
+                  alert("Network error — please try again.");
+                } finally {
+                  setCancelLoading(false);
+                }
+              }}
+              className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-[#E74C3C] rounded-xl hover:bg-red-600 transition-all disabled:opacity-50"
+            >
+              {cancelLoading ? "Cancelling…" : "Yes, Cancel"}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }

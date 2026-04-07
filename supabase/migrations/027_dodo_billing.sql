@@ -1,3 +1,8 @@
+-- 027_dodo_billing.sql
+-- Dodo Payments is the approved billing provider (alongside Shopify).
+-- Flutterwave and Paystack were removed — see migration 034 for cleanup.
+-- BI-013: Legacy providers removed April 2026; only Dodo + Shopify remain.
+
 -- Dodo Payments subscription tracking on merchants
 ALTER TABLE merchants
   ADD COLUMN IF NOT EXISTS dodo_subscription_id TEXT,

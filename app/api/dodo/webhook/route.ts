@@ -159,16 +159,29 @@ function getWebhookHandler() {
         ? (PLAN_AMOUNTS[tx.plan]?.annualAmount ?? tx.amount)
         : (PLAN_AMOUNTS[tx.plan]?.monthlyAmount ?? tx.amount);
 
-      const result = await createConversion({
-        customer_id: merchantRow?.user_id ?? tx.merchant_id,
-        external_id: txRef,
-        amount: planAmount,
-      });
+      let lastError: unknown;
+      let result: { ok: boolean; error?: unknown } = { ok: false };
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          result = await createConversion({
+            customer_id: merchantRow?.user_id ?? tx.merchant_id,
+            external_id: txRef,
+            amount: planAmount,
+          });
+          if (result.ok) break;
+          lastError = result.error;
+        } catch (e) {
+          lastError = e;
+        }
+        if (attempt < 3) await new Promise(r => setTimeout(r, 1000 * attempt));
+      }
       if (!result.ok) {
-        console.error("[dodo/webhook] Tapfiliate conversion failed:", result.error);
+        console.error("[dodo/webhook] Tapfiliate conversion failed after 3 attempts:", lastError,
+          { merchant_id: tx.merchant_id, txRef });
       }
     } catch (err) {
-      console.error("[dodo/webhook] Tapfiliate conversion error:", (err as Error).message);
+      console.error("[dodo/webhook] Tapfiliate conversion error:", (err as Error).message,
+        { merchant_id: tx.merchant_id, txRef });
     }
 
     // Best-effort receipt email

@@ -66,7 +66,7 @@ export default function RootLayout({
 s.src='https://script.tapfiliate.com/tapfiliate.js';var r=p.getElementsByTagName('script')[0];
 r.parentNode.insertBefore(s,r)})(window,'tap',document);
 tap('create','63365-6bd0a5',{integration:'javascript'});
-tap('detect');`}
+if(document.cookie.indexOf('tap_consent=1')>-1){tap('detect');}`}
         </Script>
       </body>
       {process.env.NEXT_PUBLIC_GA_ID && (

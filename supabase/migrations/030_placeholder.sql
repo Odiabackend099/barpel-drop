@@ -1,0 +1,7 @@
+-- ============================================================================
+-- Migration 030: Intentionally skipped
+--
+-- The migration sequence jumps from 029 to 031.
+-- No schema changes were required at this version.
+-- This placeholder documents the gap to prevent confusion.
+-- ============================================================================

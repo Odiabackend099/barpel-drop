@@ -94,6 +94,10 @@ export function generateNonce(bytes = 32): string {
  */
 export function redactPii(text: string): string {
   return text
+    // Formatted phone numbers: (123) 456-7890, 123-456-7890, 123.456.7890
+    .replace(/\(?\d{3}\)?[\s.\-]\d{3}[\s.\-]\d{4}/g, "[PHONE_REDACTED]")
+    // International with spaces: +44 7911 123 456
+    .replace(/\+\d{1,3}[\s](\d[\s]?){7,12}/g, "[PHONE_REDACTED]")
     // Phone numbers: +234XXXXXXXXXX or 0XXXXXXXXXX patterns
     .replace(/(\+?\d{1,4})\d{4}(\d{4,})/g, (_m, prefix, suffix) => `${prefix}****${suffix.slice(-4)}`)
     // More general phone pattern

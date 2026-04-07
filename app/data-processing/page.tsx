@@ -96,7 +96,7 @@ export default function DataProcessing() {
               <section className="mb-8">
                 <h2 className="heading-card text-brand-navy mb-4">4. Subprocessors</h2>
                 <p className="text-text-secondary mb-4">
-                  The Controller authorizes Barpel to engage Subprocessors to assist in providing the Service. Barpel maintains a current list of Subprocessors at <a href="#" className="text-brand-teal hover:underline">barpel.ai/subprocessors</a>.
+                  The Controller authorizes Barpel to engage Subprocessors to assist in providing the Service. Barpel maintains a current list of Subprocessors at <a href="/privacy" className="text-brand-teal hover:underline">barpel.ai/subprocessors</a>.
                 </p>
                 <p className="text-text-secondary mb-4">
                   Barpel will:

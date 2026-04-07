@@ -1,23 +1,6 @@
 import { NextRequest } from 'next/server'
 import { sendChatWidgetLeadEmail } from '@/lib/email/client'
-
-// Rate limit: 1 lead capture per IP per hour
-const rateLimitMap = new Map<string, number>()
-
-function checkLeadRateLimit(ip: string): boolean {
-  const now = Date.now()
-  const lastCapture = rateLimitMap.get(ip)
-
-  // Prune entries older than 1 hour
-  Array.from(rateLimitMap.keys()).forEach((key) => {
-    const ts = rateLimitMap.get(key)!
-    if (now - ts > 60 * 60 * 1000) rateLimitMap.delete(key)
-  })
-
-  if (lastCapture && now - lastCapture < 60 * 60 * 1000) return false
-  rateLimitMap.set(ip, now)
-  return true
-}
+import { rateLimit } from '@/lib/rate-limit'
 
 export async function POST(req: NextRequest) {
   const ip =
@@ -25,8 +8,13 @@ export async function POST(req: NextRequest) {
     req.headers.get('x-forwarded-for')?.split(',')[0].trim() ??
     'unknown'
 
-  if (!checkLeadRateLimit(ip)) {
-    return Response.json({ ok: true }) // Silently succeed — never interrupt chat UX
+  // BE-002: Distributed rate limit via Upstash Redis — 1 lead capture per IP per hour.
+  // Fail-open if Redis is unavailable so chat UX is never broken.
+  try {
+    const limited = await rateLimit(`rl:chat:lead:${ip}`, 1, 3600)
+    if (limited) return Response.json({ ok: true }) // Silently succeed — never interrupt chat UX
+  } catch {
+    // Redis unavailable — fail open
   }
 
   let body: { name?: string; email?: string; phone?: string; platform?: string }

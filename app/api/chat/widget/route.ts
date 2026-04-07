@@ -1,28 +1,6 @@
 import { NextRequest } from 'next/server'
-
-// ─── Rate limiting ────────────────────────────────────────────────────────────
-// In-memory map: IP → { count, resetAt }. Sufficient for MVP.
-// Entries are pruned on each request to prevent memory growth.
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
-
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now()
-
-  // Prune expired entries
-  Array.from(rateLimitMap.keys()).forEach((key) => {
-    const val = rateLimitMap.get(key)!
-    if (now > val.resetAt) rateLimitMap.delete(key)
-  })
-
-  const entry = rateLimitMap.get(ip)
-  if (entry && now < entry.resetAt) {
-    if (entry.count >= 10) return false
-    entry.count++
-  } else {
-    rateLimitMap.set(ip, { count: 1, resetAt: now + 60 * 60 * 1000 })
-  }
-  return true
-}
+import { rateLimit } from '@/lib/rate-limit'
+import { getServerEnv } from '@/lib/env'
 
 // ─── System prompt ────────────────────────────────────────────────────────────
 const SYSTEM_PROMPT = `You are Aria, the AI sales assistant for Barpel Drop AI.
@@ -131,8 +109,13 @@ export async function POST(req: NextRequest) {
     req.headers.get('x-forwarded-for')?.split(',')[0].trim() ??
     'unknown'
 
-  if (!checkRateLimit(ip)) {
-    return Response.json({ error: 'Too many messages. Try again later.' }, { status: 429 })
+  // BE-002: Distributed rate limit via Upstash Redis — 10 messages per IP per hour.
+  // Fail-open if Redis is unavailable so chat UX is never broken.
+  try {
+    const limited = await rateLimit(`rl:chat:widget:${ip}`, 10, 3600)
+    if (limited) return Response.json({ error: 'Too many messages. Try again later.' }, { status: 429 })
+  } catch {
+    // Redis unavailable — fail open
   }
 
   let body: { messages?: unknown }
@@ -159,7 +142,7 @@ export async function POST(req: NextRequest) {
   // Call NVIDIA API with streaming
   let nvidia: Response
   try {
-    nvidia = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+    nvidia = await fetch(`${getServerEnv().NVIDIA_API_BASE_URL}/chat/completions`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${process.env.NVIDIA_API_KEY}`,

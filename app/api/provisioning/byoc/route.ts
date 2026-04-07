@@ -113,6 +113,9 @@ export async function POST(request: Request) {
   }
 
   // --- Store credentials in Vault (upsert pattern) ---
+  // Secret names are scoped to merchant.id (UUID) — cross-merchant name
+  // collisions are impossible. Upsert: update if the secret already exists
+  // (re-provisioning flow), create on first provision.
   const secrets = [
     {
       name: `twilio-byoc-sid-${merchant.id}`,

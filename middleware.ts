@@ -9,7 +9,21 @@ import { NextResponse, type NextRequest } from "next/server";
  * 4. Redirects authenticated users from /login to /onboarding or /dashboard
  * 5. Allows webhook routes through without auth (they use HMAC)
  */
+const API_BODY_SIZE_LIMIT = 1_048_576; // 1 MB
+
 export async function middleware(request: NextRequest) {
+  // Reject oversized JSON payloads on API routes before any processing.
+  // Protects against body-bomb DoS across all endpoints without per-route changes.
+  if (
+    request.nextUrl.pathname.startsWith("/api/") &&
+    (request.method === "POST" || request.method === "PUT" || request.method === "PATCH")
+  ) {
+    const contentLength = parseInt(request.headers.get("content-length") ?? "0", 10);
+    if (contentLength > API_BODY_SIZE_LIMIT) {
+      return NextResponse.json({ error: "Request body too large." }, { status: 413 });
+    }
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -94,6 +108,9 @@ export async function middleware(request: NextRequest) {
     // Layer 2: decode from `host` — handles both Format A and Format B
     if (!shop) {
       const hostB64 = request.nextUrl.searchParams.get("host") ?? "";
+      if (hostB64.length > 512) {
+        return NextResponse.redirect(new URL("/login", request.url));
+      }
       try {
         const hostDecoded = Buffer.from(hostB64, "base64").toString("utf-8");
         const storesMatch = hostDecoded.match(/\/stores\/([a-zA-Z0-9-]+\.myshopify\.com)/);

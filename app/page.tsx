@@ -126,7 +126,7 @@ const jsonLd = {
           "name": "How fast does Barpel AI answer customer calls?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Barpel AI answers calls with an average response time of 2.3 seconds. Unlike human agents, it operates 24/7 with no hold times, no voicemail, and no time zone limitations."
+            "text": "Barpel AI answers calls instantly — no hold times, no voicemail, no time zone limitations. It operates 24/7 and connects customers to your AI agent immediately."
           }
         },
         {
@@ -181,12 +181,6 @@ export default function HomePage() {
             </p>
           </div>
         </section>
-        <p className="sr-only">
-          Barpel AI achieves an 89% customer satisfaction rate across all supported
-          e-commerce stores. The average call response time is 2.3 seconds. Stores
-          using Barpel AI&apos;s cart recovery feature see a 4.2x improvement in
-          recovery rates, with 42% of targeted abandoned carts successfully recovered.
-        </p>
         <Features />
         <HowItWorks />
         <Integrations />

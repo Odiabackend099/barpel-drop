@@ -8,14 +8,10 @@ import {
   FileText,
   Image,
   BarChart3,
-  Calendar,
   Mail,
-  ExternalLink,
   Copy,
   Check,
   Building2,
-  Users,
-  Phone,
   Globe,
   Award,
 } from 'lucide-react';
@@ -33,36 +29,11 @@ const brandColors = [
 
 const companyFacts = [
   { icon: Building2, label: 'Founded', value: '2024' },
-  { icon: Users, label: 'Team Size', value: '30+ people' },
   { icon: Globe, label: 'Headquarters', value: 'San Francisco, CA' },
-  { icon: Phone, label: 'Calls Handled', value: '2M+' },
-  { icon: BarChart3, label: 'Active Merchants', value: '100+' },
   { icon: Award, label: 'Languages Supported', value: '30+' },
+  { icon: BarChart3, label: 'Stage', value: 'Early Access' },
 ];
 
-const pressReleases = [
-  {
-    date: 'February 12, 2026',
-    title: 'Barpel AI Raises $18M Series A to Scale AI Voice Support for E-Commerce',
-    excerpt:
-      'Barpel AI, the leading AI voice support platform for e-commerce, announced an $18 million Series A funding round led by Accel Partners, with participation from existing investors Sequoia Scout and Y Combinator.',
-    link: '#',
-  },
-  {
-    date: 'September 5, 2025',
-    title: 'Barpel AI Surpasses 2 Million Customer Calls Handled by AI',
-    excerpt:
-      'Barpel AI reached a major milestone today, having processed over two million AI-handled customer support calls for e-commerce merchants since its launch earlier this year.',
-    link: '#',
-  },
-  {
-    date: 'March 20, 2025',
-    title: 'Barpel AI Launches Publicly with Shopify Integration and 30+ Language Support',
-    excerpt:
-      'After six months of private beta with select Shopify merchants, Barpel AI opened its doors to all e-commerce brands. The platform offers one-click Shopify integration and supports voice conversations in over 30 languages.',
-    link: '#',
-  },
-];
 
 function ColorSwatch({ color }: { color: typeof brandColors[0] }) {
   const [copied, setCopied] = useState(false);
@@ -284,7 +255,7 @@ export default function PressKitPage() {
         <div className="mt-8 bg-white rounded-xl p-6 border border-slate-100">
           <h3 className="heading-card text-brand-navy mb-3">Boilerplate</h3>
           <p className="text-sm text-text-secondary leading-relaxed">
-            Barpel AI is an AI-powered voice support platform for e-commerce. Founded in 2024 and headquartered in San Francisco, Barpel enables online stores to automate customer phone support with conversational AI that handles order tracking, returns, product questions, and cart recovery in 30+ languages. Over 500 merchants trust Barpel to deliver 24/7 voice support, reducing costs while improving customer satisfaction. The company is backed by leading investors and has processed over 2 million AI-handled calls since launch.
+            Barpel AI is an AI-powered voice support platform for e-commerce. Founded in 2024 and headquartered in San Francisco, Barpel enables online stores to automate customer phone support with conversational AI that handles order tracking, returns, product questions, and cart recovery in 30+ languages. The platform integrates with Shopify, TikTok Shop, WooCommerce, and Amazon, and is currently available in early access.
           </p>
         </div>
       </m.div>
@@ -302,35 +273,11 @@ export default function PressKitPage() {
           <h2 className="heading-section text-brand-navy">Press Releases</h2>
         </div>
 
-        <div className="space-y-6">
-          {pressReleases.map((release, index) => (
-            <m.div
-              key={release.title}
-              className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 group"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1, duration: 0.5 }}
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <Calendar className="w-4 h-4 text-brand-teal" />
-                <span className="text-xs font-medium text-brand-teal">{release.date}</span>
-              </div>
-              <h3 className="heading-card text-brand-navy mb-2 group-hover:text-brand-teal transition-colors">
-                {release.title}
-              </h3>
-              <p className="text-sm text-text-secondary leading-relaxed mb-4">
-                {release.excerpt}
-              </p>
-              <a
-                href={release.link}
-                className="inline-flex items-center gap-1 text-sm font-medium text-brand-teal hover:gap-2 transition-all duration-200"
-              >
-                Read full release
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            </m.div>
-          ))}
+        <div className="bg-off-white rounded-xl p-8 border border-light-mint text-center">
+          <p className="text-text-secondary text-sm">
+            No press releases yet. For media inquiries contact{' '}
+            <a href="mailto:press@barpel.ai" className="text-brand-teal hover:underline">press@barpel.ai</a>.
+          </p>
         </div>
       </m.div>
 

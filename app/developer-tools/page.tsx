@@ -338,7 +338,9 @@ export default function DeveloperToolsPage() {
               Read the docs
             </Link>
             <Link
-              href="#"
+              href="https://discord.gg/barpelai"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white/10 border border-white/20 text-white font-semibold rounded-lg hover:bg-white/20 transition-all duration-200"
             >
               <MessageSquare className="w-4 h-4" />

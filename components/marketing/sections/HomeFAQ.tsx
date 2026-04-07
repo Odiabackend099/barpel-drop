@@ -22,7 +22,7 @@ const faqs = [
   {
     question: 'How fast does Barpel AI answer calls?',
     answer:
-      'Barpel AI answers calls with an average response time of 2.3 seconds. Unlike human agents, it operates 24/7 with no hold times, no voicemail, and no time zone limitations. Calls are handled instantly, any time of day.',
+      'Barpel AI answers calls instantly — no hold times, no voicemail, no time zone limitations. Unlike human agents, it operates 24/7 and connects customers to your AI agent the moment they call.',
   },
   {
     question: 'Can Barpel AI handle returns and refunds?',

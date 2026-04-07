@@ -18,10 +18,10 @@ export async function POST(request: Request) {
 
   const adminSupabase = createAdminClient();
 
-  // Use admin client to read caller_id_validation_code (not in RLS-safe select)
+  // Use admin client to read merchant ID (needed to look up Vault secret)
   const { data: merchant } = await adminSupabase
     .from("merchants")
-    .select("id, caller_id_validation_code")
+    .select("id")
     .eq("user_id", user.id)
     .is("deleted_at", null)
     .single();
@@ -54,7 +54,22 @@ export async function POST(request: Request) {
     );
   }
 
-  const storedCode: string | null = merchant.caller_id_validation_code;
+  // Read validation code from Vault (stored by /api/caller-id/start)
+  const secretName = `caller-id-code-${merchant.id}`;
+  let storedCode: string | null = null;
+  let vaultSecretId: string | null = null;
+  try {
+    const { data: vaultRows } = await adminSupabase.rpc("vault_lookup_secret_by_name", {
+      p_name: secretName,
+    });
+    if (Array.isArray(vaultRows) && vaultRows[0]?.secret) {
+      storedCode = vaultRows[0].secret as string;
+      vaultSecretId = vaultRows[0].id as string;
+    }
+  } catch (vaultErr) {
+    console.error("[caller-id/verify] Vault lookup failed:", vaultErr);
+  }
+
   if (!storedCode) {
     return NextResponse.json(
       { error: "No pending verification found. Call /api/caller-id/start first." },
@@ -76,18 +91,27 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: "Invalid code" }, { status: 400 });
   }
 
-  // Mark caller ID as verified and clear the temp validation code
+  // Mark caller ID as verified
   const { error: updateError } = await adminSupabase
     .from("merchants")
     .update({
       verified_caller_id: phoneNumber,
       caller_id_verified: true,
-      caller_id_validation_code: null,
     })
     .eq("id", merchant.id);
 
   if (updateError) {
     return NextResponse.json({ error: updateError.message }, { status: 500 });
+  }
+
+  // Delete the temp Vault secret — single-use, no longer needed
+  if (vaultSecretId) {
+    try {
+      await adminSupabase.rpc("vault_delete_secret_by_id", { p_id: vaultSecretId });
+    } catch (vaultErr) {
+      // Non-fatal — secret will just be orphaned; no security risk since code is now invalid
+      console.error("[caller-id/verify] Failed to delete Vault secret:", vaultErr);
+    }
   }
 
   return NextResponse.json({ success: true });

@@ -162,20 +162,20 @@ export default function PartnersPage() {
           <div className="bg-off-white rounded-2xl p-8 border border-light-mint">
             <h3 className="heading-card text-brand-navy mb-2">What you are promoting</h3>
             <p className="text-sm text-text-secondary mb-6">
-              Barpel is an AI phone agent for Shopify stores. It picks up customer calls in 2 seconds, resolves 78% without a human, and recovers abandoned carts automatically. Plans start at $29/month.
+              Barpel is an AI phone agent for Shopify stores. It answers customer calls instantly, handles order tracking, returns, and cart recovery — all automatically. Plans start at $29/month.
             </p>
             <div className="space-y-3 text-sm">
               <div className="flex items-center gap-2 text-text-secondary">
                 <CheckCircle2 className="w-4 h-4 text-brand-teal flex-shrink-0" />
-                2.3-second average response time
+                Answers calls instantly, 24/7
               </div>
               <div className="flex items-center gap-2 text-text-secondary">
                 <CheckCircle2 className="w-4 h-4 text-brand-teal flex-shrink-0" />
-                78% call resolution rate without a human
+                Handles order tracking, returns, and cart recovery
               </div>
               <div className="flex items-center gap-2 text-text-secondary">
                 <CheckCircle2 className="w-4 h-4 text-brand-teal flex-shrink-0" />
-                4.2x improvement in cart recovery
+                Supports 30+ languages
               </div>
               <div className="flex items-center gap-2 text-text-secondary">
                 <CheckCircle2 className="w-4 h-4 text-brand-teal flex-shrink-0" />

@@ -91,10 +91,6 @@ export default function VoicePage() {
   const isActive = merchant?.provisioning_status === "active";
   const isSuspended = merchant?.provisioning_status === "suspended";
 
-  // Legacy ElevenLabs voice detection
-  const isLegacyVoice =
-    merchant?.ai_voice_id && !VALID_VAPI_IDS.includes(merchant.ai_voice_id);
-
   // Sync merchant data into local state once loaded (lazy-init pattern)
   useEffect(() => {
     if (merchant) {
@@ -507,16 +503,6 @@ export default function VoicePage() {
         </p>
         {previewError && (
           <p className="text-xs text-red-500 font-sans mb-3">{previewError}</p>
-        )}
-
-        {/* Legacy voice migration banner */}
-        {isLegacyVoice && (
-          <div className="mb-4 p-3 rounded-lg border border-[#F5A623]/30 bg-[#F5A623]/5">
-            <p className="text-xs text-slate-900 font-sans">
-              <span className="font-semibold">Your current voice is no longer available.</span>{" "}
-              We&apos;ve upgraded to higher-quality Vapi native voices. Please select a new voice below.
-            </p>
-          </div>
         )}
 
         {loading ? (

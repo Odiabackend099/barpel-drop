@@ -29,8 +29,8 @@ const fadeInUp = {
 const integrationSteps = [
   {
     icon: ShoppingBag,
-    title: 'Install from Shopify App Store',
-    description: 'One-click installation directly from the Shopify App Store. No coding required, no developer needed.',
+    title: 'Connect your Shopify store',
+    description: 'Authorize Barpel with one click via Shopify OAuth. No coding required, no developer needed.',
   },
   {
     icon: RefreshCw,
@@ -89,9 +89,9 @@ const features = [
 ];
 
 const stats = [
-  { value: '100+', label: 'Shopify stores using Barpel' },
-  { value: '4.2x', label: 'Cart recovery improvement' },
-  { value: '4.9/5', label: 'App Store rating' },
+  { value: '30+', label: 'Languages supported' },
+  { value: '15 min', label: 'Cart recovery window' },
+  { value: '24/7', label: 'Always-on coverage' },
   { value: '99.9%', label: 'Uptime guarantee' },
 ];
 
@@ -244,56 +244,30 @@ export default function ShopifyStoresPage() {
         </div>
       </m.div>
 
-      {/* Case Study Highlight */}
+      {/* Case Study Highlight — coming soon */}
       <m.div {...fadeInUp} className="mb-20">
-        <div className="bg-gradient-to-br from-teal-50 to-emerald-50 rounded-2xl p-12">
-          <div className="flex items-center gap-2 mb-4">
+        <div className="bg-gradient-to-br from-teal-50 to-emerald-50 rounded-2xl p-12 text-center">
+          <div className="flex items-center justify-center gap-2 mb-4">
             <BarChart3 className="w-5 h-5 text-teal-500" />
-            <span className="text-sm font-semibold text-teal-600 uppercase tracking-wide">Case Study</span>
+            <span className="text-sm font-semibold text-teal-600 uppercase tracking-wide">Case Studies</span>
           </div>
-          <h3 className="text-2xl font-bold text-brand-navy mb-4">
-            ShopMax Pro increased cart recovery by 4.2x
-          </h3>
-          <p className="text-slate-600 mb-6 leading-relaxed max-w-3xl">
-            ShopMax Pro, a Shopify Plus store selling premium home goods, was losing thousands
-            in abandoned carts every month. Email recovery campaigns only converted at 2.1%.
-            After implementing Barpel AI cart recovery calls, their conversion rate jumped to 8.8% —
-            a 4.2x improvement with an average recovered cart value of $127.
+          <p className="text-slate-600 max-w-lg mx-auto">
+            We are documenting early access results. Real merchant case studies coming soon.
           </p>
-          <div className="flex flex-wrap gap-4 mb-6">
-            {[
-              { label: 'Cart recovery rate', value: '4.2x' },
-              { label: 'Avg recovered cart', value: '$127' },
-              { label: 'Customer satisfaction', value: '89%' },
-            ].map((metric) => (
-              <div key={metric.label} className="bg-white rounded-lg px-4 py-3 shadow-sm">
-                <div className="text-xl font-bold text-teal-500">{metric.value}</div>
-                <div className="text-xs text-slate-500">{metric.label}</div>
-              </div>
-            ))}
-          </div>
-          <Link
-            href="/case-studies/shopmax-pro"
-            className="inline-flex items-center gap-2 text-teal-600 font-semibold hover:gap-3 transition-all duration-200"
-          >
-            Read the full story
-            <ArrowRight className="w-4 h-4" />
-          </Link>
         </div>
       </m.div>
 
       {/* Final CTA */}
       <m.div {...fadeInUp} className="text-center">
         <h2 className="heading-section text-brand-navy mb-4">
-          Install Barpel on your Shopify store today
+          Connect Barpel to your Shopify store today
         </h2>
         <p className="body-large text-slate-600 max-w-xl mx-auto mb-8">
-          Join 100+ Shopify merchants who trust Barpel for AI-powered phone support.
           Free trial includes all features — no credit card required.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link href="/signup" className="btn-primary inline-flex items-center gap-2">
-            Install on Shopify
+            Connect Shopify
             <ArrowRight className="w-4 h-4" />
           </Link>
           <Link

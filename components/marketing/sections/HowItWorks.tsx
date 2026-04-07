@@ -140,7 +140,7 @@ export default function HowItWorks() {
                 </div>
                 <div className="flex items-center gap-2 text-sm text-text-secondary">
                   <CheckCircle2 className="w-4 h-4 text-brand-teal" />
-                  <span>Join 100+ merchants using Barpel</span>
+                  <span>Join merchants using Barpel</span>
                 </div>
               </m.div>
             </m.div>

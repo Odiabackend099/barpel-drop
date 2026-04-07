@@ -40,6 +40,7 @@ function ShopifyConnectedToast() {
 }
 
 export default function IntegrationsPage() {
+  const router = useRouter();
   const { merchant, loading: merchantLoading, deleteAiVoice, togglePause } =
     useMerchant();
   const {
@@ -85,7 +86,7 @@ export default function IntegrationsPage() {
       ) {
         if (pollingRef.current) clearInterval(pollingRef.current);
         pollingRef.current = null;
-        window.location.reload();
+        router.refresh();
       }
     }, 5000);
 

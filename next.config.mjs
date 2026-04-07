@@ -1,5 +1,6 @@
 import bundleAnalyzer from '@next/bundle-analyzer';
 import withPWA from '@ducanh2912/next-pwa';
+import { withSentryConfig } from '@sentry/nextjs';
 
 const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
@@ -25,12 +26,22 @@ const nextConfig = {
   },
 };
 
-export default withBundleAnalyzer(
-  withPWA({
-    dest: 'public',
-    disable: process.env.NODE_ENV === 'development',
-    reloadOnOnline: true,
-    cacheOnFrontEndNav: true,
-    workboxOptions: { disableDevLogs: true },
-  })(nextConfig)
+const sentryConfig = {
+  silent: true,
+  disableLogger: true,
+  widenClientFileUpload: true,
+  hideSourceMaps: true,
+};
+
+export default withSentryConfig(
+  withBundleAnalyzer(
+    withPWA({
+      dest: 'public',
+      disable: process.env.NODE_ENV === 'development',
+      reloadOnOnline: true,
+      cacheOnFrontEndNav: true,
+      workboxOptions: { disableDevLogs: true },
+    })(nextConfig)
+  ),
+  sentryConfig
 );

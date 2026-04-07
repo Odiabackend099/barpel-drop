@@ -6,6 +6,23 @@
 -- Tickets:   D-1 through D-13
 -- Safety:    Every ALTER uses IF NOT EXISTS / IF EXISTS guards.
 --            Migration is idempotent — safe to run multiple times.
+--
+-- RLS POLICY PRECEDENCE (DB-010):
+-- PostgreSQL evaluates ALL permissive policies with OR between them.
+-- Later migrations that DROP and re-CREATE a policy override the earlier one.
+-- Policy execution order within a migration follows statement order.
+-- All policies here are PERMISSIVE (the default). There are no RESTRICTIVE
+-- policies in this database — every row is accessible as long as ANY
+-- permissive policy allows it.
+-- Effective policy chain (by table, latest-wins):
+--   merchants:        002 (select/update) — user_id = auth.uid()
+--   integrations:     002 (select/insert/update) — via merchants subquery
+--   call_logs:        002 → 009 (select/insert/update) — via merchants subquery
+--   credit_transactions: 002 (select) — via call_logs subquery
+--   return_requests:  002 (select/insert/update) — via call_logs subquery
+--   webhook_events:   028 — RLS enabled, no policies (service role only)
+--   oauth_states:     028 — RLS enabled, no policies (service role only)
+--   leads:            028 — RLS enabled, no policies (service role only)
 -- ============================================================================
 
 

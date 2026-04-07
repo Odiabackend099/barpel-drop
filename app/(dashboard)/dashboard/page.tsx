@@ -1,6 +1,9 @@
 "use client";
 
+const LABOR_COST_PER_CALL = 3.40;
+
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import dynamic from 'next/dynamic';
 import { m } from "framer-motion";
 import { Phone, Clock, CreditCard as CardIcon, TrendingUp, Info } from "lucide-react";
@@ -97,6 +100,8 @@ export default function DashboardPage() {
         if (res.ok) {
           const data = await res.json();
           setStats(data);
+        } else {
+          toast.error("Failed to load dashboard stats.");
         }
       } finally {
         setLoading(false);
@@ -121,7 +126,7 @@ export default function DashboardPage() {
 
   const callsByType = stats?.call_types ?? {};
   const total = Object.values(callsByType).reduce((a, b) => a + b, 0);
-  const moneySaved = (stats?.total_calls ?? 0) * 3.40;
+  const moneySaved = (stats?.total_calls ?? 0) * LABOR_COST_PER_CALL;
 
   return (
     <div className="space-y-6">
@@ -180,7 +185,7 @@ export default function DashboardPage() {
                         <Info className="h-3 w-3 text-muted-foreground cursor-pointer" />
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Based on the average cost of a human agent handling one support call ($3.40)</p>
+                        <p>Based on the average cost of a human agent handling one support call (${LABOR_COST_PER_CALL.toFixed(2)})</p>
                       </TooltipContent>
                     </UITooltip>
                   </TooltipProvider>

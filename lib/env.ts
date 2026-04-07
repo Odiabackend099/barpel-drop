@@ -27,13 +27,6 @@ const serverSchema = z.object({
   SHOPIFY_API_KEY: z.string().min(1),
   SHOPIFY_API_SECRET: z.string().min(1),
 
-  // Stripe — legacy, kept optional for zero-downtime env cleanup
-  STRIPE_SECRET_KEY: z.string().startsWith("sk_").optional(),
-  STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_").optional(),
-
-  // Flutterwave — legacy, kept optional for dunning-check cancellation of existing FLW subscribers
-  FLW_SECRET_KEY: z.string().min(1).optional(),
-
   // AfterShip (optional for now per spec)
   AFTERSHIP_API_KEY: z.string().min(1).optional(),
 
@@ -52,6 +45,9 @@ const serverSchema = z.object({
   // Notifications — contact form lead capture
   SLACK_WEBHOOK_URL: z.string().url().optional(),
 
+  // NVIDIA LLM — base URL for chat completions (BE-003)
+  NVIDIA_API_BASE_URL: z.string().url().optional().default("https://integrate.api.nvidia.com/v1"),
+
   // App
   NEXT_PUBLIC_BASE_URL: z.string().url(),
 
@@ -63,6 +59,14 @@ const serverSchema = z.object({
   DODO_PAYMENTS_WEBHOOK_KEY: z.string().min(1),
   DODO_PAYMENTS_ENVIRONMENT: z.enum(["test_mode", "live_mode"]).default("test_mode"),
   DODO_PAYMENTS_RETURN_URL: z.string().url(),
+
+  // Dodo product IDs per plan/cycle — optional (fall back to "" if not configured)
+  DODO_PRODUCT_ID_STARTER_MONTHLY: z.string().default(""),
+  DODO_PRODUCT_ID_STARTER_ANNUAL: z.string().default(""),
+  DODO_PRODUCT_ID_GROWTH_MONTHLY: z.string().default(""),
+  DODO_PRODUCT_ID_GROWTH_ANNUAL: z.string().default(""),
+  DODO_PRODUCT_ID_SCALE_MONTHLY: z.string().default(""),
+  DODO_PRODUCT_ID_SCALE_ANNUAL: z.string().default(""),
 });
 
 const clientSchema = z.object({

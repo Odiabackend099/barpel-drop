@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getAuthUser, unauthorizedResponse } from '@/lib/supabase/auth-guard'
+import { getServerEnv } from '@/lib/env'
 
 export async function POST(req: NextRequest) {
   // Auth — merchant must be logged in
@@ -178,7 +179,7 @@ If you cannot resolve the issue: "I'll flag this for our team — you can also e
 
   let nvidia: Response
   try {
-    nvidia = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+    nvidia = await fetch(`${getServerEnv().NVIDIA_API_BASE_URL}/chat/completions`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${process.env.NVIDIA_API_KEY}`,
