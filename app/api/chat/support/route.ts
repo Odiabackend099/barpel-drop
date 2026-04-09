@@ -185,17 +185,14 @@ If you cannot resolve the issue: "I'll flag this for our team — you can also e
       headers: {
         Authorization: `Bearer ${env.NVIDIA_API_KEY}`,
         'Content-Type': 'application/json',
-        Accept: 'application/json',
+        Accept: 'text/event-stream',
       },
       body: JSON.stringify({
         model: 'moonshotai/kimi-k2.5',
         messages: [{ role: 'system', content: systemPrompt }, ...sanitized],
         temperature: 0.6,
         max_tokens: 500,
-        frequency_penalty: 0,
-        presence_penalty: 0,
         stream: true,
-        chat_template_kwargs: { thinking: false },
       }),
       signal: AbortSignal.timeout(25000),
     })
