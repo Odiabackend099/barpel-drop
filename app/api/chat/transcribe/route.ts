@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import { DeepgramClient } from '@deepgram/sdk'
+import { getServerEnv } from '@/lib/env'
 
 const MAX_AUDIO_BYTES = 10 * 1024 * 1024 // 10 MB
 
@@ -24,7 +25,7 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: 'Empty audio file' }, { status: 400 })
   }
 
-  const deepgram = new DeepgramClient({ apiKey: process.env.DEEPGRAM_API_KEY! })
+  const deepgram = new DeepgramClient({ apiKey: getServerEnv().DEEPGRAM_API_KEY })
 
   try {
     const response = await deepgram.listen.v1.media.transcribeFile(

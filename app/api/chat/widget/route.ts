@@ -142,10 +142,11 @@ export async function POST(req: NextRequest) {
   // Call NVIDIA API with streaming
   let nvidia: Response
   try {
-    nvidia = await fetch(`${getServerEnv().NVIDIA_API_BASE_URL}/chat/completions`, {
+    const env = getServerEnv()
+    nvidia = await fetch(`${env.NVIDIA_API_BASE_URL}/chat/completions`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${process.env.NVIDIA_API_KEY}`,
+        Authorization: `Bearer ${env.NVIDIA_API_KEY}`,
         'Content-Type': 'application/json',
         Accept: 'text/event-stream',
       },
@@ -169,7 +170,8 @@ export async function POST(req: NextRequest) {
   }
 
   if (!nvidia.ok) {
-    console.error('[chat/widget] NVIDIA error status:', nvidia.status)
+    const errorText = await nvidia.text()
+    console.error('[chat/widget] NVIDIA error status:', nvidia.status, 'body:', errorText)
     return Response.json({ error: 'AI service unavailable' }, { status: 502 })
   }
 

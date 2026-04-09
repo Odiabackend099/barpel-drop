@@ -179,10 +179,11 @@ If you cannot resolve the issue: "I'll flag this for our team — you can also e
 
   let nvidia: Response
   try {
-    nvidia = await fetch(`${getServerEnv().NVIDIA_API_BASE_URL}/chat/completions`, {
+    const env = getServerEnv()
+    nvidia = await fetch(`${env.NVIDIA_API_BASE_URL}/chat/completions`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${process.env.NVIDIA_API_KEY}`,
+        Authorization: `Bearer ${env.NVIDIA_API_KEY}`,
         'Content-Type': 'application/json',
         Accept: 'text/event-stream',
       },
@@ -206,7 +207,8 @@ If you cannot resolve the issue: "I'll flag this for our team — you can also e
   }
 
   if (!nvidia.ok) {
-    console.error('[chat/support] NVIDIA error status:', nvidia.status, 'user:', user.id)
+    const errorText = await nvidia.text()
+    console.error('[chat/support] NVIDIA error status:', nvidia.status, 'body:', errorText, 'user:', user.id)
     return Response.json({ error: 'AI service unavailable' }, { status: 502 })
   }
 
