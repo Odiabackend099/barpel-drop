@@ -1,7 +1,5 @@
 "use client";
 
-const LABOR_COST_PER_CALL = 3.40;
-
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import dynamic from 'next/dynamic';
@@ -13,13 +11,16 @@ import { CallLogTable } from "@/components/dashboard/CallLogTable";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import {
-  Tooltip as UITooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CALL_TYPE_LABELS as SHARED_CALL_TYPE_LABELS, CALL_TYPE_COLORS } from "@/lib/constants";
 import { format, subDays } from "date-fns";
 import type { CallLog } from "@/lib/mockApi";
+
+const LABOR_COST_PER_CALL = 3.40;
+const MAX_CREDITS_SECONDS = 6000; // 100 minutes × 60 seconds
 
 const CallVolumeChart = dynamic(
   () => import('@/components/dashboard/CallVolumeChart'),
@@ -41,6 +42,7 @@ interface DashboardStats {
   total_calls: number;
   credits_remaining: number;
   avg_handle_time: number;
+  money_saved: number;
   chart_data: Array<{ date: string; count: number }>;
   call_types: Record<string, number>;
   recent_calls?: CallLog[];
@@ -61,6 +63,7 @@ const MOCK_STATS: DashboardStats = {
   total_calls: 247,
   credits_remaining: 6234,
   avg_handle_time: 143,
+  money_saved: 247 * LABOR_COST_PER_CALL,
   chart_data: chartData,
   call_types: {
     order_lookup: 98,
@@ -70,19 +73,8 @@ const MOCK_STATS: DashboardStats = {
   },
 };
 
-const CALL_TYPE_LABELS: Record<string, string> = {
-  order_lookup: "Order Lookup",
-  return_request: "Return Request",
-  abandoned_cart_recovery: "Cart Recovery",
-  general: "General",
-};
-
-const breakdownColors: Record<string, string> = {
-  order_lookup: "#00A99D",
-  return_request: "#F5A623",
-  abandoned_cart_recovery: "#7DD9C0",
-  general: "#8AADA6",
-};
+const CALL_TYPE_LABELS = SHARED_CALL_TYPE_LABELS;
+const breakdownColors = CALL_TYPE_COLORS;
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -126,7 +118,7 @@ export default function DashboardPage() {
 
   const callsByType = stats?.call_types ?? {};
   const total = Object.values(callsByType).reduce((a, b) => a + b, 0);
-  const moneySaved = (stats?.total_calls ?? 0) * LABOR_COST_PER_CALL;
+  const moneySaved = stats?.money_saved ?? 0;
 
   return (
     <div className="space-y-6">
@@ -170,7 +162,7 @@ export default function DashboardPage() {
               value={`${Math.floor((stats?.credits_remaining ?? 0) / 60)} credits`}
               color="#7DD9C0"
               progress
-              progressValue={((stats?.credits_remaining ?? 0) / 6000) * 100}
+              progressValue={((stats?.credits_remaining ?? 0) / MAX_CREDITS_SECONDS) * 100}
             />
             </m.div>
             <m.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } }}>
@@ -179,16 +171,41 @@ export default function DashboardPage() {
               label={
                 <div className="flex items-center gap-1">
                   <span>Money Saved</span>
-                  <TooltipProvider>
-                    <UITooltip>
-                      <TooltipTrigger asChild>
-                        <Info className="h-3 w-3 text-muted-foreground cursor-pointer" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Based on the average cost of a human agent handling one support call (${LABOR_COST_PER_CALL.toFixed(2)})</p>
-                      </TooltipContent>
-                    </UITooltip>
-                  </TooltipProvider>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button aria-label="How is this calculated?" className="inline-flex">
+                        <Info className="h-3 w-3 text-muted-foreground cursor-pointer hover:text-[#00A99D] transition-colors" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-72 text-xs" side="bottom" align="start">
+                      <p className="font-semibold text-[#1B2A4A] mb-2">How we calculate this</p>
+                      <div className="space-y-2 text-muted-foreground">
+                        <p>
+                          Each call your AI handles replaces a human support agent.
+                          Industry data (Zendesk, Gartner) puts the average cost at{" "}
+                          <strong className="text-[#1B2A4A]">${LABOR_COST_PER_CALL.toFixed(2)}</strong> per call.
+                        </p>
+                        <div className="bg-[#F0F9F8] border border-[#D0EDE8] rounded-md p-2 font-mono text-[11px]">
+                          <div className="flex justify-between">
+                            <span>Calls handled by AI</span>
+                            <span className="text-[#1B2A4A] font-semibold">{stats?.total_calls ?? 0}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Cost per human call</span>
+                            <span className="text-[#1B2A4A] font-semibold">&times; ${LABOR_COST_PER_CALL.toFixed(2)}</span>
+                          </div>
+                          <div className="border-t border-[#D0EDE8] mt-1 pt-1 flex justify-between font-semibold text-[#00A99D]">
+                            <span>Labor cost saved</span>
+                            <span>${moneySaved.toFixed(2)}</span>
+                          </div>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground/70">
+                          This measures labor savings, not product value. WISMO &amp; support calls
+                          cost $2.50–$5.50 per interaction with a human agent.
+                        </p>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
               }
               value={`$${moneySaved.toFixed(2)}`}

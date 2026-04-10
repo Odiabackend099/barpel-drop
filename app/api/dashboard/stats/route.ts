@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
   const { data: stats, error } = await supabase.rpc("get_dashboard_stats", {
     p_merchant_id: merchant.id,
     ...(from ? { p_date_from: from } : {}),
-    ...(to ? { p_date_to: to + "T23:59:59.999Z" } : {}),
+    ...(to ? { p_date_to: to.includes("T") ? to : to + "T23:59:59.999Z" } : {}),
   });
 
   if (error) {

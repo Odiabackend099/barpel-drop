@@ -20,15 +20,15 @@ const serverSchema = z.object({
   TWILIO_ACCOUNT_SID: z.string().min(1),
   TWILIO_AUTH_TOKEN: z.string().min(1),
   // Optional — UK/US address SIDs for number provisioning (may be managed manually)
-  TWILIO_UK_ADDRESS_SID: z.string().min(1).optional(),
-  TWILIO_US_ADDRESS_SID: z.string().min(1).optional(),
+  TWILIO_UK_ADDRESS_SID: z.string().optional(),
+  TWILIO_US_ADDRESS_SID: z.string().optional(),
 
   // Shopify (renamed from SHOPIFY_CLIENT_ID / SHOPIFY_CLIENT_SECRET per spec Part Six)
   SHOPIFY_API_KEY: z.string().min(1),
   SHOPIFY_API_SECRET: z.string().min(1),
 
   // AfterShip (optional for now per spec)
-  AFTERSHIP_API_KEY: z.string().min(1).optional(),
+  AFTERSHIP_API_KEY: z.string().optional(),
 
   // Email notifications — transactional emails via Resend
   RESEND_API_KEY: z.string().min(1), // REQUIRED — if missing, all emails fail silently
@@ -45,8 +45,24 @@ const serverSchema = z.object({
   // Notifications — contact form lead capture
   SLACK_WEBHOOK_URL: z.string().url().optional(),
 
-  // NVIDIA LLM — base URL for chat completions (BE-003)
+  // NVIDIA LLM — base URL and API key for chat completions (BE-003)
   NVIDIA_API_BASE_URL: z.string().url().optional().default("https://integrate.api.nvidia.com/v1"),
+  NVIDIA_API_KEY: z.string().min(1),
+
+  // Deepgram API — Voice transcription
+  DEEPGRAM_API_KEY: z.string().min(1),
+
+  // Barpel Connect (Custom Shopify Distribution)
+  BARPEL_CONNECT_CLIENT_ID: z.string().min(1).optional(),
+  BARPEL_CONNECT_CLIENT_SECRET: z.string().min(1).optional(),
+
+  // Stripe
+  STRIPE_SECRET_KEY: z.string().min(1),
+  STRIPE_WEBHOOK_SECRET: z.string().min(1),
+
+  // Tapfiliate — affiliate program
+  TAPFILIATE_API_KEY: z.string().min(1).optional(),
+  TAPFILIATE_ACCOUNT_ID: z.string().min(1).optional(),
 
   // App
   NEXT_PUBLIC_BASE_URL: z.string().url(),

@@ -1,9 +1,16 @@
 "use client";
 
-import { PhoneIncoming, PhoneOutgoing, Eye, Play, Download } from "lucide-react";
+import { PhoneIncoming, PhoneOutgoing, Eye, Play } from "lucide-react";
 import { SENTIMENT_CONFIG, CALL_TYPE_COLORS, CALL_TYPE_LABELS } from "@/lib/constants";
 import type { CallLog } from "@/lib/mockApi";
 import React from "react";
+import { AudioPlayerModal } from "@/components/dashboard/AudioPlayerModal";
+
+const emojiIcons: Record<string, string> = {
+  positive: "\u{1F60A}",
+  neutral: "\u{1F610}",
+  negative: "\u{1F620}",
+};
 
 function Badge({ color, children }: { color: string; children: React.ReactNode }) {
   return (
@@ -23,6 +30,8 @@ interface CallLogTableProps {
 }
 
 export function CallLogTable({ calls, expandedId, onToggle }: CallLogTableProps) {
+  const [audioCall, setAudioCall] = React.useState<CallLog | null>(null);
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
@@ -43,7 +52,7 @@ export function CallLogTable({ calls, expandedId, onToggle }: CallLogTableProps)
             const sentimentKey = call.sentiment as keyof typeof SENTIMENT_CONFIG;
             const sentiment = SENTIMENT_CONFIG[sentimentKey];
             const isExpanded = expandedId === call.id;
-            const emojiIcons: Record<string, string> = { positive: "\u{1F60A}", neutral: "\u{1F610}", negative: "\u{1F620}" };
+            const recordingUrl = call.recording_url;
 
             return (
               <React.Fragment key={call.id}>
@@ -93,39 +102,14 @@ export function CallLogTable({ calls, expandedId, onToggle }: CallLogTableProps)
                           <Eye className="w-4 h-4" />
                         </button>
                       )}
-                      {(call as CallLog & { recording_url?: string }).recording_url && (
-                        <>
-                          <a
-                            href={(call as CallLog & { recording_url?: string }).recording_url!}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title="Play recording"
-                            className="p-1.5 rounded-lg hover:bg-[#F0F9F8] text-muted-foreground hover:text-[#1B2A4A] transition-colors"
-                          >
-                            <Play className="w-4 h-4" />
-                          </a>
-                          <button
-                            onClick={async () => {
-                              try {
-                                const url = (call as CallLog & { recording_url?: string }).recording_url!;
-                                const res = await fetch(url);
-                                const blob = await res.blob();
-                                const a = document.createElement("a");
-                                a.href = URL.createObjectURL(blob);
-                                a.download = `call-${call.id.slice(0, 8)}.wav`;
-                                a.click();
-                                URL.revokeObjectURL(a.href);
-                              } catch {
-                                // Fallback: open in new tab if fetch fails (CORS)
-                                window.open((call as CallLog & { recording_url?: string }).recording_url!, "_blank");
-                              }
-                            }}
-                            title="Download recording"
-                            className="p-1.5 rounded-lg hover:bg-[#F0F9F8] text-muted-foreground hover:text-[#1B2A4A] transition-colors"
-                          >
-                            <Download className="w-4 h-4" />
-                          </button>
-                        </>
+                      {recordingUrl && (
+                        <button
+                          onClick={() => setAudioCall(call)}
+                          title="Play recording"
+                          className="p-1.5 rounded-lg hover:bg-[#F0F9F8] text-muted-foreground hover:text-[#1B2A4A] transition-colors"
+                        >
+                          <Play className="w-4 h-4" />
+                        </button>
                       )}
                     </div>
                   </td>
@@ -165,6 +149,11 @@ export function CallLogTable({ calls, expandedId, onToggle }: CallLogTableProps)
           })}
         </tbody>
       </table>
+      <AudioPlayerModal
+        open={audioCall !== null}
+        onClose={() => setAudioCall(null)}
+        call={audioCall}
+      />
     </div>
   );
 }
